@@ -1,17 +1,44 @@
 // ==UserScript==
 // @name        Planet Hunter TESS Tweaks
-// @namespace
+// @namespace   astro.tess
 // @match       https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.1
+// @version     1.0.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
 
-(function injectCSS() {
-  GM_addStyle(/*css*/`
+// helper for debug messages used to understand timing of ajax loading (and related MutationObserver)
+function ajaxDbg(... args) {
+  console.log(...(['[DBG]'].concat(args)));
+}
+
+// General helpers to handle initial top level ajax load
+function onMainLoaded(handleFn) {
+  const mainEl = document.querySelector('main');
+  if (!mainEl) {
+    console.error('onMainLoaded() - the <main> element is missing unexpectedly. Cannot wait.');
+    return false;
+  }
+  const mainObserver = new MutationObserver(function(mutations, observer) {
+    ajaxDbg('onMainLoaded() - main is changed, begin handling')
+    if (handleFn()) {
+      ajaxDbg('onMainLoaded() - stop observing as hooks to wait for ajax load done');
+      observer.disconnect();
+    } // continue to observe
+  })
+  mainObserver.observe(mainEl, { childList: true, subtree: true });
+}
+
+
+const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
+
+(function customizeClassify() {
+
+  (function injectCSS() {
+    GM_addStyle(`
 #lightCurveViewerExpandCtr {
   display: none;
 }
@@ -52,356 +79,311 @@
     overflow-y: scroll;
 }
 
-.hide-headers header {
-  display: none;
-}
+`);
+  })(); // function injectCSS()
 
-#hideShowHeaderCtl:before {
-  content: "< Header";
-}
-
-.hide-headers #hideShowHeaderCtl:before {
-  content: "Header >";
-}
-`)
-})(); // function injectCSS()
-
-
-
-// Tips for tracking lightcurve viewer changes due to ajax load after pressing done
-// 1.add a click listener to done
-// 2. observe mutation changes of document.querySelector('svg.light-curve-viewer'), use config {childList: true}
-// 3. when ajax loads, the curve is changed
-// 4. do what whatever is done upon the changes
-// 5. disconnect the observer, as any zoom, etc., will also change the it.
-// @see https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
-
-function annotateViewerRoot() {
-  // find the container that controls the size of the light-curve
-  const lightCurveEl = document.querySelector('div.light-curve-viewer');
-  if (lightCurveEl) {
-    const rootEl = lightCurveEl.parentElement.parentElement.parentElement;
-    rootEl.classList.add('x-light-curve-root');
-    return rootEl;
-  } else {
-    return null;
-  }
-} // function annotateViewerRoot()
-
-window.toggleExpandedViewer = function () {
-  // only applicable to classify page
-  if (location.pathname != '/projects/nora-dot-eisner/planet-hunters-tess/classify') {
-    return;
+  function getViewerSVGEl() {
+    return document.querySelector('svg.light-curve-viewer');
   }
 
-  // add expanded at doc root, so that in case LC viewer is not yet loaded, we can still let it be in expanded state
-  document.documentElement.classList.toggle('lcv-expanded');
-  const rootEl = annotateViewerRoot()
-  if (rootEl) {
-    rootEl.scrollIntoView();
-    rootEl.querySelector('svg').focus(); // to make built-in keyboard shortcuts work without users clicking
-  } else {
-    console.warn('toggleExpandedViewer() - cannot find light curve viewer container - cannot focus it')
-  }
-}; // function toggleExpandedViewer()
-
-function initToggleExpandedViewerUI() {
-  document.body.insertAdjacentHTML('beforeend', `
-<div id="lightCurveViewerExpandCtr" style="z-index: 9; position: fixed; top: 10px; right: 4px; padding: 4px 8px; background-color: rgba(255,255,0,0.5);">
-    <button id="lightCurveViewerExpandCtl"></button>
-</div>`);
-  document.getElementById('lightCurveViewerExpandCtl').onclick = toggleExpandedViewer;
-} // function initToggleExpandedViewerUI()
-
-initToggleExpandedViewerUI();
-if (location.pathname === '/projects/nora-dot-eisner/planet-hunters-tess/classify') {
-  setTimeout(toggleExpandedViewer, 2000);
-}
-
-
-
-//
-// Add additional keyboard shortcuts to the existing
-// zoom-in/out (+ / -), pan left / right (left arrow / right arrow)
-//
-
-//
-// Click subject info on classify screen
-//
-
-function clickSubjectInfoOnClassify() {
-  if (location.pathname != "/projects/nora-dot-eisner/planet-hunters-tess/classify") {
-    return false;
-  }
-
-  const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
-  if (infoBtn) {
-    infoBtn.click();
-    return true;
-  }
-
-  return false;
-} // function clickSubjectInfoOnClassify()
-
-function showSubjectInfoOnKey(evt) {
-  // Press I or Numpad 1 (mnemonic of I closer to other keyboard shortcuts)
-  if ((evt.code === "KeyI" || evt.code === "Numpad1")
-      && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
-    console.debug('About to show subject info upon event ', evt);
-    const success = clickSubjectInfoOnClassify();
-    if (success) {
-      evt.preventDefault();
+  function annotateViewerRoot() {
+    // find the container that controls the size of the light-curve
+    // annotate it for the use with SVG
+    const lightCurveEl = document.querySelector('div.light-curve-viewer');
+    if (lightCurveEl) {
+      const rootEl = lightCurveEl.parentElement.parentElement.parentElement;
+      rootEl.classList.add('x-light-curve-root');
+      return rootEl;
+    } else {
+      return null;
     }
-  }
-} // function showSubjectInfoOnKey(..)
-(function() {
-  window.addEventListener('keydown', showSubjectInfoOnKey)
-})(); // (function())
+  } // function annotateViewerRoot()
 
-
-
-function clickViewerBtn(btnTitle) {
-  if (location.pathname != "/projects/nora-dot-eisner/planet-hunters-tess/classify") {
+  // for the buttons to the right of the lightcurve,
+  // It does not work for the buttons below the lightcurve (they don't have title)
+  function clickViewerBtn(btnTitle) {
+    if (location.pathname !== PATH_CLASSIFY) {
+      return false;
+    }
+    const btn = document.querySelector(`button[title="${btnTitle}"]`);
+    if (btn) {
+      btn.click();
+      // focus on viewer so that built-in viewer shortcuts will work
+      const rootEl = annotateViewerRoot();
+      if (rootEl) {
+        rootEl.querySelector('svg').focus();
+      }
+      return true;
+    }
     return false;
-  }
-  const btn = document.querySelector(`button[title="${btnTitle}"]`);
-  if (btn) {
-    btn.click();
-    // focus on viewer so that built-in viewer shortcuts will work
-    const rootEl = annotateViewerRoot();
+  } // function clickViewerBtn(..)
+
+
+  function toggleExpandedViewer() {
+    // only applicable to classify page
+    if (location.pathname !== PATH_CLASSIFY) {
+      return;
+    }
+
+    // add expanded at doc root, so that in case LC viewer is not yet loaded, we can still let it be in expanded state
+    document.documentElement.classList.toggle('lcv-expanded');
+    const rootEl = annotateViewerRoot()
     if (rootEl) {
-      rootEl.querySelector('svg').focus();
+      rootEl.scrollIntoView();
+      rootEl.querySelector('svg').focus(); // to make built-in keyboard shortcuts work without users clicking
+    } else {
+      console.warn('toggleExpandedViewer() - cannot find light curve viewer container - cannot focus it')
     }
+  } // function toggleExpandedViewer()
+
+  function initToggleExpandedViewerUI() {
+    if (document.getElementById('lightCurveViewerExpandCtr')) {
+      return false; // already created. no need to do it again
+    }
+
+    document.body.insertAdjacentHTML('beforeend', `
+  <div id="lightCurveViewerExpandCtr" style="z-index: 9; position: fixed; top: 10px; right: 4px; padding: 4px 8px; background-color: rgba(255,255,0,0.5);">
+      <button id="lightCurveViewerExpandCtl"></button>
+  </div>`);
+    document.getElementById('lightCurveViewerExpandCtl').onclick = toggleExpandedViewer;
+
+    toggleExpandedViewer(); // set viewer to expanded state
     return true;
+  } // function initToggleExpandedViewerUI()
+
+
+  let addKeyMapToViewerCalled = false;
+  function addKeyMapToViewer() {
+    if (addKeyMapToViewerCalled) {
+      return; // No need to set the keymap (on window object), say, during ajax load
+    } else {
+      addKeyMapToViewerCalled = true;
+    }
+
+    function clickSubjectInfoOnClassify() {
+      if (location.pathname != "/projects/nora-dot-eisner/planet-hunters-tess/classify") {
+        return false;
+      }
+
+      const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
+      if (infoBtn) {
+        infoBtn.click();
+        return true;
+      }
+
+      return false;
+    } // function clickSubjectInfoOnClassify()
+
+    function showSubjectInfoOnKey(evt) {
+      // Press I or Numpad 1 (mnemonic of I closer to other keyboard shortcuts)
+      if ((evt.code === "KeyI" || evt.code === "Numpad1")
+          && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
+        // console.debug('About to show subject info upon event ', evt);
+        const success = clickSubjectInfoOnClassify();
+        if (success) {
+          evt.preventDefault();
+        }
+      }
+    } // function showSubjectInfoOnKey(..)
+    window.addEventListener('keydown', showSubjectInfoOnKey);
+
+    function resetViewerOnKey(evt) {
+      // Press 0
+      if ((evt.code === "Digit0" || evt.code === "Numpad0" || evt.code === "KeyO") // use letter O as an alterative as it's close to keyM used below
+           && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
+        // console.debug('About to reset viewer upon event ', evt);
+        const success = clickViewerBtn('Reset subject view');
+        if (success) {
+          evt.preventDefault();
+        }
+      }
+
+    } // function resetViewerOnKey(..)
+    window.addEventListener('keydown', resetViewerOnKey);
+
+    function toViewerMoveModeOnKey(evt) {
+      if ((evt.code === "KeyM")
+           && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
+        const success = clickViewerBtn('Move subject');
+        if (success) {
+          evt.preventDefault();
+        }
+      }
+    } // function toViewerMoveModeOnKey(..)
+    window.addEventListener('keydown', toViewerMoveModeOnKey);
+
+    function toViewerAnnotateModeOnKey(evt) {
+      if ((evt.code === "KeyA" || evt.code === "Comma") // use comma as an alternative as it is close to keyM
+           && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
+        const success = clickViewerBtn('Annotate');
+        if (success) {
+          evt.preventDefault();
+        }
+      }
+    } // function toViewerMoveModeOnKey(..)
+    window.addEventListener('keydown', toViewerAnnotateModeOnKey);
+
+  } // function addKeyMapToViewer()
+
+  function tweakWheelOnViewer() {
+    // make wheel scrolling within viewer work better part 1
+    // ensure mouse scroll within the viewer means zoom in/out (move the viewer mode to Move subject when necessary)
+    function changeToMoveOnWheelInViewer(evt) {
+      evt.preventDefault(); // prevent accidental window scrolling due to mouse wheel handled by browser
+
+      // case already on move subject, no-op
+      if (document.querySelector('button.hWUwko[title="Move subject"')) {
+        return;
+      }
+
+      // set to Move subject mode, so the next wheel (typically right away) will be used to zoom
+      clickViewerBtn('Move subject');
+    } // function changeToMoveOnWheelInViewer(..)
+
+
+    const lcvEl = getViewerSVGEl();
+    if (lcvEl.changeToMoveOnWheelInViewerCalled) {
+      return; // no need to init again
+    }
+    lcvEl.changeToMoveOnWheelInViewerCalled = true;
+
+    lcvEl.addEventListener('wheel', changeToMoveOnWheelInViewer);
   }
-  return false;
-} // function clickViewerBtn(..)
 
-function resetViewerOnKey(evt) {
-  // Press 0
-  if ((evt.code === "Digit0" || evt.code === "Numpad0" || evt.code === "KeyO") // use letter O as an alterative as it's close to keyM used below
-       && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
-    console.debug('About to reset viewer upon event ', evt);
-    const success = clickViewerBtn('Reset subject view');
-    if (success) {
-      evt.preventDefault();
-    }
-  }
+  function doCustomizeViewer() {
+    ajaxDbg('doCustomizeViewer() - start customization');
 
-} // function resetViewerOnKey(..)
-(function() {
-  window.addEventListener('keydown', resetViewerOnKey);
-})(); // (function())
-
-
-function toViewerMoveModeOnKey(evt) {
-  if ((evt.code === "KeyM")
-       && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
-    const success = clickViewerBtn('Move subject');
-    if (success) {
-      evt.preventDefault();
-    }
-  }
-} // function toViewerMoveModeOnKey(..)
-(function() {
-  window.addEventListener('keydown', toViewerMoveModeOnKey);
-})(); // (function())
-
-
-function toViewerAnnotateModeOnKey(evt) {
-  if ((evt.code === "KeyA" || evt.code === "Comma") // use comma as an alternative as it is close to keyM
-       && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
-    const success = clickViewerBtn('Annotate');
-    if (success) {
-      evt.preventDefault();
-    }
-  }
-} // function toViewerMoveModeOnKey(..)
-(function() {
-  window.addEventListener('keydown', toViewerAnnotateModeOnKey);
-})(); // (function())
-
-
-
-/* does not work
-function zoomMaxViewerOnKey(evt) {
-  // Press 0
-  if ((evt.code === "Digit9" || evt.code === "Numpad9")
-       && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
-    console.debug('About to reset viewer upon event ', evt);
-    const success = clickViewerBtn('Zoom in on subject');
-    if (success) {
-      evt.preventDefault();
-    }
-  }
-} // function zoomMaxViewerOnKey(..)
-window.addEventListener('keydown', zoomMaxViewerOnKey);
-*/
-
-
-// Customize Viewer default config
-
-function customizeViewer() {
-  clickViewerBtn('Move subject'); // also make the focus on svg so that built-in keyboard shortcuts would work too
-
-
-  // make wheel scrolling within viewer work better part 1/2
-  // ensure mouse scroll within the viewer means zoom in/out (move the viewer mode to Move subject when necessary)
-  function changeToMoveOnWheelInViewer(evt) {
-    if (evt.target.tagName.toLowerCase() !== 'rect') {
-      return;
-    }
-
-    evt.preventDefault(); // prevent accidental window scrolling due to mouse wheel handled by browser
-
-    // already on move
-    if (document.querySelector('button.hWUwko[title="Move subject"')) {
-      return;
-    }
-
-//    console.debug('Viewer: try to stop scroll by wheel in say, Annotate mode. Change to Move subject mode')
-//    evt.preventDefault();
-//    evt.stopImmediatePropagation();
-//    evt.stopPropagation();
-
-    // set to Move subject mode, so the next wheel (typically right away) will be used to zoom
+    // also make the focus on svg so that built-in keyboard shortcuts would work too
     clickViewerBtn('Move subject');
-    // does not work... clickViewerBtn('Reset subject view'); // sometimes expanded LC has weird zoom
-  } // function changeToMoveOnWheelInViewer(..)
 
-  // must add it to svg (rather than window) to intercept browser's default wheel behavior
-  const viewerEl = document.querySelector('svg.light-curve-viewer');
-  if (viewerEl) {
-    viewerEl.addEventListener('wheel', changeToMoveOnWheelInViewer);
-    return true;
+    // expand the viewer
+    initToggleExpandedViewerUI();
+
+    // intercept browser's default wheel behavior when wheeling on the viewer SVG
+    tweakWheelOnViewer();
+
+    addKeyMapToViewer(); // additional keyboard shortcuts
   }
-  // else customization cannot complete.
-  return false;
 
-} // function customizeViewer()
-
-let numTries = 0;
-function tryCustomizeViewer() {
-  const success = customizeViewer();
-  numTries++;
-  if (!success) {
-    console.debug('viewer not yet ready, retry...');
-    setTimeout(tryCustomizeViewer, 1000);
-  }
-} // function tryCustomizeViewer()
-
-setTimeout(customizeViewer, 1500); // customize upon the first (regular HTTP) load, use setTimeout to account for ajax load
-
-// Set the same customization upon loading the next subject (by clicking done) via ajax
-
-function onViewerMutate(mutationsList, observer) {
-  ///console.debug('onViewerMutate()', mutationsList);
-  observer.disconnect(); // no need to observe anymore.
-  setTimeout(customizeViewer, 500); // delay to ensure the LC viewer is properly initialized
-}
-
-
-window.lcViewerObserver = new MutationObserver(onViewerMutate);
-
-function customizeViewerOnLoad(evt) {
-  if (evt.target.textContent.toLowerCase() === 'done' &&
-      !evt.shiftKey) { // ignore cases when shift is pressed.
-    // before ajax load, observe the changes so that once the new viewer is loaded
-    // it wil be called.
-    const lcvEl = document.querySelector('svg.light-curve-viewer');
-    if (lcvEl) {
-      lcViewerObserver.observe(lcvEl, { childList: true, subtree: true });
+  //
+  // Plumbing codes to trigger actual viewer customization upon ajax load (for initial load)
+  //
+  let customizeViewerCalled = false;
+  function customizeViewer() {
+    if (customizeViewerCalled) { // to avoid being called repeatedly upon svg modification
+      return;
     }
+    customizeViewerCalled = true;
+
+    doCustomizeViewer();
+  }
+
+  function customizeViewerOnSVGLoaded() {
+    const lcvEl = getViewerSVGEl();
+    const lcvObserver = new MutationObserver(function(mutations, observer) {
+      observer.disconnect();
+      // The SVG will be modified a few times by zooniverse code (to load lightcurve, etc.)
+      // So we wait a bit to let it finish before customizing
+      setTimeout(customizeViewer, 500);
+    });
+
+    if (!lcvEl) {
+      ajaxDbg('customizeViewerOnSVGLoaded() - svg not yet present. NO-OP');
+      return false; // svg not yet there so wait
+
+    }
+    ajaxDbg('customizeViewerOnSVGLoaded() - wait for svg loaded. svg children:', document.querySelector('svg.light-curve-viewer').children);
+    customizeViewerCalled = false;
+    lcvObserver.observe(lcvEl, { childList: true, subtree: true });
     return true;
-  } else {
-    return false; // still let the default click event fired
-  }
-} // function customizeViewerOnLoad(..)
-(function() {
-  window.addEventListener('click', customizeViewerOnLoad);
-})(); // (function())
-
-
-/*
-(function() {
-  // make wheel scrolling within viewer work better part 2/2
-
-  // hide headers in viewer to avoid wheel scroll in viewer spill to scrolling window (when viewer is in move subject mode)
-  if (location.pathname == "/projects/nora-dot-eisner/planet-hunters-tess/classify") {
-    document.documentElement.classList.add('hide-headers');
   }
 
-  document.body.insertAdjacentHTML('beforeend', `\
-<div id="hideShowHeaderCtr" style="position: fixed;z-index: 9;left: 0;top: 0;padding: 4px 4px;background-color: rgba(31,31,31,0.5);">
-  <button id="hideShowHeaderCtl"></button>
+  if (location.pathname === PATH_CLASSIFY) {
+    onMainLoaded(customizeViewerOnSVGLoaded);
+  }
+
+  //
+  // Plumbing codes to trigger actual viewer customization upon user click done (that load viewer with new data)
+  //
+  function customizeViewerOnDoneClicked(evt) {
+    if (evt.target.textContent.toLowerCase() === 'done' &&
+        !evt.shiftKey) { // ignore cases when shift is pressed.
+
+      // observe the changes so that once the new data is loaded to viewer
+      // customization will be applied again.
+      return customizeViewerOnSVGLoaded();
+    }
+  } // function customizeViewerOnDoneClicked(..)
+  window.addEventListener('click', customizeViewerOnDoneClicked);
+
+})();
+
+
+(function customizeSubjectTalk() {
+  //
+  // Tools to extract TIC on subject talk page
+  //
+
+  function getTicIdFromMetadataPopIn() {
+    // open the pop-in
+    document.querySelector('button[title="Metadata"]').click();
+
+    const metadataCtr = document.querySelector('.modal-dialog .content-container > table');
+    if (!metadataCtr) {
+      return null;
+    }
+
+    const ticThs = Array.from(metadataCtr.querySelectorAll('th'))
+      .filter( th => th.textContent == 'TIC ID' );
+
+    if (ticThs.length < 1) {
+      return null;
+    }
+
+
+    const result = ticThs[0].parentElement.querySelector('td').textContent;
+
+    const closeBtn = document.querySelector('form.modal-dialog button.modal-dialog-close-button');
+    if (closeBtn) {
+      closeBtn.click();
+    }
+
+    return result;
+  } // function getTicIdFromMetadataPopIn()
+
+  function extractTicIdIfAny() {
+    const ticId = getTicIdFromMetadataPopIn();
+    if (ticId) {
+      window.prompt("TIC ID for copy", "TIC " + ticId);
+    }
+  } // function extractTicIdIfAny()
+
+  function initExtractTicIdIfAnyUI() {
+    if (document.getElementById('extractTicIdIfAnyCtr')) {
+      return false; // no need to re-init
+    }
+    document.body.insertAdjacentHTML('beforeend', `
+<div id="extractTicIdIfAnyCtr" style="z-index: 9; position: fixed; top: 50px; right: 4px; padding: 4px 8px; background-color: rgba(255,168,0,0.5);">
+  <button id="extractTicIdIfAnyCtl">TIC</button>
 </div>`);
-  document.getElementById('hideShowHeaderCtl').onclick = function() {
-    document.documentElement.classList.toggle('hide-headers');
-  }; // document.getElementById('hideShowHeaderCtl').onclick = function()
+    document.getElementById('extractTicIdIfAnyCtl').onclick = extractTicIdIfAny;
+    return true;
+  } // function initExtractTicIdIfAnyUI()
 
-})(); // (function())
-*/
-
-
-
-//
-// Tools to extract TIC on subject talk page
-//
-
-function getTicIdFromMetadataPopIn() {
-  // open the pop-in
-  document.querySelector('button[title="Metadata"]').click();
-
-  const metadataCtr = document.querySelector('.modal-dialog .content-container > table');
-  if (!metadataCtr) {
-    return null;
+  function showTicOnTitleIfAny() {
+    const ticId = getTicIdFromMetadataPopIn();
+    if (ticId) {
+      document.title = 'TIC' + ticId + ' | ' + document.title;
+    }
   }
 
-  const ticThs = Array.from(metadataCtr.querySelectorAll('th'))
-    .filter( th => th.textContent == 'TIC ID' );
-
-  if (ticThs.length < 1) {
-    return null;
+  if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2112/')
+      || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/')) {
+    initExtractTicIdIfAnyUI();
+    // Possibly on a subject discussion thread.
+    // try to add TIC to title. It needs some delay to ensure the tic data has been loaded
+    setTimeout(showTicOnTitleIfAny, 5000); // TODO: consider to wait for ajax load rather than an arbitrary timeout
   }
 
-
-  const result = ticThs[0].parentElement.querySelector('td').textContent;
-
-  const closeBtn = document.querySelector('form.modal-dialog button.modal-dialog-close-button');
-  if (closeBtn) {
-    closeBtn.click();
-  }
-
-  return result;
-} // function getTicIdFromMetadataPopIn()
-
-function extractTicIdIfAny() {
-  const ticId = getTicIdFromMetadataPopIn();
-  if (ticId) {
-    window.prompt("TIC ID for copy", "TIC " + ticId);
-  }
-} // function extractTicIdIfAny()
-
-function initExtractTicIdIfAnyUI() {
-  document.body.insertAdjacentHTML('beforeend', `
-<div style="z-index: 9; position: fixed; top: 50px; right: 4px; padding: 4px 8px; background-color: rgba(255,168,0,0.5);">
-<button id="extractTicIdIfAnyCtl">TIC</button>
-</div>`);
-  document.getElementById('extractTicIdIfAnyCtl').onclick = extractTicIdIfAny;
-} // function initExtractTicIdIfAnyUI()
-initExtractTicIdIfAnyUI();
-
-function showTicOnTitleIfAny() {
-  const ticId = getTicIdFromMetadataPopIn();
-  if (ticId) {
-    document.title = 'TIC' + ticId + ' | ' + document.title
-  }
-}
-
-if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2112/')
-    || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/')) {
-  // Possibly on a subject discussion thread.
-  // try to add TIC to title. It needs some delay to ensure the tic data has been loaded
-  setTimeout(showTicOnTitleIfAny, 5000)
-}
+})();
 

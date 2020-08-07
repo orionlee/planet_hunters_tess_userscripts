@@ -1,17 +1,14 @@
 // ==UserScript==
 // @name        TESS - ExoFOP tweak
-// @namespace
+// @namespace   astro.tess
 // @include     /^https:\/\/exofop.ipac.caltech.edu\/tess\/target.php[?]id=.+/
 // @grant       none
 // @noframes
-// @version     1.0.3
+// @version     1.0.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
-
-
-
 
 function getAliases() {
   return document.querySelector('a[name="basic"] ~ table tr:last-of-type td:first-of-type').textContent;

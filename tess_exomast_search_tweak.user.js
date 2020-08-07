@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        TESS - ExoMAST search tweak
-// @namespace
+// @namespace   astro.tess
 // @include     /^https:\/\/exo.mast.stsci.edu\//
 // @grant       none
 // @noframes
-// @version     1.0.2
+// @version     1.0.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg

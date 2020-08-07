@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        TESS - SIMBAD tweak
-// @namespace
+// @namespace   astro.tess
 // @include     /^http:\/\/simbad.u-strasbg.fr\/simbad\/sim-coo[?]/
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.1
+// @version     1.0.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -34,7 +34,7 @@ function normalize(aliasText) {
   return res;
 } // function normalize(..)
 
-// hash come from links from customized ExOFOP
+// hash come from links from customized ExoFOP
 
 
 const aliasesMatch = location.hash.match(/aliases=([^&]+)/);
@@ -56,7 +56,7 @@ font-face: monospace; font-size: 90%;
 </div>`);
 
 
-  // Now try to highight the IDS in the result
+  // Now try to highlight the IDS in the result
   const aliasList = aliases.split(',').map(t => normalize(t));
 
   let numIdsMatched = 0;

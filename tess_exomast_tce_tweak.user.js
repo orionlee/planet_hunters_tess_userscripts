@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        TESS - ExoMAST TCE tweak
-// @namespace
+// @namespace   astro.tess
 // @include     /^https:\/\/exo.mast.stsci.edu\/exomast_planet.html[?]planet=.+/
 // @grant       none
 // @noframes
-// @version     1.0.1
+// @version     1.0.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -56,7 +56,7 @@ function showTransitTimeInBtjd() {
       timeEl.insertAdjacentHTML('afterend', `<span class="nowrap" style="font-family: monospace; font-size: 90%">(${timeRel.toFixed(3)}, Sec. ${sector})</span>`);
     }
   } else {
-    console.warn('Cannot found transit tiem in MJD', unitEl);
+    console.warn('Cannot found transit time in MJD', unitEl);
   }
 
 } // function showTransitTimeInBtjd()

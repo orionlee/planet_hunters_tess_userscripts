@@ -1,0 +1,1 @@
+A collection of userscripts to enhance Zooniverse Planet Hunters TESS experience.

@@ -41,7 +41,13 @@ They could be useful if you follow up on ExoMAST, ExoFOP, and SIMBAD
 - They work together so that when one follows up on SIMBAD from ExoFOP page, you can easily reference the IDs of the target to ensure SIMBAD referenced the same star.
 
 
+---
 
+**Screenshots**
+
+Wider lightcurve viewer (by shrinking Done &Talk / Done panel)
+
+<img src="https://imgur.com/Y1vQTo0.png">
 
 
 

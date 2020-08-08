@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.4
+// @version     1.0.5
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -342,10 +342,43 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     return result;
   } // function getTicIdFromMetadataPopIn()
 
+  function showTicPopin(ticId) {
+
+   const popinCtr = document.getElementById('ticPopin');
+   if (popinCtr) {
+     popinCtr.style.display = 'block';
+   } else {
+     // create one
+     document.body.insertAdjacentHTML('beforeend', `\
+<div id="ticPopin" style="position: fixed; top: 20px; right: 10vh; padding: 1em 3ch; z-index: 9999; background-color: lightgray; border: 1px solid black;">
+  <a style="float: right; font-weight: bold;" href="javascript:void(0);" onclick="this.parentElement.style.display='none';">[X]</a>
+
+  <br>
+  TIC <input id="ticIdForCopy" style="display: inline-block; border: 0;" readonly value="${ticId}">&emsp;<button id="ticCopyCtl">Copy</button>
+
+  <br><br>
+  Subject info., including TOI:<br>
+  <a target="_blank" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
+
+  <br><br>
+  Search TCEs:<br>
+  <a target="_blank" href="https://exo.mast.stsci.edu/#search=TIC%20${ticId}" ref="noopener nofollow">https://exo.mast.stsci.edu/</a>
+ </div>`);
+    const copyBtn =  document.getElementById('ticCopyCtl');
+    copyBtn.onclick = () => {
+      document.getElementById('ticIdForCopy').focus();
+      document.getElementById('ticIdForCopy').select();
+      const success = document.execCommand('copy');
+      console.debug('Copy success:', success);
+      document.getElementById('ticPopin').style.display = 'none';
+    };
+   }
+  }
+
   function extractTicIdIfAny() {
     const ticId = getTicIdFromMetadataPopIn();
     if (ticId) {
-      window.prompt("TIC ID for copy", "TIC " + ticId);
+      showTicPopin(ticId);
     }
   } // function extractTicIdIfAny()
 

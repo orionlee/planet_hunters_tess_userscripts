@@ -1,10 +1,13 @@
 // ==UserScript==
 // @name        TESS - SIMBAD tweak
 // @namespace   astro.tess
-// @include     /^http:\/\/simbad.u-strasbg.fr\/simbad\/sim-coo[?]/
+// @match       http://simbad.u-strasbg.fr/simbad/sim-coo?Coord=*
+//                ^^^ links generated from ExoFOP, coordinate-based
+// @match       http://simbad.u-strasbg.fr/simbad/sim-id?Ident=*
+//                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.2
+// @version     1.0.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -61,7 +64,8 @@ font-face: monospace; font-size: 90%;
 
   let numIdsMatched = 0;
 
-  // highlight for case the coordinate has multiple results
+  // highlight the aliases
+  // for case the coordinate has multiple results
   console.debug('subject entries', document.querySelectorAll('#datatable tr td:nth-of-type(2) a'));
   Array.from(document.querySelectorAll('#datatable tr td:nth-of-type(2) a'), linkEl => {
     if (aliasList.includes(linkEl.textContent.trim())) {
@@ -69,9 +73,11 @@ font-face: monospace; font-size: 90%;
       linkEl.innerHTML = `<span class="matched-id">${curText}</span>`;
       numIdsMatched++;
     }
+    // propagate the aliases to the links of individual result
+    linkEl.href += location.hash;
   });
 
-  // case the coord matches a single ID
+  // case the coordinate matches a single result
   if (document.querySelector('a[name="lab_ident"]')) {
     const idTableEl = document.querySelector('a[name="lab_ident"]').parentElement.nextElementSibling.nextElementSibling.nextElementSibling;
     Array.from(idTableEl.querySelectorAll('tt'), tt => {

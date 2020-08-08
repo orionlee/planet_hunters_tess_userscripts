@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.5
+// @version     1.0.9
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -354,8 +354,9 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
   <a style="float: right; font-weight: bold;" href="javascript:void(0);" onclick="this.parentElement.style.display='none';">[X]</a>
 
   <br>
-  TIC <input id="ticIdForCopy" style="display: inline-block; border: 0;" readonly value="${ticId}">&emsp;<button id="ticCopyCtl">Copy</button>
-
+  TIC <input id="ticIdForCopy" style="display: inline-block; border: 0;" readonly value="${ticId}">
+  &emsp;<button id="ticCopyCtl">Copy</button>
+  &emsp;<button id="ticCopyNAddToNoteCtl">Copy & Add to note</button>
   <br><br>
   Subject info., including TOI:<br>
   <a target="_blank" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
@@ -363,17 +364,49 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
   <br><br>
   Search TCEs:<br>
   <a target="_blank" href="https://exo.mast.stsci.edu/#search=TIC%20${ticId}" ref="noopener nofollow">https://exo.mast.stsci.edu/</a>
+  <br><br>
+  <button id="ticShowMetadataCtl">Metadata</button>
  </div>`);
-    const copyBtn =  document.getElementById('ticCopyCtl');
-    copyBtn.onclick = () => {
+
+    // bind buttons generated to actual logic
+
+    const hideTicPopin = () => {
+      document.getElementById('ticPopin').style.display = 'none';
+    };
+
+    const copyTicToClipboard = () => {
       document.getElementById('ticIdForCopy').focus();
       document.getElementById('ticIdForCopy').select();
       const success = document.execCommand('copy');
-      console.debug('Copy success:', success);
-      document.getElementById('ticPopin').style.display = 'none';
+      console.debug('Copy TIC success:', success);
     };
+
+    const addTicToNote = () => {
+      const ticId = document.getElementById('ticIdForCopy').value;
+      const noteEl = document.querySelector('form.talk-comment-form textarea');
+      const addNewLine = !(['', '\n', '\r'].includes(noteEl.value.charAt(noteEl.value.length - 1)));
+      noteEl.value += `${addNewLine ? '\n': ''}TIC ${ticId}\n`;
+      noteEl.focus();
+    };
+
+    document.getElementById('ticCopyCtl').onclick = () => {
+      copyTicToClipboard();
+      hideTicPopin();
+    };
+
+    document.getElementById('ticCopyNAddToNoteCtl').onclick = () => {
+      copyTicToClipboard();
+      addTicToNote();
+      hideTicPopin();
+    };
+
+    document.getElementById('ticShowMetadataCtl').onclick = () => {
+      document.querySelector('button[title="Metadata"]').click();
+      hideTicPopin();
+    };
+
    }
-  }
+  } // function showTicPopin()
 
   function extractTicIdIfAny() {
     const ticId = getTicIdFromMetadataPopIn();

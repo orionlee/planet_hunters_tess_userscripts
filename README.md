@@ -7,6 +7,10 @@ Prerequisites: a userscript manager installed on your browser, e.g., [Tampermonk
 ---
 
 **Script Planter Hunter TESS Tweak**
+
+[Click to install](https://github.com/orionlee/planet_hunters_tess_userscripts/raw/master/zn_planet_hunter_tess.user.js)
+
+
 - Make lightcurve viewer wider.
 - Zooming with mouse wheel: prevent accidental scrolling the browser window
 - More keyboard shortcuts for lightcurve viewer.

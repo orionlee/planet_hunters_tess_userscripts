@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.3
+// @version     1.0.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -161,7 +161,7 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     }
 
     function clickSubjectInfoOnClassify() {
-      if (location.pathname != "/projects/nora-dot-eisner/planet-hunters-tess/classify") {
+      if (location.pathname !== PATH_CLASSIFY) {
         return false;
       }
 
@@ -174,54 +174,45 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
       return false;
     } // function clickSubjectInfoOnClassify()
 
-    function showSubjectInfoOnKey(evt) {
-      // Press I or Numpad 1 (mnemonic of I closer to other keyboard shortcuts)
-      if ((evt.code === "KeyI" || evt.code === "Numpad1")
-          && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
-        // console.debug('About to show subject info upon event ', evt);
-        const success = clickSubjectInfoOnClassify();
+    function clickReset() {
+      return clickViewerBtn('Reset subject view');
+    }
+
+    function clickMove() {
+      return clickViewerBtn('Move subject');
+    }
+
+    function clickAnnotate() {
+      return clickViewerBtn('Annotate');
+    }
+
+    const keyMap = {
+      "KeyI":    clickSubjectInfoOnClassify,
+      "Numpad1": clickSubjectInfoOnClassify,
+      // also accepts Numpad1 is convenient for users who frequent use numpad +/-/0
+
+      "Digit0":  clickReset,
+      "Numpad0": clickReset,
+      "KeyO":    clickReset,
+      // also accepts  KeyO as an alterative as it's close to keyM used below
+
+      "KeyM":    clickMove,
+
+      "KeyA":    clickAnnotate,
+      "Comma":   clickAnnotate,
+      // also accepts use comma as an alternative as it is close to keyM
+    };
+
+    function handleViewerKeyboardShortcuts(evt) {
+      const handler = keyMap[evt.code];
+      if (handler && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
+        const success = handler();
         if (success) {
           evt.preventDefault();
         }
       }
-    } // function showSubjectInfoOnKey(..)
-    window.addEventListener('keydown', showSubjectInfoOnKey);
-
-    function resetViewerOnKey(evt) {
-      // Press 0
-      if ((evt.code === "Digit0" || evt.code === "Numpad0" || evt.code === "KeyO") // use letter O as an alterative as it's close to keyM used below
-           && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
-        // console.debug('About to reset viewer upon event ', evt);
-        const success = clickViewerBtn('Reset subject view');
-        if (success) {
-          evt.preventDefault();
-        }
-      }
-
-    } // function resetViewerOnKey(..)
-    window.addEventListener('keydown', resetViewerOnKey);
-
-    function toViewerMoveModeOnKey(evt) {
-      if ((evt.code === "KeyM")
-           && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
-        const success = clickViewerBtn('Move subject');
-        if (success) {
-          evt.preventDefault();
-        }
-      }
-    } // function toViewerMoveModeOnKey(..)
-    window.addEventListener('keydown', toViewerMoveModeOnKey);
-
-    function toViewerAnnotateModeOnKey(evt) {
-      if ((evt.code === "KeyA" || evt.code === "Comma") // use comma as an alternative as it is close to keyM
-           && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
-        const success = clickViewerBtn('Annotate');
-        if (success) {
-          evt.preventDefault();
-        }
-      }
-    } // function toViewerMoveModeOnKey(..)
-    window.addEventListener('keydown', toViewerAnnotateModeOnKey);
+    }
+    window.addEventListener('keydown', handleViewerKeyboardShortcuts);
 
   } // function addKeyMapToViewer()
 

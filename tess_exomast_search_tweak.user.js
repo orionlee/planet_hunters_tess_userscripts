@@ -4,7 +4,7 @@
 // @match       https://exo.mast.stsci.edu/
 // @grant       none
 // @noframes
-// @version     1.0.10
+// @version     1.0.11
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -79,14 +79,21 @@ function showLinksToMatchingTCEs() {
 }
 
 function openTCEinNewWindow(evt) {
-  console.log('intercept click', evt);
+  //console.log('intercept click', evt);
   evt.preventDefault();
   evt.stopPropagation()
   evt.stopImmediatePropagation();
-  // compensate for the site's auto blur so that the list remains there
-  // after users clicks one matching TCE
-  showLinksToMatchingTCEs();
-  openNewBackgroundTab(createTCEUrl(evt.target.textContent));
+  const tceUrl = createTCEUrl(evt.target.textContent);
+  if (evt.ctrlKey || evt.button === 1) {
+    // Open TCE to a new window with middle-click or ctrl-click
+
+    // compensate for the site's auto blur so that the list remains there
+    // after users clicks one matching TCE
+    showLinksToMatchingTCEs();
+    openNewBackgroundTab(tceUrl);
+  } else {
+    location.href = tceUrl;
+  }
 }
 
 function interceptAutoCompleteClick() {
@@ -95,7 +102,7 @@ function interceptAutoCompleteClick() {
     // install onclick to auto-complete UI's children, so that
     // clicking a TCE will open it to a new window
     if (evt.target.id !== 'ui-id-1') {
-      evt.target.onclick = openTCEinNewWindow;
+      evt.target.onmousedown = openTCEinNewWindow; // use onmousedown to capture middle-click
     }
   });
 }

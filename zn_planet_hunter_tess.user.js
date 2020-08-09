@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.9
+// @version     1.0.10
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -62,6 +62,14 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
 
   .lcv-expanded #lightCurveViewerExpandCtl:before {
     content: "< Shrink LC";
+  }
+
+  /* make marked transit areas cover all the way to the bottom
+     when the viewer becomes taller in expanded state.
+     Use 10000px to approximate 100% height
+   */
+  .lcv-expanded .annotations-layer rect.selection {
+    height: 10000px;
   }
 
 }

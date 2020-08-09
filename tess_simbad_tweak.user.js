@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.4
+// @version     1.0.5
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -38,12 +38,10 @@ function normalize(aliasText) {
 } // function normalize(..)
 
 // hash come from links from customized ExoFOP
-
-
 const aliasesMatch = location.hash.match(/aliases=([^&]+)/);
-const otherParamsMatch = location.hash.match(/other_params=([^&]+)/);
-if (aliasesMatch) {
+if (aliasesMatch) { // match aliases to the identifiers
   const aliases = decodeURIComponent(aliasesMatch[1]);
+  const otherParamsMatch = location.hash.match(/other_params=([^&]+)/);
   const otherParams = otherParamsMatch ? decodeURIComponent(otherParamsMatch[1]) : '';
 
   document.body.insertAdjacentHTML('beforeend', `\
@@ -73,7 +71,7 @@ z-index: 99; font-size: 90%;
       linkEl.innerHTML = `<span class="matched-id">${curText}</span>`;
       numIdsMatched++;
     }
-    // propagate the aliases to the links of individual result
+    // also propagate the aliases to the links of individual result
     linkEl.href += location.hash;
   });
 
@@ -93,3 +91,12 @@ z-index: 99; font-size: 90%;
   }
 }
 
+// For single result case,
+// link star type to wikipedia, if it exists, e.g., link Eclipsing binary in the following:
+// TYC 12345-678-9 -- Eclipsing binary
+const startTitleEl = document.querySelector('#basic_data font[size="+2"]');
+if (startTitleEl) {
+  startTitleEl.innerHTML = startTitleEl.innerHTML.replace(/(--\s*)(.+)/, `$1\
+<a target="wiki_star_type"
+href="https://en.wikipedia.org/w/index.php?title=Special:Search&search=$2">$2</a>`);
+}

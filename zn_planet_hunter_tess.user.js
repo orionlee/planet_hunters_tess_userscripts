@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.10
+// @version     1.0.11
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -442,8 +442,12 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     }
   }
 
-  if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2112/')
-      || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/')) {
+  // TODO: support cases the thread was ajax loaded, e.g., traversing from parent talk topics to the thread
+  if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/')
+    || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2112/') // Notes (of subjects)
+    || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2110/') // Planets!
+    || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2107/') // Strange Stars
+  ) {
     initExtractTicIdIfAnyUI();
     // Possibly on a subject discussion thread.
     // try to add TIC to title. It needs some delay to ensure the tic data has been loaded

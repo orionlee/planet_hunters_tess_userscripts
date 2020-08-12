@@ -4,7 +4,7 @@
 // @match       https://exo.mast.stsci.edu/
 // @grant       none
 // @noframes
-// @version     1.0.11
+// @version     1.0.12
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -60,8 +60,10 @@ function createTCEUrl(tceText) {
 function showLinksToMatchingTCEs() {
   let uiCtr = document.querySelector('#tceURLsCtr ul');
   if (!uiCtr) {
+    // the <div> needs extra margin-bottom, to avoid its links from being covered by the footer
+    // setting z-index has no apparent effect
     document.querySelector('.ui-widget').insertAdjacentHTML('beforeend', `\
-    <div id="tceURLsCtr" class="search-label">
+    <div id="tceURLsCtr" class="search-label" style="margin-bottom: 0.8in;">
       Matching TCEs:
       <ul style="font-size: 90%; margin: 0.5em 0 0 4ch !important;">
       </ul>

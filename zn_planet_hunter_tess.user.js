@@ -3,8 +3,9 @@
 // @namespace   astro.tess
 // @match       https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/*
 // @grant       GM_addStyle
+// @grant       GM_openInTab
 // @noframes
-// @version     1.0.15
+// @version     1.0.16
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -483,6 +484,44 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     // Possibly on a subject discussion thread.
     // try to add TIC to title. It needs some delay to ensure the tic data has been loaded
     setTimeout(showTicOnTitleIfAny, 5000); // TODO: consider to wait for ajax load rather than an arbitrary timeout
+  }
+
+  function openTalkSearchInNewTab(talkForm) {
+    const query = talkForm.querySelector('input').value;
+    const searchUrl = query.startsWith('#') ?
+    `https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/tags/${query.slice(1)}` :
+    `https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=${encodeURIComponent(query)}`;
+
+    GM_openInTab(searchUrl, true); // open the search in the a new tab in background.
+  }
+  function tweakTalkSearch() {
+    const talkForm = document.querySelector('form.talk-search-form');
+    if (talkForm.tweakCalled) {
+      return; // avoid repeated init
+    }
+    talkForm.tweakCalled = true;
+
+    // Open talk search in a new tab for:
+
+    // 1. Ctrl-click or middle button click
+    talkForm.querySelector('button').onmousedown = (evt) => {
+      // middle button click or ctrl-click
+      if (evt.ctrlKey || evt.button === 1) {
+        evt.preventDefault();
+        openTalkSearchInNewTab(talkForm);
+      }
+    };
+
+    // 2. Ctrl-Enter
+    talkForm.querySelector('input').onkeydown = (evt) => {
+      if (evt.ctrlKey && evt.code === 'Enter') {
+        evt.preventDefault();
+        openTalkSearchInNewTab(talkForm);
+      }
+    };
+  }
+  if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk')) {
+    setTimeout(tweakTalkSearch, 5000);
   }
 
 })();

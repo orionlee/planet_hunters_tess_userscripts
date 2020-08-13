@@ -15,7 +15,9 @@ Prerequisites: a userscript manager installed on your browser, e.g., [Tampermonk
 - Zooming with mouse wheel: prevent accidental scrolling the browser window.
 - On lightcurve viewer: click with middle mouse button toggles between Annotate and Move subject.
 - More keyboard shortcuts for lightcurve viewer.
-- On subject talk pages: button to let one copy TIC easily.
+- On subject talk pages:
+  - button to let one copy TIC easily.
+  - open search result in a new tab by Ctrl-Enter, Ctrl-Click, or middle button click.
 
 Keyboard shortcuts :
 

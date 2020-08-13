@@ -2,9 +2,9 @@
 // @name        TESS - ExoMAST search tweak
 // @namespace   astro.tess
 // @match       https://exo.mast.stsci.edu/
-// @grant       none
+// @grant       GM_openInTab
 // @noframes
-// @version     1.0.12
+// @version     1.0.13
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -42,16 +42,6 @@ fillSearchBoxByHash();
 // Tweak to open TCE in a new window
 //
 
-function openNewBackgroundTab(url){
-  var a = document.createElement("a");
-  a.href = url;
-  var evt = document.createEvent("MouseEvents");
-  //the tenth parameter of initMouseEvent sets ctrl key
-  evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0,
-                     true, false, false, false, 0, null);
-  a.dispatchEvent(evt);
-}
-
 function createTCEUrl(tceText) {
   const tceId = tceText.trim().replace(/[\s)()]/g, '');
   return `https://exo.mast.stsci.edu/exomast_planet.html?planet=${tceId}`
@@ -87,12 +77,13 @@ function openTCEinNewWindow(evt) {
   evt.stopImmediatePropagation();
   const tceUrl = createTCEUrl(evt.target.textContent);
   if (evt.ctrlKey || evt.button === 1) {
-    // Open TCE to a new window with middle-click or ctrl-click
+    // Open TCE to a new tab in background with middle-click or ctrl-click
 
     // compensate for the site's auto blur so that the list remains there
     // after users clicks one matching TCE
     showLinksToMatchingTCEs();
-    openNewBackgroundTab(tceUrl);
+
+    GM_openInTab(tceUrl, true);
   } else {
     location.href = tceUrl;
   }

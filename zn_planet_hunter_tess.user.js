@@ -4,8 +4,8 @@
 // @match       https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.14
-// @author      -
+// @version     1.0.15
+// @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
@@ -225,28 +225,53 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
   } // function addKeyMapToViewer()
 
   function tweakWheelOnViewer() {
+
+    const lcvEl = getViewerSVGEl();
+    if (lcvEl.tweakWheelOnViewerCalled) {
+      return; // no need to init again
+    }
+    // else start the init
+    lcvEl.tweakWheelOnViewerCalled = true;
+
+
+    function isBtnHighlighted(btnTitle) {
+      // .hWUwko css class for active button
+      return document.querySelector(`button.hWUwko[title="${btnTitle}"]`);
+    }
+
     // make wheel scrolling within viewer work better part 1
     // ensure mouse scroll within the viewer means zoom in/out (move the viewer mode to Move subject when necessary)
     function changeToMoveOnWheelInViewer(evt) {
       evt.preventDefault(); // prevent accidental window scrolling due to mouse wheel handled by browser
 
       // case already on move subject, no-op
-      if (document.querySelector('button.hWUwko[title="Move subject"')) {
+      if (isBtnHighlighted('Move subject')) {
         return;
       }
 
       // set to Move subject mode, so the next wheel (typically right away) will be used to zoom
       clickViewerBtn('Move subject');
     } // function changeToMoveOnWheelInViewer(..)
-
-
-    const lcvEl = getViewerSVGEl();
-    if (lcvEl.changeToMoveOnWheelInViewerCalled) {
-      return; // no need to init again
-    }
-    lcvEl.changeToMoveOnWheelInViewerCalled = true;
-
     lcvEl.addEventListener('wheel', changeToMoveOnWheelInViewer);
+
+
+    // Use middle button to toggle between Annotate / Move subject
+    function toggleAnnotateMoveOnMiddleClickInViewer(evt) {
+      // we intercept middle click (button === 1) only
+      if (evt.button !== 1) {
+        return;
+      }
+
+      evt.preventDefault(); // prevent system default
+
+      // case already on move subject, no-op
+      if (isBtnHighlighted('Move subject')) {
+        clickViewerBtn('Annotate');
+      } else {
+        clickViewerBtn('Move subject');
+      }
+    } // function toggleAnnotateMoveOnMiddleClickInViewer(..)
+    lcvEl.addEventListener('mousedown', toggleAnnotateMoveOnMiddleClickInViewer);
   }
 
   function doCustomizeViewer() {

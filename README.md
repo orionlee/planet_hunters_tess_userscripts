@@ -12,7 +12,8 @@ Prerequisites: a userscript manager installed on your browser, e.g., [Tampermonk
 
 
 - Make lightcurve viewer wider.
-- Zooming with mouse wheel: prevent accidental scrolling the browser window
+- Zooming with mouse wheel: prevent accidental scrolling the browser window.
+- On lightcurve viewer: click with middle mouse button toggles between Annotate and Move subject.
 - More keyboard shortcuts for lightcurve viewer.
 - On subject talk pages: button to let one copy TIC easily.
 
@@ -20,12 +21,12 @@ Keyboard shortcuts :
 
 Action | Shortcuts
 -------|----------
-Move   | M
-Annotate | A, or Comma (next to M)
+Move subject| M
+Annotate | A, or Comma (next to M for ease of toggle)
 Reset | 0, or O
 Subject Info| I , or Numpad 1
 
---- 
+---
 
 **Other helpful scripts**
 

@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.11
+// @version     1.0.14
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -350,15 +350,16 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     return result;
   } // function getTicIdFromMetadataPopIn()
 
-  function showTicPopin(ticId) {
+  function showHideTicPopin(ticId) {
 
    const popinCtr = document.getElementById('ticPopin');
    if (popinCtr) {
-     popinCtr.style.display = 'block';
+     // toggle hide show
+     popinCtr.style.display = popinCtr.style.display === 'none' ? 'block' : 'none';
    } else {
      // create one
      document.body.insertAdjacentHTML('beforeend', `\
-<div id="ticPopin" style="position: fixed; top: 20px; right: 10vh; padding: 1em 3ch; z-index: 9999; background-color: lightgray; border: 1px solid black;">
+<div id="ticPopin" style="display: block; position: fixed; top: 20px; right: 10vh; padding: 1em 3ch; z-index: 9999; background-color: lightgray; border: 1px solid black;">
   <a style="float: right; font-weight: bold;" href="javascript:void(0);" onclick="this.parentElement.style.display='none';">[X]</a>
 
   <br>
@@ -372,6 +373,11 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
   <br><br>
   Search TCEs:<br>
   <a target="_blank" href="https://exo.mast.stsci.edu/#search=TIC%20${ticId}" ref="noopener nofollow">https://exo.mast.stsci.edu/</a>
+
+  <br><br>
+  When TIC will be observed:<br>
+  <a target="_blank" href="https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}" ref="noopener nofollow">https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}</a>
+
   <br><br>
   <button id="ticShowMetadataCtl">Metadata</button>
  </div>`);
@@ -419,7 +425,7 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
   function extractTicIdIfAny() {
     const ticId = getTicIdFromMetadataPopIn();
     if (ticId) {
-      showTicPopin(ticId);
+      showHideTicPopin(ticId);
     }
   } // function extractTicIdIfAny()
 
@@ -429,7 +435,7 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     }
     document.body.insertAdjacentHTML('beforeend', `
 <div id="extractTicIdIfAnyCtr" style="z-index: 9; position: fixed; top: 50px; right: 4px; padding: 4px 8px; background-color: rgba(255,168,0,0.5);">
-  <button id="extractTicIdIfAnyCtl">TIC</button>
+  <button id="extractTicIdIfAnyCtl" accesskey="T">TIC</button>
 </div>`);
     document.getElementById('extractTicIdIfAnyCtl').onclick = extractTicIdIfAny;
     return true;

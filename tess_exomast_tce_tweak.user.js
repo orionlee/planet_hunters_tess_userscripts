@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        TESS - ExoMAST TCE tweak
 // @namespace   astro.tess
-// @include     /^https:\/\/exo.mast.stsci.edu\/exomast_planet.html[?]planet=.+/
+// @match       https://exo.mast.stsci.edu/exomast_planet.html?planet=*
 // @grant       none
 // @noframes
-// @version     1.0.4
+// @version     1.0.5
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -75,11 +75,32 @@ function showTransitTimeInBtjd() {
 
 } // function showTransitTimeInBtjd()
 
+// Sometimes the planet radius shown in TCE is calculated when the star size assumed to be 1 (star size unknown)
+// So to mitigate it, we use the available data to create a rough estimate.
+// If the rough estimate is off too much, we display it as a warning.
+// Example - see:
+//   https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/2112/1327057?comment=2557625
+function warnIfPlanetRadiusMightBeOff() {
+  const radiusStarInSun = parseFloat(document.querySelector('#Rs ~ span').firstChild.nodeValue)
+  const transitDepthInPct = parseFloat(document.querySelector('#transit_depth ~ span').firstChild.nodeValue)
+  const radiusPlanetInJupiter = parseFloat(document.querySelector('#Rp ~ span').firstChild.nodeValue)
+  const estRadiusPlanetInJupiter = Math.sqrt(radiusStarInSun * radiusStarInSun * transitDepthInPct / 100) / 0.10276
+
+  // if the radius reported vs estimated is off by more then 30%, warn the users
+  if (Math.abs(radiusPlanetInJupiter - estRadiusPlanetInJupiter) / radiusPlanetInJupiter >= 0.3) {
+    document.querySelector('#Rp ~ span').insertAdjacentHTML('afterend', `\
+<span style="color: red;font-weight: bold;"
+      title="The reported planet radius could be way off due to, e.g., assuming star size is sun. Shown is the estimate."
+>(${estRadiusPlanetInJupiter.toFixed(3)})</span>`);
+  }
+}
+
 // wait till Ajax load done
 // setTimeout(showTransitTimeInBtjd, 4000);
 const dataObserver = new MutationObserver(function(mutations, observer) {
   console.debug('TCE data on left panel loaded');
   showTransitTimeInBtjd();
+  warnIfPlanetRadiusMightBeOff();
   observer.disconnect();
 });
 dataObserver.observe(document.querySelector('#data'), { childList: true });

@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        TESS - ExoFOP tweak
 // @namespace   astro.tess
-// @include     /^https:\/\/exofop.ipac.caltech.edu\/tess\/target.php[?]id=.+/
+// @match       https://exofop.ipac.caltech.edu/tess/target.php?id=*
 // @grant       none
 // @noframes
-// @version     1.0.4
+// @version     1.0.5
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -36,7 +36,7 @@ function getOtherParams() {
       + getMagnitudeOfRow(document.querySelector('a[name="magnitudes"] ~ table tr:nth-child(5)'));
   }
 
-  return `Distance(pc): ${getDistance()} ; Magnitudes: ${getMagnitudes()}`;
+  return `Distance(pc): ${getDistance()} ; Magnitudes: ${getMagnitudes()} ;`;
 } // function getOtherParams()
 
 const simbadLinkEl = document.querySelector('a[target="simbad"]');

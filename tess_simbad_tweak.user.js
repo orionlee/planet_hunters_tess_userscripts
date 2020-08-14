@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.6
+// @version     1.0.7
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -37,12 +37,37 @@ function normalize(aliasText) {
   return res;
 } // function normalize(..)
 
+// Show some parameters in additional units
+function annotateOtherParams(otherParams) {
+  let res = otherParams;
+
+  // convert it to parallax in mas
+  // (easier to compare with the value in SIMBAD single result details page)
+  const distanceInPc = parseFloat((res.match(/Distance\(pc\):\s*([0-9.]+)/) || ['', '0'])[1]);
+  if (distanceInPc > 0) {
+    const parallaxInMas = 1000 / distanceInPc;
+    res = res.replace(/Distance\(pc\):[^;]+;/, `$& Parallax(mas): ${parallaxInMas.toFixed(4)} ; `);
+  }
+
+  // convert apparent magnitude to absolute one
+  // (just the first one)
+  const magMatch = otherParams.match(/Magnitudes:\s([^-]+-)([0-9.]+)/);
+  if (magMatch && distanceInPc > 0) {
+    const magBand = magMatch[1];
+    const magApparent = parseFloat(magMatch[2]);
+    const magAbsolute = magApparent - 5 * Math.log10(distanceInPc / 10);
+    res = res.replace(/Magnitudes:[^;]+;/,  `$& Abs. magnitude: ${magBand}${magAbsolute.toFixed(2)} ; `);
+  }
+  return res;
+}
+
 // hash come from links from customized ExoFOP
 const aliasesMatch = location.hash.match(/aliases=([^&]+)/);
 if (aliasesMatch) { // match aliases to the identifiers
   const aliases = decodeURIComponent(aliasesMatch[1]);
   const otherParamsMatch = location.hash.match(/other_params=([^&]+)/);
-  const otherParams = otherParamsMatch ? decodeURIComponent(otherParamsMatch[1]) : '';
+  let otherParams = otherParamsMatch ? decodeURIComponent(otherParamsMatch[1]) : '';
+  otherParams = annotateOtherParams(otherParams);
 
   document.body.insertAdjacentHTML('beforeend', `\
 <div id="tessAliasesCtr" style="background-color:rgba(255,255,0,0.9);

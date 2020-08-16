@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.0.17
+// @version     1.0.18
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -531,10 +531,10 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
   function autoLinkTICIds() {
     const replaceExpr = '$1<a href="https://exofop.ipac.caltech.edu/tess/target.php?id=$2">TIC $2</a> <sup style="font-size: 70%;">[<a href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC $2">Talk</a>]</sup>';
     const ticReList = [
-      /(\s+)TIC\s*(\d+)/mgi,  // regular text match, with space preceding to ensure it is not, say, part of an URL
-      /(^)TIC\s*(\d+)/mgi,  // cases the TIC  is at start of a line
-      /(<p>)TIC\s*(\d+)/mgi, // cases the TIC is visually at the start of the line, e.g., <p>TIC 12345678
-      /(<br>)TIC\s*(\d+)/mgi, // cases the TIC is visually at the start of the line, e.g., <br>TIC 12345678
+      /(\s+)TIC(?:\s*ID)?\s*(\d+)/mgi,  // regular text match, with space preceding to ensure it is not, say, part of an URL
+      /(^)TIC(?:\s*ID)?\s*(\d+)/mgi,  // cases the TIC  is at start of a line
+      /(<p>)TIC(?:\s*ID)?\s*(\d+)/mgi, // cases the TIC is visually at the start of the line, e.g., <p>TIC 12345678
+      /(<br>)TIC(?:\s*ID)?\s*(\d+)/mgi, // cases the TIC is visually at the start of the line, e.g., <br>TIC 12345678
     ];
     Array.from(document.querySelectorAll('.talk-comment-body .markdown'), commentEl => {
       let changed = false;

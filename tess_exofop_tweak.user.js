@@ -2,14 +2,19 @@
 // @name        TESS - ExoFOP tweak
 // @namespace   astro.tess
 // @match       https://exofop.ipac.caltech.edu/tess/target.php?id=*
-// @grant       none
+// @grant       GM_addStyle
 // @noframes
-// @version     1.0.5
+// @version     1.0.6
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
 
+//
+// Generate modified SIMBAD URLs to pass along TIC's identifiers, etc.
+// to aid in checking the result from SIMBAD link refers to the same object or not.
+// (The SIMBAD link is coordinate-based, so at times it might be off target if there are nearby stars.)
+//
 function getAliases() {
   return document.querySelector('a[name="basic"] ~ table tr:last-of-type td:first-of-type').textContent;
 }
@@ -56,3 +61,40 @@ if (simbadLinkEl) {
   console.warn('Cannot find Links to SIMBAD');
 }
 
+
+//
+// Highlight observation notes if any
+//
+const observationNoteBtn = document.querySelector('button.commentsbtn');
+if (observationNoteBtn && observationNoteBtn.textContent.trim() !== 'Open Observing Notes (0)') {
+  GM_addStyle(`
+@keyframes blink-color {
+  from {
+    color: white;
+    margin-left: 5px;
+  }
+  to {
+    color: yellow;
+    margin-left: 0px;
+  }
+}
+
+.blinked {
+  animation-name: blink-color;
+  animation-duration: 1s;
+  animation-iteration-count: 5;
+  animation-play-state: paused; /* start only when the tab is visible */
+  font-weight: bold;
+  color: yellow;
+}
+`);
+  observationNoteBtn.classList.add('blinked');
+
+  // start blink animation only when the tab is visible
+  const startAnimate = () => {
+    if (!document.hidden) {
+      observationNoteBtn.style.animationPlayState = 'running';
+    }
+  };
+  document.addEventListener("visibilitychange", startAnimate, false);
+}

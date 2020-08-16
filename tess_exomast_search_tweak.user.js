@@ -4,7 +4,7 @@
 // @match       https://exo.mast.stsci.edu/
 // @grant       GM_openInTab
 // @noframes
-// @version     1.0.13
+// @version     1.0.15
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -28,9 +28,9 @@ function fillSearchBoxByHash() {
         // the intercept requires auto-complete to paint its UI
         // so try it with some delay, and try again to be safe
         // It could be done more robustly by using MutationObserver to wait for the UI to be constructed.
-        setTimeout(interceptAutoCompleteClick, 500);
-        setTimeout(interceptAutoCompleteClick, 1000);
-        setTimeout(interceptAutoCompleteClick, 2000);
+        setTimeout(doAfterTCEListLoaded, 500);
+        setTimeout(doAfterTCEListLoaded, 1000);
+        setTimeout(doAfterTCEListLoaded, 2000);
       }, 200);
     }
   }
@@ -67,11 +67,13 @@ function showLinksToMatchingTCEs() {
     const tceUrl = createTCEUrl(tceText);
     tceLinksHTML += `  <li><a target="tce" href="${tceUrl}">${tceText}</a></li>\n`;
   })
+  if (tceLinksHTML === '') {
+    tceLinksHTML += `  <li>No TCE found</li>\n`;
+  }
   uiCtr.innerHTML = tceLinksHTML;
 }
 
 function openTCEinNewWindow(evt) {
-  //console.log('intercept click', evt);
   evt.preventDefault();
   evt.stopPropagation()
   evt.stopImmediatePropagation();
@@ -79,10 +81,7 @@ function openTCEinNewWindow(evt) {
   if (evt.ctrlKey || evt.button === 1) {
     // Open TCE to a new tab in background with middle-click or ctrl-click
 
-    // compensate for the site's auto blur so that the list remains there
-    // after users clicks one matching TCE
-    showLinksToMatchingTCEs();
-
+    showLinksToMatchingTCEs(); // update the copied TCE list incase it's been changed, say, user edits the TCE number
     GM_openInTab(tceUrl, true);
   } else {
     location.href = tceUrl;
@@ -98,4 +97,12 @@ function interceptAutoCompleteClick() {
       evt.target.onmousedown = openTCEinNewWindow; // use onmousedown to capture middle-click
     }
   });
+}
+
+function doAfterTCEListLoaded() {
+  interceptAutoCompleteClick();
+
+  // compensate for the site's auto blur so that the list remains there
+  // after users clicks one matching TCE
+  showLinksToMatchingTCEs();
 }

@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.7
+// @version     1.0.9
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -119,14 +119,34 @@ z-index: 99; font-size: 90%;
 // For single result case,
 // link star type to wikipedia, if it exists, e.g., link Eclipsing binary in the following:
 // TYC 12345-678-9 -- Eclipsing binary
+function simbadStarTypeToWikiLinkHtml(starType) {
+  const NO_LINK = '[NO-LINK]';
+  const wikiTitleExceptionsMap = {
+    // exceptions to be added
+    Star: NO_LINK,
+  };
+
+  // default is starType, and the mapping takes care of special cases
+  const wikiTitle = wikiTitleExceptionsMap[starType] || starType;
+
+  return wikiTitle === NO_LINK ? starType :
+  `<a target="wiki_star_type"
+    href="https://en.wikipedia.org/w/index.php?title=Special:Search&search=${wikiTitle}">${starType}</a>`
+}
 const startTitleEl = document.querySelector('#basic_data font[size="+2"]');
 if (startTitleEl) {
-  startTitleEl.innerHTML = startTitleEl.innerHTML.replace(/<b>\s*\n*(.+)\s*\n*<\/b>\s*--\s*(.+)/, `\
+  const reStarIdAndType = /<b>\s*\n*(.+)\s*\n*<\/b>\s*--\s*(.+)/;
+  let html = startTitleEl.innerHTML;
+  const starIdAndTypeMatch = html.match(reStarIdAndType);
+  if (starIdAndTypeMatch) {
+    const typeWikiLinkHtml = simbadStarTypeToWikiLinkHtml(starIdAndTypeMatch[2]);
+    html = html.replace(reStarIdAndType, `\
 <b><a target="wiki_star"
       href="https://en.wikipedia.org/w/index.php?title=Special:Search&search=$1">$1</a></b> --
-<a target="wiki_star_type"
-    href="https://en.wikipedia.org/w/index.php?title=Special:Search&search=$2">$2</a>
+${typeWikiLinkHtml}
 <svg style="height: 0.8em; width: 1em; background: transparent;" aria-hidden="true" data-prefix="fas" data-icon="external-link-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M576 24v127.984c0 21.461-25.96 31.98-40.971 16.971l-35.707-35.709-243.523 243.523c-9.373 9.373-24.568 9.373-33.941 0l-22.627-22.627c-9.373-9.373-9.373-24.569 0-33.941L442.756 76.676l-35.703-35.705C391.982 25.9 402.656 0 424.024 0H552c13.255 0 24 10.745 24 24zM407.029 270.794l-16 16A23.999 23.999 0 0 0 384 303.765V448H64V128h264a24.003 24.003 0 0 0 16.97-7.029l16-16C376.089 89.851 365.381 64 344 64H48C21.49 64 0 85.49 0 112v352c0 26.51 21.49 48 48 48h352c26.51 0 48-21.49 48-48V287.764c0-21.382-25.852-32.09-40.971-16.97z"></path></svg>
 `);
 // ^ external indicator svg adapted from ExoFOP
+    startTitleEl.innerHTML = html;
+  }
 }

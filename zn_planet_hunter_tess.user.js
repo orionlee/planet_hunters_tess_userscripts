@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.0.18
+// @version     1.0.20
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -558,3 +558,66 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
 
 })();
 
+(function customizeCollection() {
+  function isPathNamePHTCollection() {
+    return /\/projects\/nora-dot-eisner\/planet-hunters-tess\/collections\/.+\/.+/.test(location.pathname);
+  }
+
+  function isElementOrAncestor(el, criteria, maxLevel = 9999999) {
+    let curEl = el,
+        curLevel = 0;
+    while (curEl != null && curLevel <= maxLevel) {
+      if (criteria(curEl)) {
+        return true;
+      }
+      curEl = curEl.parentElement;
+      curLevel += 1;
+    }
+    return false;
+  }
+
+  function showSubjectNumInThumbnails() {
+    Array.from(document.querySelectorAll('.subject-viewer'), (ctr) => {
+      if (ctr.subjectAdded) { return; }
+      const [,  subjNum] = ctr.querySelector('.subject-container a.subject-link').href.match(/\/subjects\/(.+)$/);
+      ctr.querySelector('.subject-tools').insertAdjacentHTML('beforeend', `<span class="subject-num" title="Subject number">${subjNum}&nbsp;</span>`);
+      ctr.subjectAdded = true;
+    });
+  }
+
+  function onPaginateShowSubjectNumInThumbnails(evt) {
+    console.debug('onPaginateShowSubjectNumInThumbnails', evt);
+    if (!isPathNamePHTCollection()) {
+      return;
+    }
+    const target = evt.target;
+    if ( isElementOrAncestor(target, el => el.tagName === 'BUTTON' && el.className.contains('paginator'), 3)
+      || (target.tagName === 'SELECT' && target.parentElement.className.contains('paginator')) ) {
+        // case clicking one of the paginate buttons
+        setTimeout(showSubjectNumInThumbnails, 3000);
+      }
+  }
+
+  function initToShowSubjectNumOnPaginate() {
+    window.addEventListener('click', onPaginateShowSubjectNumInThumbnails);
+    window.addEventListener('change', onPaginateShowSubjectNumInThumbnails);
+  }
+
+  function initShowSubjectNumUi() {
+    document.body.insertAdjacentHTML('beforeend', `\
+<div id="showSubjectNumCtr" style="position: fixed; right: 10px; top: 100px; z-index: 99; background-color: rgba(255,255,0,0.7); border: 1px solid gray; padding: 0.5em 1ch;">
+    <button id="showSubjectNumCtl">Subject Num.</button>
+</div>
+    `);
+    document.getElementById('showSubjectNumCtl').onclick = showSubjectNumInThumbnails;
+  }
+
+  if (isPathNamePHTCollection()) {
+    // TODO: replace timeout with event-based mechanism to act upon ajax load is done
+    setTimeout(showSubjectNumInThumbnails, 3000); // show subject num for current list
+    setTimeout(initToShowSubjectNumOnPaginate, 3000); // show subject num upon ajx paginate
+    // an UI so that users can press to show subjects when one paginates
+    // it can be avoided if we intercept the ajax pagination
+    setTimeout(initShowSubjectNumUi, 3000);
+  }
+})();

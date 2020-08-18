@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.9
+// @version     1.0.10
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -124,6 +124,7 @@ function simbadStarTypeToWikiLinkHtml(starType) {
   const wikiTitleExceptionsMap = {
     // exceptions to be added
     Star: NO_LINK,
+    'Eruptive variable Star' : 'Eruptive variable'
   };
 
   // default is starType, and the mapping takes care of special cases

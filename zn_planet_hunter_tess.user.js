@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.0.21
+// @version     1.0.22
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -16,23 +16,24 @@ function ajaxDbg(... args) {
   console.log(...(['[DBG]'].concat(args)));
 }
 
-// General helpers to handle initial top level ajax load
-function onMainLoaded(handleFn) {
-  const mainEl = document.querySelector('main');
+/**
+ * Generic helper to react upon ajax load to the specified element.
+ */
+function onElementLoaded(elementSelector, msgHelper, handleFn) {
+  const mainEl = document.querySelector(elementSelector);
   if (!mainEl) {
-    console.error('onMainLoaded() - the <main> element is missing unexpectedly. Cannot wait.');
+    console.error(`${msgHelper.prefix} - the ${msgHelper.elementName} element is missing unexpectedly. Cannot wait.`);
     return false;
   }
   const mainObserver = new MutationObserver(function(mutations, observer) {
-    ajaxDbg('onMainLoaded() - main is changed, begin handling')
+    ajaxDbg(`${msgHelper.prefix} - ${msgHelper.elementName} is changed, begin handling`);
     if (handleFn()) {
-      ajaxDbg('onMainLoaded() - stop observing as hooks to wait for ajax load done');
+      ajaxDbg(`${msgHelper.prefix} - stop observing as hooks to wait for ajax load done`);
       observer.disconnect();
     } // continue to observe
   })
   mainObserver.observe(mainEl, { childList: true, subtree: true });
 }
-
 
 const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
 
@@ -90,6 +91,13 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
 
 `);
   })(); // function injectCSS()
+
+  // Helper to react to classify tab's top-level ajax load
+  function onMainLoaded(handleFn) {
+    onElementLoaded('main',
+      { prefix: 'onMainMainLoaded()', elementName: '<main>'},
+      handleFn);
+  }
 
   function getViewerSVGEl() {
     return document.querySelector('svg.light-curve-viewer');
@@ -558,25 +566,9 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
 
 })();
 
-// General helpers to handle initial top level ajax load
-function onPanoptesMainLoaded(handleFn) {
-  const mainEl = document.querySelector('#panoptes-main-container');
-  if (!mainEl) {
-    console.error('onPanoptesMainLoaded() - the #panoptes-main-container element is missing unexpectedly. Cannot wait.');
-    return false;
-  }
-  const mainObserver = new MutationObserver(function(mutations, observer) {
-    ajaxDbg('onPanoptesMainLoaded() - #panoptes-main-container is changed, begin handling')
-    if (handleFn()) {
-      ajaxDbg('onPanoptesMainLoaded() - stop observing as hooks to wait for ajax load done');
-      observer.disconnect();
-    } // continue to observe
-  })
-  mainObserver.observe(mainEl, { childList: true, subtree: true });
-}
 
 (function customizeCollection() {
-  function isElementOrAncestor(el, criteria, maxLevel = 9999999) {
+  function isElementOrAncestor(el, criteria, maxLevel = Number.POSITIVE_INFINITY) {
     let curEl = el,
         curLevel = 0;
     while (curEl != null && curLevel <= maxLevel) {
@@ -587,6 +579,13 @@ function onPanoptesMainLoaded(handleFn) {
       curLevel += 1;
     }
     return false;
+  }
+
+  // Helper to react to collection-related ajax load
+  function onPanoptesMainLoaded(handleFn) {
+    onElementLoaded('#panoptes-main-container',
+      { prefix: 'onPanoptesMainLoaded()', elementName: '#panoptes-main-container'},
+      handleFn);
   }
 
   function isPathNamePHTCollection() {

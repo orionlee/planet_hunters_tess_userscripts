@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.0.20
+// @version     1.0.21
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -558,11 +558,24 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
 
 })();
 
-(function customizeCollection() {
-  function isPathNamePHTCollection() {
-    return /\/projects\/nora-dot-eisner\/planet-hunters-tess\/collections\/.+\/.+/.test(location.pathname);
+// General helpers to handle initial top level ajax load
+function onPanoptesMainLoaded(handleFn) {
+  const mainEl = document.querySelector('#panoptes-main-container');
+  if (!mainEl) {
+    console.error('onPanoptesMainLoaded() - the #panoptes-main-container element is missing unexpectedly. Cannot wait.');
+    return false;
   }
+  const mainObserver = new MutationObserver(function(mutations, observer) {
+    ajaxDbg('onPanoptesMainLoaded() - #panoptes-main-container is changed, begin handling')
+    if (handleFn()) {
+      ajaxDbg('onPanoptesMainLoaded() - stop observing as hooks to wait for ajax load done');
+      observer.disconnect();
+    } // continue to observe
+  })
+  mainObserver.observe(mainEl, { childList: true, subtree: true });
+}
 
+(function customizeCollection() {
   function isElementOrAncestor(el, criteria, maxLevel = 9999999) {
     let curEl = el,
         curLevel = 0;
@@ -576,17 +589,33 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     return false;
   }
 
+  function isPathNamePHTCollection() {
+    return /\/projects\/nora-dot-eisner\/planet-hunters-tess\/collections\/.+\/.+/.test(location.pathname);
+  }
+
+  function isPathNamePHTCollectionOrContainer() {
+    return /\/projects\/nora-dot-eisner\/planet-hunters-tess\/collections/.test(location.pathname);
+  }
+
   function showSubjectNumInThumbnails() {
+    if (!isPathNamePHTCollection()) { // current path indicates it's not a collection, so no-op
+      return false;
+    }
+
+    if (!document.querySelector('.collections-show .subject-viewer')) {
+      return false; // subjects not yet loaded by ajax, no-op
+    }
+
     Array.from(document.querySelectorAll('.subject-viewer'), (ctr) => {
       if (ctr.subjectAdded) { return; }
       const [,  subjNum] = ctr.querySelector('.subject-container a.subject-link').href.match(/\/subjects\/(.+)$/);
       ctr.querySelector('.subject-tools').insertAdjacentHTML('beforeend', `<span class="subject-num" title="Subject number">${subjNum}&nbsp;</span>`);
       ctr.subjectAdded = true;
     });
+    return true;
   }
 
   function onPaginateShowSubjectNumInThumbnails(evt) {
-    console.debug('onPaginateShowSubjectNumInThumbnails', evt);
     if (!isPathNamePHTCollection()) {
       return;
     }
@@ -594,13 +623,22 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     if ( isElementOrAncestor(target, el => el.tagName === 'BUTTON' && el.className.contains('paginator'), 3)
       || (target.tagName === 'SELECT' && target.parentElement.className.contains('paginator')) ) {
         // case clicking one of the paginate buttons
-        setTimeout(showSubjectNumInThumbnails, 3000);
+        // show subject numbers once the new thumbnails are ajax-loaded
+        onPanoptesMainLoaded(showSubjectNumInThumbnails);
       }
   }
 
   function initToShowSubjectNumOnPaginate() {
     window.addEventListener('click', onPaginateShowSubjectNumInThumbnails);
     window.addEventListener('change', onPaginateShowSubjectNumInThumbnails);
+  }
+
+  function customizeOneCollection() {
+    const customized = showSubjectNumInThumbnails();
+    if (customized) {
+      initToShowSubjectNumOnPaginate();
+    }
+    return customized;
   }
 
   function initShowSubjectNumUi() {
@@ -612,12 +650,12 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     document.getElementById('showSubjectNumCtl').onclick = showSubjectNumInThumbnails;
   }
 
-  if (isPathNamePHTCollection()) {
-    // TODO: replace timeout with event-based mechanism to act upon ajax load is done
-    setTimeout(showSubjectNumInThumbnails, 3000); // show subject num for current list
-    setTimeout(initToShowSubjectNumOnPaginate, 3000); // show subject num upon ajx paginate
-    // an UI so that users can press to show subjects when one paginates
-    // it can be avoided if we intercept the ajax pagination
-    setTimeout(initShowSubjectNumUi, 3000);
+  // main logic
+  if (isPathNamePHTCollectionOrContainer()) {
+    onPanoptesMainLoaded(customizeOneCollection);
+
+    // a fallback UI so that users can press to show subjects for the cases
+    // that ajax-based auto population failed
+    initShowSubjectNumUi();
   }
 })();

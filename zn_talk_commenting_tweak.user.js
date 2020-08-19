@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name        Zooniverse Talk - Better Paste Links and Images
+// @name        Zooniverse Talk - Better Commenting
 // @namespace   zooniverse.org
 // @match       https://www.zooniverse.org/*
 // @grant       none
 // @noframes
-// @version     1.0.1
+// @version     1.0.2
 // @author      -
-// @description For zooniverse talk, when the user tries to paste a link / link to image,
-//              it will be converted to markdown automatically.
+// @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
+//              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
 // @icon        https://www.zooniverse.org/favicon.ico
 // ==/UserScript==
 
@@ -42,7 +42,10 @@ function insertAtCursor(textarea, text, transformFn) {
   }
 }
 
-// if the text is link / link to images, convert the text to markdown.
+//
+// if the text to be pasted is link / link to images, convert the text to markdown.
+//
+
 function processLinksImages(text) {
   function isImage(link) {
     return /[.](png|jpg|jpeg|gif)$/.test(link);
@@ -65,10 +68,14 @@ function processLinksImages(text) {
   return text;
 }
 
+function isTalkCommentTextArea(target) {
+  return target && target.tagName === 'TEXTAREA'
+    && target.classList.contains('markdown-editor-input');
+}
+
 function onPasteProcessLinksImages(evt) {
   // only trap those pasting to  talk comments
-  if (!(evt.target && evt.target.tagName === 'TEXTAREA'
-    && evt.target.classList.contains('markdown-editor-input'))) {
+  if (!( isTalkCommentTextArea(evt.target))) {
     return;
   }
 
@@ -98,3 +105,34 @@ function onPasteProcessLinksImages(evt) {
   evt.preventDefault();
 }
 window.addEventListener('paste', onPasteProcessLinksImages);
+
+//
+// Add keyboard shortcuts
+//
+
+function insertBold(target) {
+  insertAtCursor(target, '**Bold Text**', (_, selected) => `**${selected}**`);
+}
+
+function insertItalic(target) {
+  insertAtCursor(target, '*Italic Text*', (_, selected) => `*${selected}*`);
+}
+
+function handleKeyboardShortcuts(evt) {
+  if (!( isTalkCommentTextArea(evt.target))) {
+    return;
+  }
+  const keyMap = {
+    'KeyB': insertBold,
+    'KeyI': insertItalic,
+  }
+
+  if (evt.ctrlKey) {
+    const handler = keyMap[evt.code];
+    if (handler) {
+      handler(evt.target);
+      evt.preventDefault();
+    }
+  }
+}
+window.addEventListener('keydown', handleKeyboardShortcuts);

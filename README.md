@@ -53,9 +53,10 @@ They could be useful if you follow up on ExoMAST, ExoFOP, and SIMBAD
 - They work together so that when one follows up on SIMBAD from ExoFOP page, you can easily reference the IDs of the target to ensure SIMBAD referenced the same star.
 
 
-[(Zooniverse generic) Paste links as markdown link or image](https://github.com/orionlee/planet_hunters_tess_userscripts/raw/master/zn_talk_paste_link_img.user.js)
+[(Zooniverse generic) Commenting tweak](https://github.com/orionlee/planet_hunters_tess_userscripts/raw/master/zn_talk_commenting_tweak.user.js)
 
 - For entering comments in Talk, when one pastes a link (or a link to an image), it will be converted into a markdown link or markdown image, effectively doing the job of the link / image  button by simply pasting.
+- Provides keyboard shortcuts: `Ctrl-I` for italic, `Ctrl-B` for bold.
 
 ---
 

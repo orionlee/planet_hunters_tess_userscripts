@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       none
 // @noframes
-// @version     1.0.2
+// @version     1.0.3
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -12,7 +12,7 @@
 // ==/UserScript==
 
 
-function insertAtCursor(textarea, text, transformFn) {
+function insertAtCursor(textarea, text, transformFn, selectFn) {
   if (textarea.selectionStart >= 0 || textarea.selectionStart === '0') {
     const startPos = textarea.selectionStart;
     const endPos = textarea.selectionEnd;
@@ -26,17 +26,10 @@ function insertAtCursor(textarea, text, transformFn) {
         + text
         + textarea.value.substring(endPos, textarea.value.length);
 
-    const markdownLinkTitleIdx = text.indexOf('[Title]');
-    if (markdownLinkTitleIdx >= 0) {
-      // case inserted text is markdown link, select the title so that the user can replace it.
-      // OPEN: the logic of handling markdown link text differently should not have baked into this generic function
-      textarea.setSelectionRange(startPos + markdownLinkTitleIdx + 1,
-        startPos + markdownLinkTitleIdx + 1 + 'Title'.length);
-    } else {
-      // default: move cursor to the end of the selection.
-      textarea.setSelectionRange(startPos + text.length, startPos + text.length);
-    }
-
+    // determine cursor position after the paste, defaulted to the end of the inserted text
+    const [selectStart, selectEnd] = (selectFn ? selectFn(text, startPos) : null)
+      || [startPos + text.length, startPos + text.length];
+    textarea.setSelectionRange(selectStart, selectEnd);
   } else {
       textarea.value += text;
   }
@@ -92,10 +85,23 @@ function onPasteProcessLinksImages(evt) {
   }
 
   // paste the processed text to textarea
-  insertAtCursor(evt.target, paste, (text, selectedText) => {
+  insertAtCursor(evt.target, paste,
+    (text, selectedText) => {
       // use selected text as the labels in the markdown
       return text.replace(/(Alt Title|Title)/, selectedText);
-  })
+  },
+    (text, startPos) => {
+      const markdownLinkTitleIdx = text.indexOf('[Title]');
+      if (markdownLinkTitleIdx >= 0) {
+        // case inserted text is markdown link, select the title so that the user can replace it.
+        // OPEN: the logic of handling markdown link text differently should not have baked into this generic function
+        return [startPos + markdownLinkTitleIdx + 1, startPos + markdownLinkTitleIdx + 1 + 'Title'.length];
+      } else {
+        return null;
+      }
+    }
+  );
+
   // OPEN: after the textarea is changed, somehow zooniverse won't recognize the changes unless
   // the user types something more in the textarea.
   // If the user simply moves around by pressing arrow keys, it won't work either. The user must

@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.10
+// @version     1.0.11
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -114,7 +114,11 @@ z-index: 99; font-size: 90%;
   if (numIdsMatched > 0) {
     document.querySelector('#tessAliasesMatchMsg').textContent = ` - ${numIdsMatched} IDs matched.`;
   }
-}
+
+  // reset the hash, so that if an user copies the URL, the user won't copy the extra parameters in the hash
+  // (that would be useless in general)
+  location.hash = '';
+} // end of processing ExoFOP data from location.hash
 
 // For single result case,
 // link star type to wikipedia, if it exists, e.g., link Eclipsing binary in the following:
@@ -124,7 +128,8 @@ function simbadStarTypeToWikiLinkHtml(starType) {
   const wikiTitleExceptionsMap = {
     // exceptions to be added
     Star: NO_LINK,
-    'Eruptive variable Star' : 'Eruptive variable'
+    'Eruptive variable Star': 'Eruptive variable',
+    'Eclipsing binary of Algol type': 'Algol variable',
   };
 
   // default is starType, and the mapping takes care of special cases

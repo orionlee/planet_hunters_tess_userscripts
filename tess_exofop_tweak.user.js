@@ -4,7 +4,7 @@
 // @match       https://exofop.ipac.caltech.edu/tess/target.php?id=*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.6
+// @version     1.0.7
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -21,7 +21,7 @@ function getAliases() {
 
 function getOtherParams() {
   function getDistance() {
-    return (document.querySelector('a[name="stellar"] ~ table tr:nth-child(3) > td:nth-child(17)') || { textContent: ''})
+    return (document.querySelector('a[name="stellar"] ~ table tr:nth-child(4) > td:nth-child(17)') || { textContent: ''})
       .textContent;
   } // function getDistance()
 

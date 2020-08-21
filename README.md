@@ -62,6 +62,16 @@ They could be useful if you follow up on ExoMAST, ExoFOP, and SIMBAD
 
 ## Screenshots
 
-Wider lightcurve viewer (by shrinking Done &Talk / Done panel)
+- Wider lightcurve viewer (by shrinking Done &Talk / Done panel):
 
 ![Wide Lightcurve viewer screenshot](https://imgur.com/Y1vQTo0.png)
+
+
+- Show subject number while viewing a collection:
+
+![Subject number in a collection](https://imgur.com/X1gAhbf.png)
+
+
+- Highlight TIC IDs in talk, with links to search talk with the TIC and to ExoFOP page on hover:
+
+![TIC IDs on hover tooltip](https://imgur.com/PThBEPt.png)

@@ -1,20 +1,93 @@
 // ==UserScript==
 // @name        Planet Hunter TESS Tweaks
 // @namespace   astro.tess
-// @match       https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/*
+// @match       https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess*
+// @match       https://www.zooniverse.org/notifications*
+//                 ^ the script does not really tweak notifications, but needs to intercept it
+//                   to support the cases that PHT discussions are ajax-loaded from notifications
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.0.22
+// @version     1.1.5
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
 
 // helper for debug messages used to understand timing of ajax loading (and related MutationObserver)
+const DEBUG_PHT_AJAX = (localStorage.DEBUG_PHT_AJAX === 'true');
 function ajaxDbg(... args) {
-  console.log(...(['[DBG]'].concat(args)));
+  if (DEBUG_PHT_AJAX) {
+    console.debug(...(['[ADBG]'].concat(args)));
+  }
 }
+
+const urlChangeNotifier = (() => {
+
+  class UrlChangeNotifier {
+    constructor() {
+      this.lastHref = location.href;
+      this._listeners = new Set();
+      this._started = false;
+      this._numObserverCalls = 0;
+      // eslint-disable-next-line no-unused-vars
+      this._observer = new MutationObserver((mutations, observer) => {
+        this._numObserverCalls += 1;
+        if (location.href === this.lastHref) {
+          return;
+        }
+        try {
+          this._notifyListeners();
+        } finally {
+          this.lastHref = location.href;
+        }
+      });
+    }
+
+    _notifyListeners() {
+      // OPEN: consider to pass lastLocation, curLocation to the listeners
+      this._listeners.forEach(listener => listener());
+    }
+
+    start() {
+      if (this._started) {
+        return; // don't start repeatedly
+      }
+      this._started = true;
+      this._observer.observe(document.body, { childList: true, subtree: true });
+      this._notifyListeners(); // invoke the listeners against the current location immediately too.
+    }
+
+    stop() {
+      this._started = false;
+      this._observer.disconnect();
+    }
+
+    addListener(listener) {
+      this._listeners.add(listener);
+      if (this._started) {
+        listener(); // invoke the listener against the current location immediately too.
+      }
+    }
+
+    removeListener(listener) {
+      this._listeners.delete(listener);
+    }
+  }
+
+
+  function trackUrlChange() {
+    ajaxDbg('URL change:', location.href);
+  }
+
+  const urlChangeNotifier = new UrlChangeNotifier();
+  urlChangeNotifier.addListener(trackUrlChange);
+
+  urlChangeNotifier.start();
+
+  return urlChangeNotifier;
+})();
+unsafeWindow.urlChangeNotifier = urlChangeNotifier; // export for trial in devtools
 
 /**
  * Generic helper to react upon ajax load to the specified element.
@@ -27,17 +100,42 @@ function onElementLoaded(elementSelector, msgHelper, handleFn) {
   }
   const mainObserver = new MutationObserver(function(mutations, observer) {
     ajaxDbg(`${msgHelper.prefix} - ${msgHelper.elementName} is changed, begin handling`);
-    if (handleFn()) {
-      ajaxDbg(`${msgHelper.prefix} - stop observing as hooks to wait for ajax load done`);
+    // ensure handleFn is not called repeatedly when there is a rapid series of mutations.
+    if (handleFn.running) {
+      return;
+    }
+    let handleRes = false;
+    try {
+      handleFn.running = true;
+      handleRes = handleFn();
+    } catch (err) {
+      console.error('`${msgHelper.prefix} - ${msgHelper.elementName} - error in running handler ${handleFn.name ? handleFn.name : handleFn}', err);
+    } finally {
+      handleFn.running = false;
+    }
+    if (handleRes) {
+      ajaxDbg(`${msgHelper.prefix} - stop observing as hooks to wait for ajax load done. handleFn:`,
+      (handleFn.name ? handleFn.name : handleFn));
       observer.disconnect();
-    } // continue to observe
+    } // else continue to observe
   })
   mainObserver.observe(mainEl, { childList: true, subtree: true });
 }
 
-const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
+
+/**
+ * Helper to react to top-level ajax load for most tabs
+ * (it does not work on home and classify though)
+ */
+function onPanoptesMainLoaded(handleFn) {
+  onElementLoaded('#panoptes-main-container',
+    { prefix: 'onPanoptesMainLoaded()', elementName: '#panoptes-main-container'},
+    handleFn);
+}
+
 
 (function customizeClassify() {
+  const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
 
   (function injectCSS() {
     GM_addStyle(`
@@ -244,8 +342,9 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
 
 
     function isBtnHighlighted(btnTitle) {
-      // .hWUwko css class for active button
-      return document.querySelector(`button.hWUwko[title="${btnTitle}"]`);
+      // .hWUwko css class for active button in ZN light theme,
+      // .cyFYpe for dark theme
+      return document.querySelector(`button.hWUwko[title="${btnTitle}"], button.cyFYpe[title="${btnTitle}"]`);
     }
 
     // make wheel scrolling within viewer work better part 1
@@ -352,36 +451,98 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
 })();
 
 
+(function customizeTalk() {
+  function openTalkSearchInNewTab(talkForm) {
+    const query = talkForm.querySelector('input').value;
+    const searchUrl = query.startsWith('#') ?
+    `https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/tags/${query.slice(1)}` :
+    `https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=${encodeURIComponent(query)}`;
+
+    GM_openInTab(searchUrl, true); // open the search in the a new tab in background.
+  }
+
+  function tweakTalkSearch() {
+    const talkForm = document.querySelector('form.talk-search-form');
+
+    if (!talkForm) {
+      return false; // not talk header not yet loaded
+    }
+
+    if (talkForm.tweakCalled) {
+      return; // avoid repeated init
+    }
+    talkForm.tweakCalled = true;
+
+    // Open talk search in a new tab for:
+
+    // 1. Ctrl-click or middle button click
+    talkForm.querySelector('button').onmousedown = (evt) => {
+      // middle button click or ctrl-click
+      if (evt.ctrlKey || evt.button === 1) {
+        evt.preventDefault();
+        openTalkSearchInNewTab(talkForm);
+      }
+    };
+
+    // 2. Ctrl-Enter
+    talkForm.querySelector('input').onkeydown = (evt) => {
+      if (evt.ctrlKey && evt.code === 'Enter') {
+        evt.preventDefault();
+        openTalkSearchInNewTab(talkForm);
+      }
+    };
+    return true;
+  }
+
+  urlChangeNotifier.addListener(() => {
+    if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk')) {
+      onPanoptesMainLoaded(tweakTalkSearch);
+    }
+  })
+})();
+
 (function customizeSubjectTalk() {
+
+  // Helpers for subject / talk pages
+  function getThreadContainer() {
+    // subject pages and general talk pages have different container
+    return document.querySelector('.subject-page, .talk-discussion');
+  }
+
   //
   // Tools to extract TIC on subject talk page
   //
 
   function getTicIdFromMetadataPopIn() {
     // open the pop-in
-    document.querySelector('button[title="Metadata"]').click();
-
-    const metadataCtr = document.querySelector('.modal-dialog .content-container > table');
-    if (!metadataCtr) {
+    const metadataBtn = document.querySelector('button[title="Metadata"]')
+    if (!metadataBtn) {
       return null;
     }
+    try {
+      metadataBtn.click();
 
-    const ticThs = Array.from(metadataCtr.querySelectorAll('th'))
-      .filter( th => th.textContent == 'TIC ID' );
+      const metadataCtr = document.querySelector('.modal-dialog .content-container > table');
+      if (!metadataCtr) {
+        return null;
+      }
 
-    if (ticThs.length < 1) {
-      return null;
+      const ticThs = Array.from(metadataCtr.querySelectorAll('th'))
+        .filter( th => th.textContent == 'TIC ID' );
+
+      if (ticThs.length < 1) {
+        return null;
+      }
+      // else return the TIC id
+      return ticThs[0].parentElement.querySelector('td').textContent;
+    } finally {
+      const closeBtn = document.querySelector('form.modal-dialog button.modal-dialog-close-button');
+      if (closeBtn) {
+        closeBtn.click();
+      } else {
+        console.warn('getTicIdFromMetadataPopIn() - cannot close the popin.');
+      }
     }
-
-
-    const result = ticThs[0].parentElement.querySelector('td').textContent;
-
-    const closeBtn = document.querySelector('form.modal-dialog button.modal-dialog-close-button');
-    if (closeBtn) {
-      closeBtn.click();
-    }
-
-    return result;
   } // function getTicIdFromMetadataPopIn()
 
   function showHideTicPopin(ticId) {
@@ -467,7 +628,11 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     if (document.getElementById('extractTicIdIfAnyCtr')) {
       return false; // no need to re-init
     }
-    document.body.insertAdjacentHTML('beforeend', `
+
+    // attach the button to discussion thread container,
+    // so that if the user traverses to other pages, via ajx, the UI will be automatically removed
+    // as part of the discussion thread.
+    getThreadContainer().insertAdjacentHTML('beforeend', `
 <div id="extractTicIdIfAnyCtr" style="z-index: 9; position: fixed; top: 50px; right: 4px; padding: 4px 8px; background-color: rgba(255,168,0,0.5);">
   <button id="extractTicIdIfAnyCtl" accesskey="T">TIC</button>
 </div>`);
@@ -482,69 +647,78 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     }
   }
 
-  // TODO: support cases the thread was ajax loaded, e.g., traversing from parent talk topics to the thread
-  if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/')
-    || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2112/') // Notes (of subjects)
-    || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2110/') // Planets!
-    || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2107/') // Strange Stars
-  ) {
-    initExtractTicIdIfAnyUI();
-    // Possibly on a subject discussion thread.
-    // try to add TIC to title. It needs some delay to ensure the tic data has been loaded
-    setTimeout(showTicOnTitleIfAny, 5000); // TODO: consider to wait for ajax load rather than an arbitrary timeout
-  }
-
-  // ------------
-
-  function openTalkSearchInNewTab(talkForm) {
-    const query = talkForm.querySelector('input').value;
-    const searchUrl = query.startsWith('#') ?
-    `https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/tags/${query.slice(1)}` :
-    `https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=${encodeURIComponent(query)}`;
-
-    GM_openInTab(searchUrl, true); // open the search in the a new tab in background.
-  }
-  function tweakTalkSearch() {
-    const talkForm = document.querySelector('form.talk-search-form');
-    if (talkForm.tweakCalled) {
-      return; // avoid repeated init
+  function customizeIfTicPresent() {
+    const threadCtr = getThreadContainer();
+    if (!(threadCtr && threadCtr.querySelector('.talk-list-content'))) {
+      // discussion thread content not yet loaded.
+      return false;
     }
-    talkForm.tweakCalled = true;
 
-    // Open talk search in a new tab for:
-
-    // 1. Ctrl-click or middle button click
-    talkForm.querySelector('button').onmousedown = (evt) => {
-      // middle button click or ctrl-click
-      if (evt.ctrlKey || evt.button === 1) {
-        evt.preventDefault();
-        openTalkSearchInNewTab(talkForm);
-      }
-    };
-
-    // 2. Ctrl-Enter
-    talkForm.querySelector('input').onkeydown = (evt) => {
-      if (evt.ctrlKey && evt.code === 'Enter') {
-        evt.preventDefault();
-        openTalkSearchInNewTab(talkForm);
-      }
-    };
+    initExtractTicIdIfAnyUI();
+    showTicOnTitleIfAny();
+    return true;
   }
-  if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk')) {
-    setTimeout(tweakTalkSearch, 5000);
-  }
+
+  urlChangeNotifier.addListener(() => {
+    if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/')
+      || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2112/') // Notes (of subjects)
+      || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2110/') // Planets!
+      || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2107/') // Strange Stars
+    ) {
+      onPanoptesMainLoaded(customizeIfTicPresent);
+    }
+  })
 
   // ------------
 
+  /**
+   * Add links to TIC ids in a discussion thread
+   */
   function autoLinkTICIds() {
-    const replaceExpr = '$1<a href="https://exofop.ipac.caltech.edu/tess/target.php?id=$2">TIC $2</a> <sup style="font-size: 70%;">[<a href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC $2">Talk</a>]</sup>';
+    const commentElList = document.querySelectorAll('.talk-comment-body .markdown');
+    if (commentElList.length < 1) {
+      // discussion thread content not yet loaded.
+      return false;
+    }
+
+    if (!document.getElementById('ticToolTipStyles')) {
+      // give the style an id so that we will only insert it once.
+      document.head.insertAdjacentHTML('beforeend', `<style id="ticToolTipStyles">
+  .tooltip-tic-ctr {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted;
+    cursor: pointer;
+  }
+
+  .tooltip-tic {
+    position: absolute;
+    top: 1.5em;
+    left: 8ch;
+    border: 1px solid lightgray;
+    border-radius: 10%;
+    background-color: #eee;
+    padding: 0.5em 1ch;
+    width: 100%;
+    font-size: 80%;
+    z-index: 99;
+    display: none;
+  }
+
+  .tooltip-tic-ctr:hover .tooltip-tic {
+    display: inline;
+  }
+</style>`);
+    }
+
+    const replaceExpr = '$1<span class="tooltip-tic-ctr">TIC $2<span class="tooltip-tic"><a href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC $2" target="_pht_talk">[Talk]</a> | <a href="https://exofop.ipac.caltech.edu/tess/target.php?id=$2" target="_exofop">[ExoFOP]</a></span></span>';
     const ticReList = [
       /(\s+)TIC(?:\s*ID)?\s*(\d+)/mgi,  // regular text match, with space preceding to ensure it is not, say, part of an URL
       /(^)TIC(?:\s*ID)?\s*(\d+)/mgi,  // cases the TIC  is at start of a line
       /(<p>)TIC(?:\s*ID)?\s*(\d+)/mgi, // cases the TIC is visually at the start of the line, e.g., <p>TIC 12345678
       /(<br>)TIC(?:\s*ID)?\s*(\d+)/mgi, // cases the TIC is visually at the start of the line, e.g., <br>TIC 12345678
     ];
-    Array.from(document.querySelectorAll('.talk-comment-body .markdown'), commentEl => {
+    Array.from(commentElList, commentEl => {
       let changed = false;
       let html = commentEl.innerHTML;
       ticReList.forEach( ticRe => {
@@ -557,43 +731,49 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
         commentEl.innerHTML = html;
       }
     });
+    return true;
   }
-  // match any threads
-  if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/')
-    || location.pathname.match(/\/projects\/nora-dot-eisner\/planet-hunters-tess\/talk\/\d+\/\d+.*/)) {
-    setTimeout(autoLinkTICIds, 5000);
+
+  function setupAutoLinkTICIds() {
+    function autoLinkTICIdsOnUpdate(evt) {
+      if (!(evt.target.tagName === 'BUTTON' &&
+        evt.target.classList.contains('talk-comment-submit-button'))) {
+          return;
+      }
+      // user edit / update a comment, re-run auto link
+      // OPEN: use a crude timeout to re-run, as it's difficult to known when ajax load is finished.
+      setTimeout(autoLinkTICIds, 500);
+      setTimeout(autoLinkTICIds, 1000);
+      setTimeout(autoLinkTICIds, 3000);
+    }
+
+
+    if (autoLinkTICIds()) {
+      const threadCtr = getThreadContainer();
+      if (!threadCtr.hasAutoLinkTICIdsOnUpdate) {
+        threadCtr.addEventListener('click', autoLinkTICIdsOnUpdate);
+        threadCtr.hasAutoLinkTICIdsOnUpdate = true;
+      }
+      return true;
+    }
+    // else thread content not yet ready
+    return false;
   }
+
+  urlChangeNotifier.addListener(() => {
+    // match any threads
+    if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/')
+      || location.pathname.match(/\/projects\/nora-dot-eisner\/planet-hunters-tess\/talk\/\d+\/\d+.*/)) {
+        onPanoptesMainLoaded(setupAutoLinkTICIds);
+    }
+  });
 
 })();
 
 
 (function customizeCollection() {
-  function isElementOrAncestor(el, criteria, maxLevel = Number.POSITIVE_INFINITY) {
-    let curEl = el,
-        curLevel = 0;
-    while (curEl != null && curLevel <= maxLevel) {
-      if (criteria(curEl)) {
-        return true;
-      }
-      curEl = curEl.parentElement;
-      curLevel += 1;
-    }
-    return false;
-  }
-
-  // Helper to react to collection-related ajax load
-  function onPanoptesMainLoaded(handleFn) {
-    onElementLoaded('#panoptes-main-container',
-      { prefix: 'onPanoptesMainLoaded()', elementName: '#panoptes-main-container'},
-      handleFn);
-  }
-
   function isPathNamePHTCollection() {
     return /\/projects\/nora-dot-eisner\/planet-hunters-tess\/collections\/.+\/.+/.test(location.pathname);
-  }
-
-  function isPathNamePHTCollectionOrContainer() {
-    return /\/projects\/nora-dot-eisner\/planet-hunters-tess\/collections/.test(location.pathname);
   }
 
   function showSubjectNumInThumbnails() {
@@ -614,47 +794,10 @@ const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
     return true;
   }
 
-  function onPaginateShowSubjectNumInThumbnails(evt) {
-    if (!isPathNamePHTCollection()) {
-      return;
-    }
-    const target = evt.target;
-    if ( isElementOrAncestor(target, el => el.tagName === 'BUTTON' && el.className.contains('paginator'), 3)
-      || (target.tagName === 'SELECT' && target.parentElement.className.contains('paginator')) ) {
-        // case clicking one of the paginate buttons
-        // show subject numbers once the new thumbnails are ajax-loaded
-        onPanoptesMainLoaded(showSubjectNumInThumbnails);
-      }
-  }
-
-  function initToShowSubjectNumOnPaginate() {
-    window.addEventListener('click', onPaginateShowSubjectNumInThumbnails);
-    window.addEventListener('change', onPaginateShowSubjectNumInThumbnails);
-  }
-
-  function customizeOneCollection() {
-    const customized = showSubjectNumInThumbnails();
-    if (customized) {
-      initToShowSubjectNumOnPaginate();
-    }
-    return customized;
-  }
-
-  function initShowSubjectNumUi() {
-    document.body.insertAdjacentHTML('beforeend', `\
-<div id="showSubjectNumCtr" style="position: fixed; right: 10px; top: 100px; z-index: 99; background-color: rgba(255,255,0,0.7); border: 1px solid gray; padding: 0.5em 1ch;">
-    <button id="showSubjectNumCtl">Subject Num.</button>
-</div>
-    `);
-    document.getElementById('showSubjectNumCtl').onclick = showSubjectNumInThumbnails;
-  }
-
   // main logic
-  if (isPathNamePHTCollectionOrContainer()) {
-    onPanoptesMainLoaded(customizeOneCollection);
-
-    // a fallback UI so that users can press to show subjects for the cases
-    // that ajax-based auto population failed
-    initShowSubjectNumUi();
-  }
+  urlChangeNotifier.addListener(() => {
+    if (isPathNamePHTCollection()) {
+      onPanoptesMainLoaded(showSubjectNumInThumbnails);
+    }
+  })
 })();

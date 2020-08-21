@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.11
+// @version     1.0.12
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -130,6 +130,7 @@ function simbadStarTypeToWikiLinkHtml(starType) {
     Star: NO_LINK,
     'Eruptive variable Star': 'Eruptive variable',
     'Eclipsing binary of Algol type': 'Algol variable',
+    'Long Period Variable candidate': 'Long Period Variable star'
   };
 
   // default is starType, and the mapping takes care of special cases

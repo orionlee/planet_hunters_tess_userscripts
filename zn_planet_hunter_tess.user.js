@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.7
+// @version     1.1.8
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -157,6 +157,7 @@ unsafeWindow.urlChange.onPanoptesMainLoaded = onPanoptesMainLoaded;
 
   #lightCurveViewerExpandCtr {
     display: block;
+  }
 
   #lightCurveViewerExpandCtl:before {
     content: "Expand LC >";

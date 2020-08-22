@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.12
+// @version     1.0.14
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -32,7 +32,7 @@ function normalize(aliasText) {
   let res = aliasText.trim();
   if (res.startsWith('TYC')) {
     // for TYC, remove leading zeros, e.g., 123-01234
-    res = res.replace(/-0(\d+)/g, '-$1');
+    res = res.replace(/-0+(\d+)/g, '-$1');
   }
   return res;
 } // function normalize(..)
@@ -124,14 +124,36 @@ z-index: 99; font-size: 90%;
 // link star type to wikipedia, if it exists, e.g., link Eclipsing binary in the following:
 // TYC 12345-678-9 -- Eclipsing binary
 function simbadStarTypeToWikiLinkHtml(starType) {
+  function escape(text) {
+    const tagsToReplace = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;'
+    };
+    return text.replace(/[&<>]/g, function(tag) {
+        return tagsToReplace[tag] || tag;
+    });
+  }
+
+  // turn <, etc. to html entity for ease of comparison with extracted HTML
+  function toKeyEscaped(map) {
+    const mapEscaped = {};
+    for (const key in map) {
+      mapEscaped[escape(key)] = map[key];
+    }
+    return mapEscaped;
+  }
+
   const NO_LINK = '[NO-LINK]';
-  const wikiTitleExceptionsMap = {
-    // exceptions to be added
-    Star: NO_LINK,
-    'Eruptive variable Star': 'Eruptive variable',
-    'Eclipsing binary of Algol type': 'Algol variable',
-    'Long Period Variable candidate': 'Long Period Variable star'
-  };
+  const wikiTitleExceptionsMap = toKeyEscaped({
+      // exceptions to be added
+      'Star': NO_LINK,
+      'Eruptive variable Star': 'Eruptive variable',
+      'Eclipsing binary of Algol type': 'Algol variable',
+      'Long Period Variable candidate': 'Long Period Variable star',
+      'Low-mass star (M<1solMass)': 'Low-mass star',
+      'Variable Star of RR Lyr type': 'RR Lyrae variable',
+    });
 
   // default is starType, and the mapping takes care of special cases
   const wikiTitle = wikiTitleExceptionsMap[starType] || starType;

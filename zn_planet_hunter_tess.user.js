@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.5
+// @version     1.1.7
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -87,7 +87,6 @@ const urlChangeNotifier = (() => {
 
   return urlChangeNotifier;
 })();
-unsafeWindow.urlChangeNotifier = urlChangeNotifier; // export for trial in devtools
 
 /**
  * Generic helper to react upon ajax load to the specified element.
@@ -122,7 +121,6 @@ function onElementLoaded(elementSelector, msgHelper, handleFn) {
   mainObserver.observe(mainEl, { childList: true, subtree: true });
 }
 
-
 /**
  * Helper to react to top-level ajax load for most tabs
  * (it does not work on home and classify though)
@@ -132,6 +130,11 @@ function onPanoptesMainLoaded(handleFn) {
     { prefix: 'onPanoptesMainLoaded()', elementName: '#panoptes-main-container'},
     handleFn);
 }
+
+unsafeWindow.urlChange = {}; // export URL change tracking for use in devtools and other userscripts
+unsafeWindow.urlChange.urlChangeNotifier = urlChangeNotifier;
+unsafeWindow.urlChange.onElementLoaded = onElementLoaded;
+unsafeWindow.urlChange.onPanoptesMainLoaded = onPanoptesMainLoaded;
 
 
 (function customizeClassify() {
@@ -154,7 +157,6 @@ function onPanoptesMainLoaded(handleFn) {
 
   #lightCurveViewerExpandCtr {
     display: block;
-  }
 
   #lightCurveViewerExpandCtl:before {
     content: "Expand LC >";
@@ -574,7 +576,7 @@ function onPanoptesMainLoaded(handleFn) {
   <a target="_blank" href="https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}" ref="noopener nofollow">https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}</a>
 
   <br><br>
-  <button id="ticShowMetadataCtl">Metadata</button>
+  <button id="ticShowMetadataCtl" accesskey="I">Metadata</button>
  </div>`);
 
     // bind buttons generated to actual logic

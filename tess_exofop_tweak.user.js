@@ -3,8 +3,9 @@
 // @namespace   astro.tess
 // @match       https://exofop.ipac.caltech.edu/tess/target.php?id=*
 // @grant       GM_addStyle
+// @grant       GM_setClipboard
 // @noframes
-// @version     1.0.7
+// @version     1.0.8
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -97,4 +98,19 @@ if (observationNoteBtn && observationNoteBtn.textContent.trim() !== 'Open Observ
     }
   };
   document.addEventListener("visibilitychange", startAnimate, false);
+}
+
+
+// Extract coordinate for ease of copy/paste
+const raDecEl = document.querySelector('a[name="basic"] ~table tbody tr:nth-of-type(3) td:nth-of-type(3)');
+const raDecMatch = raDecEl ? raDecEl.textContent.match(/([0-9.+-]+)°\s+([0-9.+-]+)°/) : null;
+if (raDecMatch) {
+  // put the copy button at the header, (reducing the need of horizontal scrolling)
+  const headerEl = document.querySelector('a[name="basic"] ~table tbody tr:nth-of-type(2) th:nth-of-type(3)');
+  headerEl.insertAdjacentHTML('beforeend', '<br><button id="raDecCopyCtl" style="font-size: 80%;">Copy</button>');
+  document.getElementById('raDecCopyCtl').onclick = (evt) => {
+    const raDecStr = `${raDecMatch[1]} ${raDecMatch[2]}`;
+    GM_setClipboard(raDecStr);
+    evt.target.textContent = 'Copied';
+  }
 }

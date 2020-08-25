@@ -4,7 +4,7 @@
 // @match       https://exo.mast.stsci.edu/exomast_planet.html?planet=*
 // @grant       none
 // @noframes
-// @version     1.0.5
+// @version     1.0.6
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -59,6 +59,11 @@ function mjdToBtjd(mjd) {
 } // function mjdToBtjd()
 
 function showTransitTimeInBtjd() {
+  if (!/planet=TIC.+/.test(location.search)) {
+    // the target is not a TESS target. changing to BTJD would not make sense
+    return;
+  }
+
   const unitEl = document.querySelector('#transit_time > .small-unit');
   if (unitEl && unitEl.textContent === '[MJD]') {
     const timeEl = document.querySelector('#transit_time ~ span');

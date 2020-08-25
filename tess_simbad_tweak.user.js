@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.14
+// @version     1.0.15
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -153,6 +153,8 @@ function simbadStarTypeToWikiLinkHtml(starType) {
       'Long Period Variable candidate': 'Long Period Variable star',
       'Low-mass star (M<1solMass)': 'Low-mass star',
       'Variable Star of RR Lyr type': 'RR Lyrae variable',
+      'Variable of BY Dra type': 'BY Draconis variable',
+      'Double or multiple star': 'Double star',
     });
 
   // default is starType, and the mapping takes care of special cases

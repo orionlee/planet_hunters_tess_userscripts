@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.8
+// @version     1.1.9
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -776,7 +776,8 @@ unsafeWindow.urlChange.onPanoptesMainLoaded = onPanoptesMainLoaded;
 
 (function customizeCollection() {
   function isPathNamePHTCollection() {
-    return /\/projects\/nora-dot-eisner\/planet-hunters-tess\/collections\/.+\/.+/.test(location.pathname);
+    return /\/projects\/nora-dot-eisner\/planet-hunters-tess\/collections\/.+\/.+/.test(location.pathname)
+      ||  /\/projects\/nora-dot-eisner\/planet-hunters-tess\/recents.*/.test(location.pathname);
   }
 
   function showSubjectNumInThumbnails() {

@@ -17,6 +17,7 @@ Prerequisites: a userscript manager installed on your browser, e.g., [Tampermonk
 - More keyboard shortcuts for lightcurve viewer.
 - On subject talk pages:
   - button to let one copy TIC easily.
+  - the TIC's links to ExoMAST, ExoFOP and viewing tool (that tells you the sectors a TIC was / will be observed)
   - open search result in a new tab by Ctrl-Enter, Ctrl-Click, or middle button click.
   - Auto link TICs (to ExoFOP and search of Talk)
 - *<font color="red">(NEW)</font>* Show subject numbers in a collection so that it is easier to find a subject.

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.9
+// @version     1.1.10
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -345,9 +345,9 @@ unsafeWindow.urlChange.onPanoptesMainLoaded = onPanoptesMainLoaded;
 
 
     function isBtnHighlighted(btnTitle) {
-      // .hWUwko css class for active button in ZN light theme,
-      // .cyFYpe for dark theme
-      return document.querySelector(`button.hWUwko[title="${btnTitle}"], button.cyFYpe[title="${btnTitle}"]`);
+      // .kvbqkE css class for active button in ZN light theme,
+      // .jmdHVm for dark theme
+      return document.querySelector(`button.kvbqkE[title="${btnTitle}"], button.jmdHVm[title="${btnTitle}"]`);
     }
 
     // make wheel scrolling within viewer work better part 1
@@ -375,11 +375,16 @@ unsafeWindow.urlChange.onPanoptesMainLoaded = onPanoptesMainLoaded;
 
       evt.preventDefault(); // prevent system default
 
-      // case already on move subject, no-op
-      if (isBtnHighlighted('Move subject')) {
-        clickViewerBtn('Annotate');
-      } else {
+      // toggle between annotate and move
+      // Note: isBtnHighlighted() is prone to changes in Zooniverse's CSS style
+      // the logic here is done such that in case Zooniverse changes break isBtnHighlighted,
+      // it can still support toggle to annotate
+      // for toggling back to move, users still have the option to use mousewheel zoom,
+      // which will toggle to move, supported by changeToMoveOnWheelInViewer() listener above.
+      if (isBtnHighlighted('Annotate')) {
         clickViewerBtn('Move subject');
+      } else {
+        clickViewerBtn('Annotate');
       }
     } // function toggleAnnotateMoveOnMiddleClickInViewer(..)
     lcvEl.addEventListener('mousedown', toggleAnnotateMoveOnMiddleClickInViewer);

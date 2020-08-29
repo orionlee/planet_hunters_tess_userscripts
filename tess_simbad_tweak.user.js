@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.15
+// @version     1.0.19
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -28,14 +28,22 @@
 })(); // function injectCSS()
 
 
-function normalize(aliasText) {
+// To normalize the IDs supplied in alias hash
+function normalizeAlias(aliasText) {
   let res = aliasText.trim();
   if (res.startsWith('TYC')) {
     // for TYC, remove leading zeros, e.g., 123-01234
     res = res.replace(/-0+(\d+)/g, '-$1');
   }
   return res;
-} // function normalize(..)
+} // function normalizeAlias(..)
+
+
+// To normalize the IDs shown in SIMBAD, the textContent of the supplied element, typically an <a>
+function normalizeId(idEl) {
+  // sometimes the IDs have multiple spaces.
+  return idEl.textContent.trim().replace(/\s\s+/g, ' ');
+}
 
 // Show some parameters in additional units
 function annotateOtherParams(otherParams) {
@@ -83,7 +91,7 @@ z-index: 99; font-size: 90%;
 
 
   // Now try to highlight the IDS in the result
-  const aliasList = aliases.split(',').map(t => normalize(t));
+  const aliasList = aliases.split(',').map(t => normalizeAlias(t));
 
   let numIdsMatched = 0;
 
@@ -91,20 +99,19 @@ z-index: 99; font-size: 90%;
   // for case the coordinate has multiple results
   console.debug('subject entries', document.querySelectorAll('#datatable tr td:nth-of-type(2) a'));
   Array.from(document.querySelectorAll('#datatable tr td:nth-of-type(2) a'), linkEl => {
-    if (aliasList.includes(linkEl.textContent.trim())) {
-      const curText = linkEl.textContent;
-      linkEl.innerHTML = `<span class="matched-id">${curText}</span>`;
-      numIdsMatched++;
-    }
-    // also propagate the aliases to the links of individual result
+    // propagate the aliases to the links of individual result
     linkEl.href += location.hash;
+
+    if (aliasList.includes(normalizeId(linkEl))) {
+      location.href = linkEl.href; // ID matched, go to the individual result page directly
+    }
   });
 
   // case the coordinate matches a single result
   if (document.querySelector('a[name="lab_ident"]')) {
     const idTableEl = document.querySelector('a[name="lab_ident"]').parentElement.nextElementSibling.nextElementSibling.nextElementSibling;
     Array.from(idTableEl.querySelectorAll('tt'), tt => {
-      if (aliasList.includes(tt.textContent.trim())) {
+      if (aliasList.includes(normalizeId(tt))) {
         tt.classList.add('matched-id');
         numIdsMatched++;
       }
@@ -117,7 +124,10 @@ z-index: 99; font-size: 90%;
 
   // reset the hash, so that if an user copies the URL, the user won't copy the extra parameters in the hash
   // (that would be useless in general)
-  location.hash = '';
+  // use pushState() rather than location.hash = '' so that
+  // 1) there is no extra hash in the URL
+  // 2) if there is a need, users could still get the hash back by going back.
+  history.pushState("", document.title, location.pathname + location.search);
 } // end of processing ExoFOP data from location.hash
 
 // For single result case,
@@ -155,6 +165,7 @@ function simbadStarTypeToWikiLinkHtml(starType) {
       'Variable Star of RR Lyr type': 'RR Lyrae variable',
       'Variable of BY Dra type': 'BY Draconis variable',
       'Double or multiple star': 'Double star',
+      'Eclipsing binary of W UMa type': 'W Ursae Majoris variable',
     });
 
   // default is starType, and the mapping takes care of special cases

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.10
+// @version     1.1.11
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -768,11 +768,26 @@ unsafeWindow.urlChange.onPanoptesMainLoaded = onPanoptesMainLoaded;
     return false;
   }
 
+  function scrollToActiveComment() {
+    if (!getThreadContainer()) {
+      return false;
+    }
+
+    const activeCommentEl = document.querySelector('.talk-comment.active');
+    if (activeCommentEl) {
+      activeCommentEl.scrollIntoView();
+    }
+    return true;
+  }
+
   urlChangeNotifier.addListener(() => {
     // match any threads
     if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/')
       || location.pathname.match(/\/projects\/nora-dot-eisner\/planet-hunters-tess\/talk\/\d+\/\d+.*/)) {
         onPanoptesMainLoaded(setupAutoLinkTICIds);
+        if (/comment=\d+/.test(location.search)) {
+          scrollToActiveComment();
+        }
     }
   });
 

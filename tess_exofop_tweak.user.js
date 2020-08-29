@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.0.8
+// @version     1.0.9
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -100,6 +100,25 @@ if (observationNoteBtn && observationNoteBtn.textContent.trim() !== 'Open Observ
   document.addEventListener("visibilitychange", startAnimate, false);
 }
 
+// Highlight TOI / CTOI tables if there are entries.
+(() => {
+  GM_addStyle(`\
+table.highlighted tr:nth-of-type(1) th {
+    background-color: rgba(255, 255, 0, 0.7);
+}`);
+
+  function highlightSectionTableIfNonEmpty(anchorName, numHeaderRows) {
+    const numTrs = document.querySelectorAll(`a[name="${anchorName}"] + table tr`).length;
+    if (numTrs > numHeaderRows) {
+      document.querySelector(`a[name="${anchorName}"] + table`).classList.add('highlighted');
+    } else if (numTrs < 1) {
+      console.warn('highlightSectionTableIfNonEmpty() no Rows founds, CSS path to the table possibly outdated. anchor:', anchorName);
+    }
+  }
+
+  highlightSectionTableIfNonEmpty('tois', 3);
+  highlightSectionTableIfNonEmpty('ctois', 2);
+})();
 
 // Extract coordinate for ease of copy/paste
 const raDecEl = document.querySelector('a[name="basic"] ~table tbody tr:nth-of-type(3) td:nth-of-type(3)');

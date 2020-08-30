@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.11
+// @version     1.1.12
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -135,6 +135,38 @@ unsafeWindow.urlChange = {}; // export URL change tracking for use in devtools a
 unsafeWindow.urlChange.urlChangeNotifier = urlChangeNotifier;
 unsafeWindow.urlChange.onElementLoaded = onElementLoaded;
 unsafeWindow.urlChange.onPanoptesMainLoaded = onPanoptesMainLoaded;
+
+//
+// Miscellaneous Generic helpers
+//
+
+/**
+ * Scroll the element specified by the given CSS selector into view.
+ * It takes care of the complication when the the page is loaded in a background tab.
+ */
+function scrollIntoViewWithBackgroundTab(elementSelector) {
+  function doScrollIntoView() {
+    const el = document.querySelector(elementSelector);
+    if (el) {
+      el.scrollIntoView();
+    } else {
+      console.warn('doScrollIntoView() - cannot find element:', elementSelector);
+    }
+  }
+
+  function doScrollIntoViewOnFocus() {
+    // scroll immediately on focus has no effect. A small delay is needed for it to work
+    setTimeout(doScrollIntoView, 10);
+    window.removeEventListener('focus', doScrollIntoViewOnFocus);
+
+  }
+
+  if (document.hasFocus()) {
+    doScrollIntoView();
+  } else {
+    window.addEventListener('focus', doScrollIntoViewOnFocus);
+  }
+}
 
 
 (function customizeClassify() {
@@ -772,11 +804,7 @@ unsafeWindow.urlChange.onPanoptesMainLoaded = onPanoptesMainLoaded;
     if (!getThreadContainer()) {
       return false;
     }
-
-    const activeCommentEl = document.querySelector('.talk-comment.active');
-    if (activeCommentEl) {
-      activeCommentEl.scrollIntoView();
-    }
+    scrollIntoViewWithBackgroundTab('.talk-comment.active');
     return true;
   }
 

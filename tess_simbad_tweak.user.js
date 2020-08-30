@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.19
+// @version     1.0.20
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -166,6 +166,7 @@ function simbadStarTypeToWikiLinkHtml(starType) {
       'Variable of BY Dra type': 'BY Draconis variable',
       'Double or multiple star': 'Double star',
       'Eclipsing binary of W UMa type': 'W Ursae Majoris variable',
+      'Variable Star of gamma Dor type': 'Gamma Doradus variable',
     });
 
   // default is starType, and the mapping takes care of special cases

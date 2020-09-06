@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.12
+// @version     1.1.13
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -683,7 +683,18 @@ function scrollIntoViewWithBackgroundTab(elementSelector) {
   function showTicOnTitleIfAny() {
     const ticId = getTicIdFromMetadataPopIn();
     if (ticId) {
-      document.title = 'TIC' + ticId + ' | ' + document.title;
+      const extra = (() => {
+        const subjectNumberMatch = location.pathname.match(/\/subjects\/(\d+)/);
+        if (subjectNumberMatch) {
+          return `Subject ${subjectNumberMatch[1]} | `;
+        } else {
+          return '';
+        }
+      })();
+
+      document.title = 'TIC' + ticId + ' | ' + extra + document.title;
+    } else {
+      console.warn('showTicOnTitleIfAny() - tic id not available yet')
     }
   }
 
@@ -695,7 +706,15 @@ function scrollIntoViewWithBackgroundTab(elementSelector) {
     }
 
     initExtractTicIdIfAnyUI();
-    showTicOnTitleIfAny();
+
+    // Show TIC on title depends on the metadata icon.
+    // The icon, if available, typically is not loaded yet
+    // put a delay to load it.
+    // Waiting for metadata icon to be present would need to deal with complications
+    // that in some thread, it is not there at all.
+    // the delay is acceptable as users typically don't need to refer to it
+    // until way later, after switching to some other tab and look for this tab to go back too.
+    setTimeout(showTicOnTitleIfAny, 999);
     return true;
   }
 

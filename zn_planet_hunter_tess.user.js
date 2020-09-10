@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.13
+// @version     1.1.14
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -599,7 +599,7 @@ function scrollIntoViewWithBackgroundTab(elementSelector) {
 
   <br>
   TIC <input id="ticIdForCopy" style="display: inline-block; border: 0;" readonly value="${ticId}">
-  &emsp;<button id="ticCopyCtl">Copy</button>
+  &emsp;<button id="ticCopyCtl" accesskey="C" title="Copy shortcut: Alt-C"><u>C</u>opy</button>
   &emsp;<button id="ticCopyNAddToNoteCtl">Copy & Add to note</button>
   <br><br>
   Subject info., including TOI:<br>
@@ -614,7 +614,7 @@ function scrollIntoViewWithBackgroundTab(elementSelector) {
   <a target="_blank" href="https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}" ref="noopener nofollow">https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}</a>
 
   <br><br>
-  <button id="ticShowMetadataCtl" accesskey="I">Metadata</button>
+  <button id="ticShowMetadataCtl" accesskey="I" title="Subject Metadata shortcut: Alt-I">Metadata (<u>I</u>)</button>
  </div>`);
 
     // bind buttons generated to actual logic

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.14
+// @version     1.1.15
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -603,15 +603,15 @@ function scrollIntoViewWithBackgroundTab(elementSelector) {
   &emsp;<button id="ticCopyNAddToNoteCtl">Copy & Add to note</button>
   <br><br>
   Subject info., including TOI:<br>
-  <a target="_blank" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
+  <a target="_exofop" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
 
   <br><br>
   Search TCEs:<br>
-  <a target="_blank" href="https://exo.mast.stsci.edu/#search=TIC%20${ticId}" ref="noopener nofollow">https://exo.mast.stsci.edu/</a>
+  <a target="_exomast" href="https://exo.mast.stsci.edu/#search=TIC%20${ticId}" ref="noopener nofollow">https://exo.mast.stsci.edu/</a>
 
   <br><br>
   When TIC will be observed:<br>
-  <a target="_blank" href="https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}" ref="noopener nofollow">https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}</a>
+  <a target="_wtv" href="https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}" ref="noopener nofollow">https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}</a>
 
   <br><br>
   <button id="ticShowMetadataCtl" accesskey="I" title="Subject Metadata shortcut: Alt-I">Metadata (<u>I</u>)</button>
@@ -653,6 +653,8 @@ function scrollIntoViewWithBackgroundTab(elementSelector) {
       document.querySelector('button[title="Metadata"]').click();
       hideTicPopin();
     };
+
+    document.querySelector('a[target="_exofop"]').focus();
 
    }
   } // function showTicPopin()

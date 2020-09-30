@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.1.0
+// @version     1.1.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -47,7 +47,7 @@ function getOtherParams() {
 
 function getCoord() {
   const raDecEl = document.querySelector('a[name="basic"] ~table tbody tr:nth-of-type(3) td:nth-of-type(3)');
-  const raDecMatch = raDecEl ? raDecEl.textContent.match(/([0-9:.]+)\s([0-9:.]+)[.\n\r]+([0-9.+-]+)°\s+([0-9.+-]+)°/) : null;
+  const raDecMatch = raDecEl ? raDecEl.textContent.match(/([0-9:.]+)\s([0-9:.+-]+)[.\n\r]+([0-9.+-]+)°\s+([0-9.+-]+)°/) : null;
   if (raDecMatch) {
     return {
              ra:      raDecMatch[1],
@@ -56,6 +56,7 @@ function getCoord() {
              dec_deg: raDecMatch[4],
            };
   }
+  console.warn('getCoord() - cannot find coordinate: ', raDecEl);
   return null;
 }
 const coord = getCoord();

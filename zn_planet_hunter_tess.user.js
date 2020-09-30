@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.15
+// @version     1.1.17
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -136,6 +136,7 @@ unsafeWindow.urlChange.urlChangeNotifier = urlChangeNotifier;
 unsafeWindow.urlChange.onElementLoaded = onElementLoaded;
 unsafeWindow.urlChange.onPanoptesMainLoaded = onPanoptesMainLoaded;
 
+
 //
 // Miscellaneous Generic helpers
 //
@@ -168,6 +169,19 @@ function scrollIntoViewWithBackgroundTab(elementSelector) {
   }
 }
 
+function isElementOrAncestor(el, criteria) {
+  for (let elToTest = el; elToTest != null; elToTest = elToTest.parentElement) {
+    if (criteria(elToTest)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+//
+// Main customization logic
+//
 
 (function customizeClassify() {
   const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
@@ -586,14 +600,14 @@ function scrollIntoViewWithBackgroundTab(elementSelector) {
   } // function getTicIdFromMetadataPopIn()
 
   function showHideTicPopin(ticId) {
-
-   const popinCtr = document.getElementById('ticPopin');
-   if (popinCtr) {
-     // toggle hide show
-     popinCtr.style.display = popinCtr.style.display === 'none' ? 'block' : 'none';
-   } else {
-     // create one
-     document.body.insertAdjacentHTML('beforeend', `\
+    try {
+      const popinCtr = document.getElementById('ticPopin');
+      if (popinCtr) {
+        // toggle hide show
+        popinCtr.style.display = popinCtr.style.display === 'none' ? 'block' : 'none';
+      } else {
+        // create one
+        document.body.insertAdjacentHTML('beforeend', `\
 <div id="ticPopin" style="display: block; position: fixed; top: 20px; right: 10vh; padding: 1em 3ch; z-index: 9999; background-color: lightgray; border: 1px solid black;">
   <a style="float: right; font-weight: bold;" href="javascript:void(0);" onclick="this.parentElement.style.display='none';">[X]</a>
 
@@ -617,46 +631,60 @@ function scrollIntoViewWithBackgroundTab(elementSelector) {
   <button id="ticShowMetadataCtl" accesskey="I" title="Subject Metadata shortcut: Alt-I">Metadata (<u>I</u>)</button>
  </div>`);
 
-    // bind buttons generated to actual logic
+        // bind buttons generated to actual logic
 
-    const hideTicPopin = () => {
-      document.getElementById('ticPopin').style.display = 'none';
-    };
+        const hideTicPopin = () => {
+          document.getElementById('ticPopin').style.display = 'none';
+        };
 
-    const copyTicToClipboard = () => {
-      document.getElementById('ticIdForCopy').focus();
-      document.getElementById('ticIdForCopy').select();
-      const success = document.execCommand('copy');
-      console.debug('Copy TIC success:', success);
-    };
+        const copyTicToClipboard = () => {
+          document.getElementById('ticIdForCopy').focus();
+          document.getElementById('ticIdForCopy').select();
+          const success = document.execCommand('copy');
+          console.debug('Copy TIC success:', success);
+        };
 
-    const addTicToNote = () => {
-      const ticId = document.getElementById('ticIdForCopy').value;
-      const noteEl = document.querySelector('form.talk-comment-form textarea');
-      const addNewLine = !(['', '\n', '\r'].includes(noteEl.value.charAt(noteEl.value.length - 1)));
-      noteEl.value += `${addNewLine ? '\n': ''}TIC ${ticId}\n`;
-      noteEl.focus();
-    };
+        const addTicToNote = () => {
+          const ticId = document.getElementById('ticIdForCopy').value;
+          const noteEl = document.querySelector('form.talk-comment-form textarea');
+          const addNewLine = !(['', '\n', '\r'].includes(noteEl.value.charAt(noteEl.value.length - 1)));
+          noteEl.value += `${addNewLine ? '\n' : ''}TIC ${ticId}\n`;
+          noteEl.focus();
+        };
 
-    document.getElementById('ticCopyCtl').onclick = () => {
-      copyTicToClipboard();
-      hideTicPopin();
-    };
+        document.getElementById('ticCopyCtl').onclick = () => {
+          copyTicToClipboard();
+          hideTicPopin();
+        };
 
-    document.getElementById('ticCopyNAddToNoteCtl').onclick = () => {
-      copyTicToClipboard();
-      addTicToNote();
-      hideTicPopin();
-    };
+        document.getElementById('ticCopyNAddToNoteCtl').onclick = () => {
+          copyTicToClipboard();
+          addTicToNote();
+          hideTicPopin();
+        };
 
-    document.getElementById('ticShowMetadataCtl').onclick = () => {
-      document.querySelector('button[title="Metadata"]').click();
-      hideTicPopin();
-    };
+        document.getElementById('ticShowMetadataCtl').onclick = () => {
+          document.querySelector('button[title="Metadata"]').click();
+          hideTicPopin();
+        };
 
-    document.querySelector('a[target="_exofop"]').focus();
-
-   }
+        // add a listener to auto-close the pop-in if users clicks outside of it
+        window.addEventListener('click', (evt) => {
+          if (!isElementOrAncestor(evt.target, el => {
+            return ['extractTicIdIfAnyCtl', 'ticPopin'].includes(el.id) || // ignore when it's clicked related to the pop-in
+              (el.tagName === 'BUTTON' && el.title === 'Metadata') || el.classList.contains('modal-dialog'); // also ignore when metadata button (because the pop-in logic clicks it)
+          })) {
+            document.getElementById('ticPopin').style.display = 'none';
+          }
+          return true;
+        }, { passive: true });
+      } // else of if(popInCtr)
+    } finally {
+      // auto focus on exofop link if the pop in is displayed
+      if (document.querySelector('#ticPopin').style.display != 'none') {
+        document.querySelector('#ticPopin a[target="_exofop"]').focus();
+      }
+    }
   } // function showTicPopin()
 
   function extractTicIdIfAny() {

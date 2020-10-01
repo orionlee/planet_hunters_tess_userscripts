@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.1.1
+// @version     1.2.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -20,30 +20,44 @@ function getAliases() {
   return document.querySelector('a[name="basic"] ~ table tr:last-of-type td:first-of-type').textContent;
 }
 
+function getDistance() {
+  return (document.querySelector('a[name="stellar"] ~ table tr:nth-child(4) > td:nth-child(17)') || { textContent: ''})
+    .textContent;
+} // function getDistance()
+
+function getBandAndMagnitudeOfRow(rowIdx) {
+  // - rows 1 and 2 are headers, so rowIdx: 0 should be row 3
+  const trEl = document.querySelector(`a[name="magnitudes"] ~ table tr:nth-child(${3 + rowIdx})`);
+  if (!trEl) {
+    return null;
+  }
+  return {
+    band: trEl.querySelector('td:nth-child(1)').textContent,
+    magnitude: trEl.querySelector('td:nth-child(2)').textContent,
+  };
+}
+
 function getOtherParams() {
-  function getDistance() {
-    return (document.querySelector('a[name="stellar"] ~ table tr:nth-child(4) > td:nth-child(17)') || { textContent: ''})
-      .textContent;
-  } // function getDistance()
 
-
-  function getMagnitudeOfRow(trEl) {
-    if (!trEl) {
+  function getMagnitudeOfRow(rowIdx) {
+    const ret = getBandAndMagnitudeOfRow(rowIdx);
+    if (!ret) {
       return '';
     }
-    return trEl.querySelector('td:nth-child(1)').textContent + '-' + trEl.querySelector('td:nth-child(2)').textContent;
+    return ret.band + '-' + ret.magnitude;
   }
 
   function getMagnitudes() {
-    // try to get magnitudes in B and V bands
-    // - row 3 is usually TESS band, rows 1 and 2 are headers
-    return getMagnitudeOfRow(document.querySelector('a[name="magnitudes"] ~ table tr:nth-child(4)'))
+    // try to get magnitudes in B and V bands, more likely to match SIMBAD data
+    // - first row (row 0) is usually TESS band
+    return getMagnitudeOfRow(1)
       + ', '
-      + getMagnitudeOfRow(document.querySelector('a[name="magnitudes"] ~ table tr:nth-child(5)'));
+      + getMagnitudeOfRow(2);
   }
 
   return `Distance(pc): ${getDistance()} ; Magnitudes: ${getMagnitudes()} ;`;
 } // function getOtherParams()
+
 
 function getCoord() {
   const raDecEl = document.querySelector('a[name="basic"] ~table tbody tr:nth-of-type(3) td:nth-of-type(3)');
@@ -81,6 +95,17 @@ if (simbadLinkEl) {
   console.warn('Cannot find Links to SIMBAD');
 }
 
+// Show absolute magnitude
+(() => {
+  const distanceInPc = parseFloat(getDistance() || 0);
+  const bandAndMag = getBandAndMagnitudeOfRow(0);
+  if (distanceInPc > 0) {
+    const magApparent = parseFloat(bandAndMag.magnitude || 0);
+    const magAbsolute = magApparent - 5 * Math.log10(distanceInPc / 10);
+    document.querySelector('a[name="magnitudes"] + table th').insertAdjacentHTML('beforeend',
+      `&emsp;Abs. Magnitude: ${bandAndMag.band}  ${magAbsolute.toFixed(3)}`);
+  }
+})();
 
 //
 // Highlight observation notes if any

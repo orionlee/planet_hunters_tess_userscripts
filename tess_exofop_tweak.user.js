@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.2.0
+// @version     1.2.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -103,7 +103,8 @@ if (simbadLinkEl) {
     const magApparent = parseFloat(bandAndMag.magnitude || 0);
     const magAbsolute = magApparent - 5 * Math.log10(distanceInPc / 10);
     document.querySelector('a[name="magnitudes"] + table th').insertAdjacentHTML('beforeend',
-      `&emsp;Abs. Magnitude: ${bandAndMag.band}  ${magAbsolute.toFixed(3)}`);
+      `<span style="padding: 0 2ch;background-color: white;font-size: 110%;"
+             >Abs. Magnitude: ${bandAndMag.band}  ${magAbsolute.toFixed(3)}</span>`);
   }
 })();
 

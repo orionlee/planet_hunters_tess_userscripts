@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.0
+// @version     1.2.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -124,6 +124,11 @@ function insertItalic(target) {
   insertAtCursor(target, '*Italic Text*', (_, selected) => `*${selected}*`);
 }
 
+function submitComment(textarea) {
+  textarea.form.querySelector('button[type="submit"]').click();
+}
+
+
 function handleKeyboardShortcuts(evt) {
   if (!( isTalkCommentTextArea(evt.target))) {
     return;
@@ -131,6 +136,7 @@ function handleKeyboardShortcuts(evt) {
   const keyMap = {
     'KeyB': insertBold,
     'KeyI': insertItalic,
+    'Enter': submitComment,
   }
 
   if (evt.ctrlKey) {

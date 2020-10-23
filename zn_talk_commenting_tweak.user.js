@@ -2,9 +2,9 @@
 // @name        Zooniverse Talk - Better Commenting
 // @namespace   zooniverse.org
 // @match       https://www.zooniverse.org/*
-// @grant       none
+// @grant       GM_addStyle
 // @noframes
-// @version     1.0.3
+// @version     1.1.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -142,3 +142,26 @@ function handleKeyboardShortcuts(evt) {
   }
 }
 window.addEventListener('keydown', handleKeyboardShortcuts);
+
+
+//
+// Tweak Talk Search Result
+//
+
+function fixSearchResultImgLayout() {
+  GM_addStyle(`
+  .talk .talk-search-result img, .talk .talk-search-result video {
+    /* override the default float: left.
+       The default  makes the comment summary below the body squished
+       to the right, and becomes harder to be spotted.
+       It's particularly confusing when multiple comments have images.
+      */
+    float: none;
+
+    /* ensure images aren't too large, taking up all the spaces  */
+    max-width: 50vw;
+    max-height: 25vh;
+}
+`);
+}
+fixSearchResultImgLayout();

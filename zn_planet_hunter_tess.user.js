@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.17
+// @version     1.1.18
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -682,7 +682,7 @@ function isElementOrAncestor(el, criteria) {
     } finally {
       // auto focus on exofop link if the pop in is displayed
       if (document.querySelector('#ticPopin').style.display != 'none') {
-        document.querySelector('#ticPopin a[target="_exofop"]').focus();
+        document.querySelector('#ticPopin a[target="_exomast"]').focus();
       }
     }
   } // function showTicPopin()

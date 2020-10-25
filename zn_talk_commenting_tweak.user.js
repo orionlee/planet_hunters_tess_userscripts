@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.2.0
+// @version     1.2.1
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -72,7 +72,7 @@ function onPasteProcessLinksImages(evt) {
     return;
   }
 
-  const pasteRaw = (event.clipboardData || window.clipboardData).getData('text');
+  const pasteRaw = (evt.clipboardData || window.clipboardData).getData('text');
   if (!pasteRaw) {
     return;
   }

@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.25
+// @version     1.0.26
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -176,6 +176,7 @@ function simbadStarTypeToWikiLinkHtml(starType) {
       'Variable Star of Orion Type': 'Orion variable',
       'CV DQ Her type (intermediate polar)': 'Intermediate polar',
       'CV of AM Her type (polar)': 'Polar (star)',
+      'Variable of RS CVn type': 'RS Canum Venaticorum variable',
     });
 
   // default is starType, and the mapping takes care of special cases

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.18
+// @version     1.1.19
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -716,7 +716,8 @@ function isElementOrAncestor(el, criteria) {
       const extra = (() => {
         const subjectNumberMatch = location.pathname.match(/\/subjects\/(\d+)/);
         if (subjectNumberMatch) {
-          return `Subject ${subjectNumberMatch[1]} | `;
+          // use S. short form to make subject number more likely to fit in the visible portion of the tab.
+          return `S.${subjectNumberMatch[1]} | `;
         } else {
           return '';
         }

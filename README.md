@@ -54,10 +54,13 @@ They could be useful if you follow up on ExoMAST, ExoFOP, and SIMBAD
 - They work together so that when one follows up on SIMBAD from ExoFOP page, you can easily reference the IDs of the target to ensure SIMBAD referenced the same star.
 
 
+### Zooniverse Generic
+
 [(Zooniverse generic) Commenting tweak](https://github.com/orionlee/planet_hunters_tess_userscripts/raw/master/zn_talk_commenting_tweak.user.js)
 
 - For entering comments in Talk, when one pastes a link (or a link to an image), it will be converted into a markdown link or markdown image, effectively doing the job of the link / image  button by simply pasting.
-- Provides keyboard shortcuts: `Ctrl-I` for italic, `Ctrl-B` for bold.
+- Provides keyboard shortcuts: `Ctrl-I` for italic, `Ctrl-B` for bold, `Ctrl-Enter` to submit the comment
+- On Talk search result pages, tweak the layout so that comments with large images won't skew the layout, e.g., the comment summary at the bottom of each comment will not be pushed to the right anymore.
 
 ---
 

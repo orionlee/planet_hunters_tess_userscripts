@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.1.19
+// @version     1.2.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -622,6 +622,11 @@ function isElementOrAncestor(el, criteria) {
   <br><br>
   Search TCEs:<br>
   <a target="_exomast" href="https://exo.mast.stsci.edu/#search=TIC%20${ticId}" ref="noopener nofollow">https://exo.mast.stsci.edu/</a>
+
+  <br><br>
+  MAST Portal:<br>
+  <a target="_mast_portal" href="https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html?searchQuery=%7B%22service%22%3A%22CAOMDB%22%2C%22inputText%22%3A%22TIC%20${ticId}%22%2C%22paramsService%22%3A%22Mast.Caom.Cone%22%2C%22title%22%3A%22MAST%3A%20TIC%20350092591%22%2C%22columns%22%3A%22*%22%2C%22caomVersion%22%3Anull%7D"
+     ref="noopener nofollow">https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html</a>
 
   <br><br>
   When TIC will be observed:<br>

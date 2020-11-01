@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.2.1
+// @version     1.2.2
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -808,7 +808,7 @@ function isElementOrAncestor(el, criteria) {
 
     const replaceExpr = '$1<span class="tooltip-tic-ctr">TIC $2<span class="tooltip-tic"><a href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC $2" target="_pht_talk">[Talk]</a> | <a href="https://exofop.ipac.caltech.edu/tess/target.php?id=$2" target="_exofop">[ExoFOP]</a></span></span>';
     const ticReList = [
-      /(\s+)TIC(?:\s*ID)?\s*(\d+)/mgi,  // regular text match, with space preceding to ensure it is not, say, part of an URL
+      /(\s+|[(])TIC(?:\s*ID)?\s*(\d+)/mgi,  // regular text match, with space or bracket preceding to ensure it is not, say, part of an URL inside <a> tag
       /(^)TIC(?:\s*ID)?\s*(\d+)/mgi,  // cases the TIC  is at start of a line
       /(<p>)TIC(?:\s*ID)?\s*(\d+)/mgi, // cases the TIC is visually at the start of the line, e.g., <p>TIC 12345678
       /(<br>)TIC(?:\s*ID)?\s*(\d+)/mgi, // cases the TIC is visually at the start of the line, e.g., <br>TIC 12345678

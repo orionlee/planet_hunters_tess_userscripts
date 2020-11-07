@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.2.1
+// @version     1.3.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -171,3 +171,56 @@ function fixSearchResultImgLayout() {
 `);
 }
 fixSearchResultImgLayout();
+
+
+/**
+ * When multiple comments of a given thread / subject matches the search result,
+ * condense them into 1 entry.
+ */
+function condenseSearchResultBySubject() {
+  const entries = Array.from(document.querySelectorAll('.talk-search-results > .talk-search-result'));
+  if (entries.length < 1) {
+    return null;
+  }
+
+  GM_addStyle(`
+.talk-search-result.thread-seen {
+  display: none;
+}
+`);
+
+  const threadCountMap = {}; // number of comments for a given thread in search result
+  const uniqThreadMap = {};
+  function incCount(threadUrl, srEl) {
+    const cur = threadCountMap[threadUrl] || 0;
+    threadCountMap[threadUrl] = cur + 1;
+    if (cur < 1) {
+      uniqThreadMap[threadUrl] = srEl;
+    }
+    return cur + 1;
+  }
+
+  entries.forEach(sr => {
+    const threadUrl = sr.querySelector('.preview-content h1 a').href;
+    const countSoFar = incCount(threadUrl, sr);
+    if (countSoFar > 1) {
+      sr.classList.add('thread-seen');
+    }
+  });
+
+  // indicate in thread /  subjects that there are multiple matches
+  for (const threadUrl in threadCountMap) {
+    const count = threadCountMap[threadUrl];
+    if (count > 1) {
+      const sr = uniqThreadMap[threadUrl];
+      sr.querySelector('.preview-content h1 a').insertAdjacentHTML('afterend', `
+<span title="additional matches"> (+${count - 1})</span>`);
+    }
+  }
+
+  return [threadCountMap, uniqThreadMap]; // only useful for debugging
+}
+
+// better implementation would wait till SearchResult ajax is rendered.
+// Use setTimeout as a crude approximation
+setTimeout(condenseSearchResultBySubject, 4000);

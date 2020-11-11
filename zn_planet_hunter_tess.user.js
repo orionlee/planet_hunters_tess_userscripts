@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.2.2
+// @version     1.2.3
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -568,36 +568,71 @@ function isElementOrAncestor(el, criteria) {
   //
 
   function getTicIdFromMetadataPopIn() {
-    // open the pop-in
-    const metadataBtn = document.querySelector('button[title="Metadata"]')
-    if (!metadataBtn) {
-      return null;
-    }
-    try {
-      metadataBtn.click();
-
-      const metadataCtr = document.querySelector('.modal-dialog .content-container > table');
-      if (!metadataCtr) {
+    function getUncached() {
+      // open the pop-in
+      const metadataBtn = document.querySelector('button[title="Metadata"]')
+      if (!metadataBtn) {
         return null;
       }
+      try {
+        metadataBtn.click();
 
-      const ticThs = Array.from(metadataCtr.querySelectorAll('th'))
-        .filter( th => th.textContent == 'TIC ID' );
+        const metadataCtr = document.querySelector('.modal-dialog .content-container > table');
+        if (!metadataCtr) {
+          return null;
+        }
 
-      if (ticThs.length < 1) {
+        const ticThs = Array.from(metadataCtr.querySelectorAll('th'))
+          .filter( th => th.textContent == 'TIC ID' );
+
+        if (ticThs.length < 1) {
+          return null;
+        }
+        // else return the TIC id
+        return ticThs[0].parentElement.querySelector('td').textContent;
+      } finally {
+        const closeBtn = document.querySelector('form.modal-dialog button.modal-dialog-close-button');
+        if (closeBtn) {
+          closeBtn.click();
+        } else {
+          console.warn('getTicIdFromMetadataPopIn() - cannot close the popin.');
+        }
+      }
+    } // function getUncached()
+
+    function getCached() {
+      const subjectCtr = document.querySelector('.talk-comment-body');
+      if (!subjectCtr) {
         return null;
       }
-      // else return the TIC id
-      return ticThs[0].parentElement.querySelector('td').textContent;
-    } finally {
-      const closeBtn = document.querySelector('form.modal-dialog button.modal-dialog-close-button');
-      if (closeBtn) {
-        closeBtn.click();
-      } else {
-        console.warn('getTicIdFromMetadataPopIn() - cannot close the popin.');
-      }
+      return subjectCtr.dataset['tic']
     }
-  } // function getTicIdFromMetadataPopIn()
+
+    function saveToCache(tic) {
+      const subjectCtr = document.querySelector('.talk-comment-body');
+      if (!subjectCtr) {
+        console.warn('Cannot save the TIC to cache.');
+        return false;
+      }
+      subjectCtr.dataset['tic'] = tic;
+      return true;
+    }
+
+    // see if the TIC is cached so that I don't need to open popin
+    // It also makes let us get TIC when the popin is temporarily available,
+    // in the case when the user is editing the comment directly on the subject
+
+    let tic = getCached();
+    if (tic) {
+      return tic;
+    }
+
+    tic = getUncached();
+    if (tic) {
+      saveToCache(tic);
+    }
+    return tic;
+  }
 
   function showHideTicPopin(ticId) {
     try {

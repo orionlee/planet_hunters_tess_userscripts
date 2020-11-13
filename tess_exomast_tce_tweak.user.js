@@ -4,7 +4,7 @@
 // @match       https://exo.mast.stsci.edu/exomast_planet.html?planet=*
 // @grant       none
 // @noframes
-// @version     1.0.7
+// @version     1.0.8
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -44,6 +44,7 @@ function bjtdToRelative(tBjtd) {
   [26, 2010.266979188743, 2035.135354240565],
   [27, 2036.279092559588, 2060.643443703498],
   [28, 2061.855819071128, 2087.103119925926],
+  [29, 2088.240389614362, 2114.42783612537],
 ];
 
 

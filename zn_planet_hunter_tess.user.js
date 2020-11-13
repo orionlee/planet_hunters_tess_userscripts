@@ -8,14 +8,14 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.2.3
+// @version     1.2.4
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
 
 // helper for debug messages used to understand timing of ajax loading (and related MutationObserver)
-const DEBUG_PHT_AJAX = (localStorage.DEBUG_PHT_AJAX === 'true');
+const DEBUG_PHT_AJAX = (localStorage['DEBUG_PHT_AJAX'] === 'true');
 function ajaxDbg(... args) {
   if (DEBUG_PHT_AJAX) {
     console.debug(...(['[ADBG]'].concat(args)));
@@ -242,7 +242,7 @@ function isElementOrAncestor(el, criteria) {
   // Helper to react to classify tab's top-level ajax load
   function onMainLoaded(handleFn) {
     onElementLoaded('main',
-      { prefix: 'onMainMainLoaded()', elementName: '<main>'},
+      { prefix: 'onMainLoaded()', elementName: '<main>'},
       handleFn);
   }
 

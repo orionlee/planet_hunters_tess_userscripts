@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.2.4
+// @version     1.2.5
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -184,7 +184,7 @@ function isElementOrAncestor(el, criteria) {
 //
 
 (function customizeClassify() {
-  const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify';
+  const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify/workflow/11235';
 
   (function injectCSS() {
     GM_addStyle(`

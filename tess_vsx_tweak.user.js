@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.0
+// @version     1.1.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -125,17 +125,26 @@ function tweakSearchResult() {
   if (location.href.indexOf('/vsx/index.php?view=results.submit1') < 0) {
     return;
   }
-  
+
   let resRows = Array.from(document.querySelectorAll('.content table:nth-of-type(2) tr:nth-of-type(4) tbody > tr'));
   resRows = resRows.slice(2, resRows.length - 1); // remove 2 header rows and 1 footer row
-  resRows.forEach(tr => { 
+  const encodeJsLink = (text) => {
+          // issue: the javascript link below doesn't work when the starType contains +, even though
+          // the code has correctly encoded the + as %2B  by using encodeURIComponent.
+          // To make it work with how browser interpret the string, the % in %2B needs to be further encoded
+          // End result: + is encoded as %25%2B.
+          return encodeURIComponent(text).replace(/%/g, '%25');
+  };
+  resRows.forEach(tr => {
     const typeTd = tr.querySelector('td:nth-of-type(7)');
     const starType = typeTd ? typeTd.textContent : null;
     if (starType) {
-          // typeTd.innerHTML = `<a href="/vsx/index.php?abbrev=${starType}&view=help.vartype&nolayout=1">${starType}</a>`;      
-          typeTd.innerHTML = `<a href='javascript:window.open("index.php?abbrev=${starType}&view=help.vartype&nolayout=1", "VarTypeHelp", "width=390,height=400")'>
+          // typeTd.innerHTML = `<a href="/vsx/index.php?abbrev=${starType}&view=help.vartype&nolayout=1">${starType}</a>`;
+          typeTd.innerHTML = `<a href='javascript:window.open("index.php?abbrev=${encodeJsLink(starType)}&view=help.vartype&nolayout=1", "VarTypeHelp", "width=390,height=400")'>
   ${starType} <img style="vertical-align: -5px" src="_images/help.gif" width="15" height="15" border="0" align="absbottom" title="Get description for this type">
-</a>`;      
+</a>`;
+          // to make it really work, I probably need to recreate varTypeHelp function
+          // (that exists in target detail page), so that encoding is done within the script
     }
   });
 }

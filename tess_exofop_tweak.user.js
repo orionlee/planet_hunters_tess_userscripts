@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.5.0
+// @version     1.5.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -50,7 +50,8 @@ function bjtdToRelative(tBjtd) {
   [33, 2201.72730, 2227.57173],
   [34, 2228.766579577884, 2254.065591600167],
   [35, 2254.994772551864, 2279.979866029939],
-];
+  [36, 2280.89808, 2305.98835],
+]; // Based on the one in tess_exomast_tce_tweak.user.js
 
 
   for (const row of sectorStartStopList) {

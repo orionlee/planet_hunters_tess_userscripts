@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.4.4
+// @version     1.4.5
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -370,6 +370,10 @@ function isElementOrAncestor(el, criteria) {
     };
 
     function handleViewerKeyboardShortcuts(evt) {
+      if (['INPUT', 'TEXTAREA'].includes(evt.target.tagName)) {
+        // user typing in an input box, do nothing
+        return;
+      }
       const handler = keyMap[evt.code];
       if (handler && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
         const success = handler();

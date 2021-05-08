@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.4.5
+// @version     1.5.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -352,6 +352,14 @@ function isElementOrAncestor(el, criteria) {
       return clickViewerBtn('Annotate');
     }
 
+    function clickDone() {
+      const doneBtn = Array.from(document.querySelectorAll('button[type="submit"]'))
+                      .find(btn => btn.textContent.toLowerCase() == 'done');
+      if (doneBtn) {
+        doneBtn.click();
+      }
+    }
+
     const keyMap = {
       "KeyI":    clickSubjectInfoOnClassify,
       "Numpad1": clickSubjectInfoOnClassify,
@@ -367,20 +375,34 @@ function isElementOrAncestor(el, criteria) {
       "KeyA":    clickAnnotate,
       "Comma":   clickAnnotate,
       // also accepts use comma as an alternative as it is close to keyM
+      "!any-modifier": {
+        "Enter": clickDone,
+        "NumpadEnter": clickDone,
+      },
     };
 
     function handleViewerKeyboardShortcuts(evt) {
-      if (['INPUT', 'TEXTAREA'].includes(evt.target.tagName)) {
-        // user typing in an input box, do nothing
+      if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(evt.target.tagName)) {
+        // user typing in an input box or focuses on a button, do nothing
         return;
       }
-      const handler = keyMap[evt.code];
-      if (handler && !evt.altKey && !evt.shiftKey && !evt.ctrlKey) {
+
+      const handler =(() => {
+        const hasAnyModifier = evt.altKey || evt.shiftKey || evt.ctrlKey || evt.metaKey;
+        if (!hasAnyModifier) {
+          return keyMap[evt.code];
+        } else {
+          return keyMap['!any-modifier'][evt.code];
+        }
+      })();
+
+      if (handler) {
         const success = handler();
         if (success) {
           evt.preventDefault();
         }
       }
+
     }
     window.addEventListener('keydown', handleViewerKeyboardShortcuts);
 

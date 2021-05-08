@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.5.1
+// @version     1.5.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -220,7 +220,7 @@ if (observationNoteBtn && observationNoteBtn.textContent.trim() !== 'Open Observ
     }
   };
   document.addEventListener("visibilitychange", startAnimate, false);
-}
+} // if (observationNoteBtn ...
 
 // Highlight TOI / CTOI tables if there are entries.
 (() => {
@@ -250,8 +250,8 @@ table.highlighted tr:nth-of-type(1) th {
     }
   }
 
-  highlightIfFalseAlarm(document.querySelector('a[name="tois"] + table tr td:nth-of-type(11)'));
   highlightIfFalseAlarm(document.querySelector('a[name="tois"] + table tr td:nth-of-type(12)'));
+  highlightIfFalseAlarm(document.querySelector('a[name="tois"] + table tr td:nth-of-type(13)'));
 
 })();
 

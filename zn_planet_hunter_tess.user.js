@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.4.0
+// @version     1.4.2
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -496,7 +496,9 @@ function isElementOrAncestor(el, criteria) {
       // the logic once the modal is brought up
       function doGetSubjectMetaAndDo() {
         try {
-          const metadataCtr = document.querySelector('#lightCurveViewerExpandCtr + div table');
+          // the pop-in div has no id, but it's always added at the end
+          // so use ~ to make the matching more flexible
+          const metadataCtr = document.querySelector('#lightCurveViewerExpandCtr ~ div table');
           if (!metadataCtr) {
             console.warn('getSubjectMeta(): cannot find metadata modal dialog. no-op');
             return null;
@@ -513,7 +515,7 @@ function isElementOrAncestor(el, criteria) {
           handleFn(metaValue);
         } finally {
           // close the modal
-          const closeBtn = document.querySelector('#lightCurveViewerExpandCtr + div button[aria-label="Close"]');
+          const closeBtn = document.querySelector('#lightCurveViewerExpandCtr ~ div button[aria-label="Close"]');
           if (closeBtn) {
             closeBtn.click();
           }
@@ -521,7 +523,7 @@ function isElementOrAncestor(el, criteria) {
       } // function doGetSubjectMetaAndDo
 
       // need to wait for the dialog to appear before doing the extraction
-      setTimeout(doGetSubjectMetaAndDo, 100);
+      setTimeout(doGetSubjectMetaAndDo, 20);
     }
 
 
@@ -541,26 +543,50 @@ function isElementOrAncestor(el, criteria) {
       return Math.pow(rObject, 2) / Math.pow(rStar, 2);
     }
 
+    // Prepare output container: it is shown irrespective of whether extracting radius is successful
+    // (useful for cases when the extraction fails (intermittently) due to timing issues. The
+    //  user can still fill out the form)
+    const outputCtr = (() => {
+      const ctr = document.querySelector('#classifyHintOut');
+      if (ctr) {
+        return ctr;
+      }
+      const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
+      infoBtn.insertAdjacentHTML('beforebegin', `<div id="classifyHintOut" style="margin-right: 16px; margin-top: 4px;" title="Dip's depth estimate">
+      R<sub>s</sub> <span style="font-size: 80%;">[R<sub>☉</sub>]</span>: <input name="r_*" type="number" style="width: 10ch;" step="0.1">&emsp;
+      R<sub>p</sub> <span style="font-size: 80%;">[R<sub>j</sub>]</span>: <input name="r_p" type="number" style="width: 10ch;" step="0.1" value="1">
+      <button id="dipDepthGoBtn">Go</button>
+      <br>
+      <span style="font-size: 80%">Dip's depth ~= <span id="dipDepthOut"></span>%</span>
+  </div>`);
+      const calcDipDepthFromInput = () => {
+        const ctr = document.querySelector('#classifyHintOut');
+        const rStar = parseFloat(ctr.querySelector('input[name="r_*"]').value);
+        const rObject = parseFloat(ctr.querySelector('input[name="r_p"]').value) * R_JUPITER_IN_R_SUN;
+        const depth = calcDipDepth(rStar, rObject);
+        ctr.querySelector('#dipDepthOut').textContent = depth ? (depth * 100).toFixed(3) : '';
+      };
+      document.querySelector('#classifyHintOut input[name="r_*"]').onchange = calcDipDepthFromInput;
+      document.querySelector('#classifyHintOut input[name="r_p"]').onchange = calcDipDepthFromInput;
+      document.querySelector('#classifyHintOut #dipDepthGoBtn').onclick = calcDipDepthFromInput;
+
+      return document.querySelector('#classifyHintOut');
+    })();
+
     getSubjectRadiusAndDo(rStar => {
       console.debug('Subject Radius: ', rStar);
 
-      // Prepare output container
-      const outputCtr = (() => {
-        const ctr = document.querySelector('#classifyHintOut');
-        if (ctr) {
-          return ctr;
-        }
-        const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
-        infoBtn.insertAdjacentHTML('beforebegin', `<div id="classifyHintOut" style="font-size: 80%;margin-right: 16px; margin-top: 4px;"></div>`);
-        return document.querySelector('#classifyHintOut');
-      })();
+      const fillDipDepthCalculator = (ctr, rStar, rObject, depth) => {
+        ctr.querySelector('input[name="r_*"]').value = rStar ? rStar : '';
+        ctr.querySelector('input[name="r_p"]').value = rObject ? rObject / R_JUPITER_IN_R_SUN : '';
+        ctr.querySelector('#dipDepthOut').textContent = depth ? (depth * 100).toFixed(3) : '';
+      };
 
-      // TODO: change the output to an interactive calculator
       if (!isNaN(rStar)) {
         const depth4RJupiter = calcDipDepth(rStar, 1 * R_JUPITER_IN_R_SUN);
-        outputCtr.innerHTML = `Depth for object w/ 1 R_j: ${(depth4RJupiter * 100).toFixed(2)}% <br>R_*: ${rStar}`;
+        fillDipDepthCalculator(outputCtr, rStar, R_JUPITER_IN_R_SUN, depth4RJupiter);
       } else {
-        outputCtr.innerHTML = 'R_* not available';
+        fillDipDepthCalculator(outputCtr, null, null, null);
       }
 
     });

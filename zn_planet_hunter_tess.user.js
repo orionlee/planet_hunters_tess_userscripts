@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.4.3
+// @version     1.4.4
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -316,6 +316,22 @@ function isElementOrAncestor(el, criteria) {
   } // function initToggleExpandedViewerUI()
 
 
+  // Common helper used by
+  // 1) key map customization,  2) customizeViewerSubjectLevel()
+  function clickSubjectInfoOnClassify() {
+    if (location.pathname !== PATH_CLASSIFY) {
+      return false;
+    }
+
+    const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
+    if (infoBtn) {
+      infoBtn.click();
+      return true;
+    }
+
+    return false;
+  } // function clickSubjectInfoOnClassify()
+
   let addKeyMapToViewerCalled = false;
   function addKeyMapToViewer() {
     if (addKeyMapToViewerCalled) {
@@ -323,20 +339,6 @@ function isElementOrAncestor(el, criteria) {
     } else {
       addKeyMapToViewerCalled = true;
     }
-
-    function clickSubjectInfoOnClassify() {
-      if (location.pathname !== PATH_CLASSIFY) {
-        return false;
-      }
-
-      const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
-      if (infoBtn) {
-        infoBtn.click();
-        return true;
-      }
-
-      return false;
-    } // function clickSubjectInfoOnClassify()
 
     function clickReset() {
       return clickViewerBtn('Reset subject view');
@@ -436,7 +438,7 @@ function isElementOrAncestor(el, criteria) {
     lcvEl.addEventListener('mousedown', toggleAnnotateMoveOnMiddleClickInViewer);
   }
 
-  function doCustomizeViewer() {
+  function doCustomizeViewerGenericLevel() {
     ajaxDbg('doCustomizeViewer() - start customization');
 
     // also make the focus on svg so that built-in keyboard shortcuts would work too
@@ -451,37 +453,26 @@ function isElementOrAncestor(el, criteria) {
     addKeyMapToViewer(); // additional keyboard shortcuts
   }
 
+  // Customization that needs to be triggered only once (that applies for all subsequent subjects)
   //
-  // Plumbing codes to trigger actual viewer customization upon ajax load (for initial load)
+  // Plumbing codes to trigger actual viewer customization exactly once upon initial ajax load
   //
-  let customizeViewerCalled = false;
-  function customizeViewer() {
+  let customizeViewerGenericLevelCalled = false;
+  function customizeViewerGenericLevel() {
     // to avoid being called repeatedly upon svg modification,
     // as the modification is on the controls, not tied to the specific subject
-    if (customizeViewerCalled) {
+    if (customizeViewerGenericLevelCalled) {
       return;
     }
-    customizeViewerCalled = true;
+    customizeViewerGenericLevelCalled = true;
 
-    doCustomizeViewer();
+    doCustomizeViewerGenericLevel();
   }
 
+
+  // Customization that needs to be triggered for every subject
   function customizeViewerSubjectLevel() {
     console.debug('customizeViewerSubjectLevel()');
-    // TODO: extract as common helper (already in keymap codes above)
-    function clickSubjectInfoOnClassify() {
-      if (location.pathname !== PATH_CLASSIFY) {
-        return false;
-      }
-
-      const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
-      if (infoBtn) {
-        infoBtn.click();
-        return true;
-      }
-
-      return false;
-    } // function clickSubjectInfoOnClassify()
 
     function getSubjectMetaAndDo(key, handleFn) {
       // TODO: the codes are similar to getTicIdFromMetadataPopIn(), but
@@ -598,7 +589,7 @@ function isElementOrAncestor(el, criteria) {
       observer.disconnect();
       // The SVG will be modified a few times by zooniverse code (to load lightcurve, etc.)
       // So we wait a bit to let it finish before customizing
-      setTimeout(customizeViewer, 500);
+      setTimeout(customizeViewerGenericLevel, 500);
       setTimeout(customizeViewerSubjectLevel, 600);
     });
 
@@ -608,7 +599,7 @@ function isElementOrAncestor(el, criteria) {
 
     }
     ajaxDbg('customizeViewerOnSVGLoaded() - wait for svg loaded. svg children:', document.querySelector('svg.light-curve-viewer').children);
-    customizeViewerCalled = false;
+    customizeViewerGenericLevelCalled = false;
     lcvObserver.observe(lcvEl, { childList: true, subtree: true });
     return true;
   }

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.3.0
+// @version     1.4.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -456,12 +456,114 @@ function isElementOrAncestor(el, criteria) {
   //
   let customizeViewerCalled = false;
   function customizeViewer() {
-    if (customizeViewerCalled) { // to avoid being called repeatedly upon svg modification
+    // to avoid being called repeatedly upon svg modification,
+    // as the modification is on the controls, not tied to the specific subject
+    if (customizeViewerCalled) {
       return;
     }
     customizeViewerCalled = true;
 
     doCustomizeViewer();
+  }
+
+  function customizeViewerSubjectLevel() {
+    console.debug('customizeViewerSubjectLevel()');
+    // TODO: extract as common helper (already in keymap codes above)
+    function clickSubjectInfoOnClassify() {
+      if (location.pathname !== PATH_CLASSIFY) {
+        return false;
+      }
+
+      const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
+      if (infoBtn) {
+        infoBtn.click();
+        return true;
+      }
+
+      return false;
+    } // function clickSubjectInfoOnClassify()
+
+    function getSubjectMetaAndDo(key, handleFn) {
+      // TODO: the codes are similar to getTicIdFromMetadataPopIn(), but
+      // 1. the details, e.g., CSS path to elements, are different
+      // 2. actual extraction is done asynchronously. (a necessity here), thus changing the api
+      const clickSucceeded = clickSubjectInfoOnClassify();
+      if (!clickSucceeded) {
+        console.warn('getSubjectMeta(): click to open metadata modal dialog failed. no-op');
+        return null;
+      }
+
+      // the logic once the modal is brought up
+      function doGetSubjectMetaAndDo() {
+        try {
+          const metadataCtr = document.querySelector('#lightCurveViewerExpandCtr + div table');
+          if (!metadataCtr) {
+            console.warn('getSubjectMeta(): cannot find metadata modal dialog. no-op');
+            return null;
+          }
+
+          const filteredThs = Array.from(metadataCtr.querySelectorAll('th'))
+            .filter(th => th.textContent === key);
+
+          if (filteredThs.length < 1) {
+            return null;
+          }
+          // else extract the value and pass it to handler
+          const metaValue =  filteredThs[0].parentElement.querySelector('td').textContent;
+          handleFn(metaValue);
+        } finally {
+          // close the modal
+          const closeBtn = document.querySelector('#lightCurveViewerExpandCtr + div button[aria-label="Close"]');
+          if (closeBtn) {
+            closeBtn.click();
+          }
+        }
+      } // function doGetSubjectMetaAndDo
+
+      // need to wait for the dialog to appear before doing the extraction
+      setTimeout(doGetSubjectMetaAndDo, 100);
+    }
+
+
+    function getSubjectRadiusAndDo(handleFn) {
+      getSubjectMetaAndDo('Radius (solar radii)', radiusText => {
+        if (radiusText) {
+          // if the text is "null", it will be parsed as NaN, the handler needs to deal with it.
+          handleFn(parseFloat(radiusText));
+        }
+      });
+    }
+
+    const R_JUPITER_IN_R_SUN = 0.1028
+
+    // units: usually is r_sun, but as long as the two have the same unit, it is okay
+    function calcDipDepth(rStar, rObject) {
+      return Math.pow(rObject, 2) / Math.pow(rStar, 2);
+    }
+
+    getSubjectRadiusAndDo(rStar => {
+      console.debug('Subject Radius: ', rStar);
+
+      // Prepare output container
+      const outputCtr = (() => {
+        const ctr = document.querySelector('#classifyHintOut');
+        if (ctr) {
+          return ctr;
+        }
+        const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
+        infoBtn.insertAdjacentHTML('beforebegin', `<div id="classifyHintOut" style="font-size: 80%;margin-right: 16px; margin-top: 4px;"></div>`);
+        return document.querySelector('#classifyHintOut');
+      })();
+
+      // TODO: change the output to an interactive calculator
+      if (!isNaN(rStar)) {
+        const depth4RJupiter = calcDipDepth(rStar, 1 * R_JUPITER_IN_R_SUN);
+        outputCtr.innerHTML = `Depth for object w/ 1 R_j: ${(depth4RJupiter * 100).toFixed(2)}% <br>R_*: ${rStar}`;
+      } else {
+        outputCtr.innerHTML = 'R_* not available';
+      }
+
+    });
   }
 
   function customizeViewerOnSVGLoaded() {
@@ -471,6 +573,7 @@ function isElementOrAncestor(el, criteria) {
       // The SVG will be modified a few times by zooniverse code (to load lightcurve, etc.)
       // So we wait a bit to let it finish before customizing
       setTimeout(customizeViewer, 500);
+      setTimeout(customizeViewerSubjectLevel, 600);
     });
 
     if (!lcvEl) {

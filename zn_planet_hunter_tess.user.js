@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.2.5
+// @version     1.3.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -648,6 +648,7 @@ function isElementOrAncestor(el, criteria) {
 
   <br>
   TIC <input id="ticIdForCopy" style="display: inline-block; border: 0;" readonly value="${ticId}">
+  &emsp;<a target="_pht_talk" href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC%20${ticId}">Search Talk</a>
   &emsp;<button id="ticCopyCtl" accesskey="C" title="Copy shortcut: Alt-C"><u>C</u>opy</button>
   &emsp;<button id="ticCopyNAddToNoteCtl">Copy & Add to note</button>
   <br><br>

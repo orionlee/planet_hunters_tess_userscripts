@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.4.2
+// @version     1.4.3
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -552,7 +552,7 @@ function isElementOrAncestor(el, criteria) {
         return ctr;
       }
       const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
-      infoBtn.insertAdjacentHTML('beforebegin', `<div id="classifyHintOut" style="margin-right: 16px; margin-top: 4px;" title="Dip's depth estimate">
+      infoBtn.insertAdjacentHTML('beforebegin', `<div id="classifyHintOut" style="margin-right: 16px; margin-top: 4px; padding: 2px 4px; box-shadow: 2px 2px #ccc; border-bottom-right-radius: 6%;" title="Dip's depth estimate">
       R<sub>s</sub> <span style="font-size: 80%;">[R<sub>☉</sub>]</span>: <input name="r_*" type="number" style="width: 10ch;" step="0.1">&emsp;
       R<sub>p</sub> <span style="font-size: 80%;">[R<sub>j</sub>]</span>: <input name="r_p" type="number" style="width: 10ch;" step="0.1" value="1">
       <button id="dipDepthGoBtn">Go</button>

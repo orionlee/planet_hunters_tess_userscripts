@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.5.2
+// @version     1.5.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -244,14 +244,16 @@ table.highlighted tr:nth-of-type(1) th {
 
   // mark false positive varieties for disposition
 
-  function highlightIfFalseAlarm(el) {
-    if (el.textContent.match(/^(FA|FP)/)) {
-      el.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
-    }
+  function highlightIfFalseAlarm(elList) {
+    elList.forEach(el => {
+      if (el.textContent.match(/^(FA|FP)/)) {
+        el.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
+      }
+    });
   }
 
-  highlightIfFalseAlarm(document.querySelector('a[name="tois"] + table tr td:nth-of-type(12)'));
-  highlightIfFalseAlarm(document.querySelector('a[name="tois"] + table tr td:nth-of-type(13)'));
+  highlightIfFalseAlarm(document.querySelectorAll('a[name="tois"] + table tr td:nth-of-type(12)'));
+  highlightIfFalseAlarm(document.querySelectorAll('a[name="tois"] + table tr td:nth-of-type(13)'));
 
 })();
 

@@ -21,6 +21,7 @@ Prerequisites: a userscript manager installed on your browser, e.g., [Tampermonk
   - open search result in a new tab by Ctrl-Enter, Ctrl-Click, or middle button click.
   - Auto link TICs (to ExoFOP and search of Talk)
 - *<font color="red">(NEW)</font>* Show subject numbers in a collection so that it is easier to find a subject.
+- *<font color="red">(NEW)</font>* Calculator to gauge if a dip's depth could be due to planet-sized objects.
 
 Lightcurve viewer Keyboard shortcuts :
 
@@ -30,7 +31,7 @@ Move subject| M
 Annotate | A, or Comma (next to M for ease of toggle)
 Reset | 0, or O
 Subject Info| I , or Numpad 1
-
+Done | Ctrl/Shit/Alt/⌘ + Enter
 ---
 
 ## Other helpful scripts
@@ -68,13 +69,19 @@ They could be useful if you follow up on ExoMAST, ExoFOP, and SIMBAD
 
 - Wider lightcurve viewer (by shrinking Done &Talk / Done panel):
 
-![Wide Lightcurve viewer screenshot](https://imgur.com/Y1vQTo0.png)
+![Wide Lightcurve viewer screenshot](https://imgur.com/PLtc0fh.png)
+- There is also a dip's depth calculator next to Subject Info. In this case,
+  - one could one could estimate the companion causing the dip is about 2 R<sub>jupiter</sub>: too large to be a planet, and likely too small for a proper eclipsing binary.
+  - One could then conclude that the lightcurve is likely to be contaminated by a nearby eclipsing binary.
 
+---
 
 - Show subject number while viewing a collection:
 
 ![Subject number in a collection](https://imgur.com/X1gAhbf.png)
 
+
+---
 
 - Highlight TIC IDs in talk, with links to search talk with the TIC and to ExoFOP page on hover:
 

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.5.0
+// @version     1.6.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -498,7 +498,6 @@ function isElementOrAncestor(el, criteria) {
 
   // Customization that needs to be triggered for every subject
   function customizeViewerSubjectLevel() {
-    console.debug('customizeViewerSubjectLevel()');
 
     function getSubjectMetaAndDo(key, handleFn) {
       // TODO: the codes are similar to getTicIdFromMetadataPopIn(), but
@@ -560,6 +559,11 @@ function isElementOrAncestor(el, criteria) {
       return Math.pow(rObject, 2) / Math.pow(rStar, 2);
     }
 
+    function calcCompanionRadius(rStar, dipDepth) {
+      return Math.sqrt(Math.pow(rStar, 2) * dipDepth);
+    }
+
+
     // Prepare output container: it is shown irrespective of whether extracting radius is successful
     // (useful for cases when the extraction fails (intermittently) due to timing issues. The
     //  user can still fill out the form)
@@ -574,18 +578,31 @@ function isElementOrAncestor(el, criteria) {
       R<sub>p</sub> <span style="font-size: 80%;">[R<sub>j</sub>]</span>: <input name="r_p" type="number" style="width: 10ch;" step="0.1" value="1">
       <button id="dipDepthGoBtn">Go</button>
       <br>
-      <span style="font-size: 80%">Dip's depth ~= <span id="dipDepthOut"></span>%</span>
+      <span style="font-size: 80%">Dip's depth ~=
+          <input id="dipDepthOut" type="number" style="width: 10ch; font-style: italic;" step="0.1">%
+      </span>
   </div>`);
       const calcDipDepthFromInput = () => {
         const ctr = document.querySelector('#classifyHintOut');
         const rStar = parseFloat(ctr.querySelector('input[name="r_*"]').value);
         const rObject = parseFloat(ctr.querySelector('input[name="r_p"]').value) * R_JUPITER_IN_R_SUN;
         const depth = calcDipDepth(rStar, rObject);
-        ctr.querySelector('#dipDepthOut').textContent = depth ? (depth * 100).toFixed(3) : '';
+        ctr.querySelector('#dipDepthOut').value = depth ? (depth * 100).toFixed(3) : '';
       };
       document.querySelector('#classifyHintOut input[name="r_*"]').onchange = calcDipDepthFromInput;
       document.querySelector('#classifyHintOut input[name="r_p"]').onchange = calcDipDepthFromInput;
       document.querySelector('#classifyHintOut #dipDepthGoBtn').onclick = calcDipDepthFromInput;
+
+      // support use case that user modifies the depth, and return the estimated planet radius
+      const calcCompanionRadiusFromInput = () => {
+        const ctr = document.querySelector('#classifyHintOut');
+        const rStar = parseFloat(ctr.querySelector('input[name="r_*"]').value);
+        const depth = parseFloat(ctr.querySelector('#dipDepthOut').value) / 100;
+        const rObjectInRJupiter = calcCompanionRadius(rStar, depth) / R_JUPITER_IN_R_SUN; ;
+
+        ctr.querySelector('input[name="r_p"]').value = rObjectInRJupiter ? rObjectInRJupiter.toFixed(3) : '';
+      };
+      document.querySelector('#classifyHintOut #dipDepthOut').onchange = calcCompanionRadiusFromInput;
 
       return document.querySelector('#classifyHintOut');
     })();
@@ -593,17 +610,16 @@ function isElementOrAncestor(el, criteria) {
     getSubjectRadiusAndDo(rStar => {
       console.debug('Subject Radius: ', rStar);
 
-      const fillDipDepthCalculator = (ctr, rStar, rObject, depth) => {
+      const fillDipDepthCalculator = (ctr, rStar, rObject) => {
         ctr.querySelector('input[name="r_*"]').value = rStar ? rStar : '';
         ctr.querySelector('input[name="r_p"]').value = rObject ? rObject / R_JUPITER_IN_R_SUN : '';
-        ctr.querySelector('#dipDepthOut').textContent = depth ? (depth * 100).toFixed(3) : '';
+        document.querySelector('#classifyHintOut #dipDepthGoBtn').click();
       };
 
       if (!isNaN(rStar)) {
-        const depth4RJupiter = calcDipDepth(rStar, 1 * R_JUPITER_IN_R_SUN);
-        fillDipDepthCalculator(outputCtr, rStar, R_JUPITER_IN_R_SUN, depth4RJupiter);
+        fillDipDepthCalculator(outputCtr, rStar, R_JUPITER_IN_R_SUN);
       } else {
-        fillDipDepthCalculator(outputCtr, null, null, null);
+        fillDipDepthCalculator(outputCtr, null, null);
       }
 
     });
@@ -794,9 +810,10 @@ function isElementOrAncestor(el, criteria) {
 
   <br>
   TIC <input id="ticIdForCopy" style="display: inline-block; border: 0;" readonly value="${ticId}">
-  &emsp;<a target="_pht_talk" href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC%20${ticId}">Search Talk</a>
   &emsp;<button id="ticCopyCtl" accesskey="C" title="Copy shortcut: Alt-C"><u>C</u>opy</button>
   &emsp;<button id="ticCopyNAddToNoteCtl">Copy & Add to note</button>
+  <br><br>
+  <a target="_pht_talk" href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC%20${ticId}">Search Talk for TIC</a>
   <br><br>
   Subject info., including TOI:<br>
   <a target="_exofop" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>

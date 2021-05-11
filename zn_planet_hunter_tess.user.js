@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.6.0
+// @version     1.6.1
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -316,8 +316,10 @@ function isElementOrAncestor(el, criteria) {
   } // function initToggleExpandedViewerUI()
 
 
-  // Common helper used by
+  // BEGIN Common helpers used by
   // 1) key map customization,  2) customizeViewerSubjectLevel()
+  //
+
   function clickSubjectInfoOnClassify() {
     if (location.pathname !== PATH_CLASSIFY) {
       return false;
@@ -332,172 +334,9 @@ function isElementOrAncestor(el, criteria) {
     return false;
   } // function clickSubjectInfoOnClassify()
 
-  let addKeyMapToViewerCalled = false;
-  function addKeyMapToViewer() {
-    if (addKeyMapToViewerCalled) {
-      return; // No need to set the keymap (on window object), say, during ajax load
-    } else {
-      addKeyMapToViewerCalled = true;
-    }
 
-    function clickReset() {
-      return clickViewerBtn('Reset subject view');
-    }
-
-    function clickMove() {
-      return clickViewerBtn('Move subject');
-    }
-
-    function clickAnnotate() {
-      return clickViewerBtn('Annotate');
-    }
-
-    function clickDone() {
-      const doneBtn = Array.from(document.querySelectorAll('button[type="submit"]'))
-                      .find(btn => btn.textContent.toLowerCase() == 'done');
-      if (doneBtn) {
-        doneBtn.click();
-      }
-    }
-
-    const keyMap = {
-      "KeyI":    clickSubjectInfoOnClassify,
-      "Numpad1": clickSubjectInfoOnClassify,
-      // also accepts Numpad1 is convenient for users who frequent use numpad +/-/0
-
-      "Digit0":  clickReset,
-      "Numpad0": clickReset,
-      "KeyO":    clickReset,
-      // also accepts  KeyO as an alterative as it's close to keyM used below
-
-      "KeyM":    clickMove,
-
-      "KeyA":    clickAnnotate,
-      "Comma":   clickAnnotate,
-      // also accepts use comma as an alternative as it is close to keyM
-      "!any-modifier": {
-        "Enter": clickDone,
-        "NumpadEnter": clickDone,
-      },
-    };
-
-    function handleViewerKeyboardShortcuts(evt) {
-      if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(evt.target.tagName)) {
-        // user typing in an input box or focuses on a button, do nothing
-        return;
-      }
-
-      const handler =(() => {
-        const hasAnyModifier = evt.altKey || evt.shiftKey || evt.ctrlKey || evt.metaKey;
-        if (!hasAnyModifier) {
-          return keyMap[evt.code];
-        } else {
-          return keyMap['!any-modifier'][evt.code];
-        }
-      })();
-
-      if (handler) {
-        const success = handler();
-        if (success) {
-          evt.preventDefault();
-        }
-      }
-
-    }
-    window.addEventListener('keydown', handleViewerKeyboardShortcuts);
-
-  } // function addKeyMapToViewer()
-
-  function tweakWheelOnViewer() {
-
-    const lcvEl = getViewerSVGEl();
-    if (lcvEl.tweakWheelOnViewerCalled) {
-      return; // no need to init again
-    }
-    // else start the init
-    lcvEl.tweakWheelOnViewerCalled = true;
-
-
-    function isBtnHighlighted(btnTitle) {
-      // .kvbqkE css class for active button in ZN light theme,
-      // .jmdHVm for dark theme
-      return document.querySelector(`button.kvbqkE[title="${btnTitle}"], button.jmdHVm[title="${btnTitle}"]`);
-    }
-
-    // make wheel scrolling within viewer work better part 1
-    // ensure mouse scroll within the viewer means zoom in/out (move the viewer mode to Move subject when necessary)
-    function changeToMoveOnWheelInViewer(evt) {
-      evt.preventDefault(); // prevent accidental window scrolling due to mouse wheel handled by browser
-
-      // case already on move subject, no-op
-      if (isBtnHighlighted('Move subject')) {
-        return;
-      }
-
-      // set to Move subject mode, so the next wheel (typically right away) will be used to zoom
-      clickViewerBtn('Move subject');
-    } // function changeToMoveOnWheelInViewer(..)
-    lcvEl.addEventListener('wheel', changeToMoveOnWheelInViewer);
-
-
-    // Use middle button to toggle between Annotate / Move subject
-    function toggleAnnotateMoveOnMiddleClickInViewer(evt) {
-      // we intercept middle click (button === 1) only
-      if (evt.button !== 1) {
-        return;
-      }
-
-      evt.preventDefault(); // prevent system default
-
-      // toggle between annotate and move
-      // Note: isBtnHighlighted() is prone to changes in Zooniverse's CSS style
-      // the logic here is done such that in case Zooniverse changes break isBtnHighlighted,
-      // it can still support toggle to annotate
-      // for toggling back to move, users still have the option to use mousewheel zoom,
-      // which will toggle to move, supported by changeToMoveOnWheelInViewer() listener above.
-      if (isBtnHighlighted('Annotate')) {
-        clickViewerBtn('Move subject');
-      } else {
-        clickViewerBtn('Annotate');
-      }
-    } // function toggleAnnotateMoveOnMiddleClickInViewer(..)
-    lcvEl.addEventListener('mousedown', toggleAnnotateMoveOnMiddleClickInViewer);
-  }
-
-  function doCustomizeViewerGenericLevel() {
-    ajaxDbg('doCustomizeViewer() - start customization');
-
-    // also make the focus on svg so that built-in keyboard shortcuts would work too
-    clickViewerBtn('Move subject');
-
-    // expand the viewer
-    initToggleExpandedViewerUI();
-
-    // intercept browser's default wheel behavior when wheeling on the viewer SVG
-    tweakWheelOnViewer();
-
-    addKeyMapToViewer(); // additional keyboard shortcuts
-  }
-
-  // Customization that needs to be triggered only once (that applies for all subsequent subjects)
-  //
-  // Plumbing codes to trigger actual viewer customization exactly once upon initial ajax load
-  //
-  let customizeViewerGenericLevelCalled = false;
-  function customizeViewerGenericLevel() {
-    // to avoid being called repeatedly upon svg modification,
-    // as the modification is on the controls, not tied to the specific subject
-    if (customizeViewerGenericLevelCalled) {
-      return;
-    }
-    customizeViewerGenericLevelCalled = true;
-
-    doCustomizeViewerGenericLevel();
-  }
-
-
-  // Customization that needs to be triggered for every subject
-  function customizeViewerSubjectLevel() {
+  // should only be called after a subject is loaded, as it relies on the subject's metadata
+  function addDipDepthCalculator() {
 
     function getSubjectMetaAndDo(key, handleFn) {
       // TODO: the codes are similar to getTicIdFromMetadataPopIn(), but
@@ -623,6 +462,193 @@ function isElementOrAncestor(el, criteria) {
       }
 
     });
+  } // function addDipDepthCalculator()
+
+  //
+  // END Common helpers used by
+  // 1) key map customization,  2) customizeViewerSubjectLevel()
+
+  let addKeyMapToViewerCalled = false;
+  function addKeyMapToViewer() {
+    if (addKeyMapToViewerCalled) {
+      return; // No need to set the keymap (on window object), say, during ajax load
+    } else {
+      addKeyMapToViewerCalled = true;
+    }
+
+    function clickReset() {
+      return clickViewerBtn('Reset subject view');
+    }
+
+    function clickMove() {
+      return clickViewerBtn('Move subject');
+    }
+
+    function clickAnnotate() {
+      return clickViewerBtn('Annotate');
+    }
+
+    function clickDone() {
+      const doneBtn = Array.from(document.querySelectorAll('button[type="submit"]'))
+                      .find(btn => btn.textContent.toLowerCase() == 'done');
+      if (doneBtn) {
+        doneBtn.click();
+      }
+    }
+
+    const keyMap = {
+      "KeyI":    clickSubjectInfoOnClassify,
+      "Numpad1": clickSubjectInfoOnClassify,
+      // also accepts Numpad1 is convenient for users who frequent use numpad +/-/0
+
+      "Digit0":  clickReset,
+      "Numpad0": clickReset,
+      "KeyO":    clickReset,
+      // also accepts  KeyO as an alterative as it's close to keyM used below
+
+      "KeyM":    clickMove,
+
+      "KeyA":    clickAnnotate,
+      "Comma":   clickAnnotate,
+      // also accepts use comma as an alternative as it is close to keyM
+      "!any-modifier": {
+        "Enter": clickDone,
+        "NumpadEnter": clickDone,
+      },
+      "!altKey": {
+        // Alt-C to bring up dip's depth calculator. It is needed as a workaround
+        // when the calculator does not show up intermittently
+        // (probably due to some issues related to subject ajax loading timing).
+        "KeyC": addDipDepthCalculator,
+      },
+    };
+
+    function handleViewerKeyboardShortcuts(evt) {
+      if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(evt.target.tagName)) {
+        // user typing in an input box or focuses on a button, do nothing
+        return;
+      }
+
+      const handler =(() => {
+        const hasAnyModifier = evt.altKey || evt.shiftKey || evt.ctrlKey || evt.metaKey;
+        if (!hasAnyModifier) {
+          return keyMap[evt.code];
+        }
+
+        let res = null;
+        if (evt.altKey && !evt.shiftKey && !evt.ctrlKey && !evt.metaKey) {
+          res = keyMap['!altKey'][evt.code];
+        }
+
+        if (res == null) {
+          res = keyMap['!any-modifier'][evt.code];
+        }
+        return res;
+      })();
+
+      if (handler) {
+        const success = handler();
+        if (success) {
+          evt.preventDefault();
+        }
+      }
+
+    }
+    window.addEventListener('keydown', handleViewerKeyboardShortcuts);
+
+  } // function addKeyMapToViewer()
+
+  function tweakWheelOnViewer() {
+
+    const lcvEl = getViewerSVGEl();
+    if (lcvEl.tweakWheelOnViewerCalled) {
+      return; // no need to init again
+    }
+    // else start the init
+    lcvEl.tweakWheelOnViewerCalled = true;
+
+
+    function isBtnHighlighted(btnTitle) {
+      // .kvbqkE css class for active button in ZN light theme,
+      // .jmdHVm for dark theme
+      return document.querySelector(`button.kvbqkE[title="${btnTitle}"], button.jmdHVm[title="${btnTitle}"]`);
+    }
+
+    // make wheel scrolling within viewer work better part 1
+    // ensure mouse scroll within the viewer means zoom in/out (move the viewer mode to Move subject when necessary)
+    function changeToMoveOnWheelInViewer(evt) {
+      evt.preventDefault(); // prevent accidental window scrolling due to mouse wheel handled by browser
+
+      // case already on move subject, no-op
+      if (isBtnHighlighted('Move subject')) {
+        return;
+      }
+
+      // set to Move subject mode, so the next wheel (typically right away) will be used to zoom
+      clickViewerBtn('Move subject');
+    } // function changeToMoveOnWheelInViewer(..)
+    lcvEl.addEventListener('wheel', changeToMoveOnWheelInViewer);
+
+
+    // Use middle button to toggle between Annotate / Move subject
+    function toggleAnnotateMoveOnMiddleClickInViewer(evt) {
+      // we intercept middle click (button === 1) only
+      if (evt.button !== 1) {
+        return;
+      }
+
+      evt.preventDefault(); // prevent system default
+
+      // toggle between annotate and move
+      // Note: isBtnHighlighted() is prone to changes in Zooniverse's CSS style
+      // the logic here is done such that in case Zooniverse changes break isBtnHighlighted,
+      // it can still support toggle to annotate
+      // for toggling back to move, users still have the option to use mousewheel zoom,
+      // which will toggle to move, supported by changeToMoveOnWheelInViewer() listener above.
+      if (isBtnHighlighted('Annotate')) {
+        clickViewerBtn('Move subject');
+      } else {
+        clickViewerBtn('Annotate');
+      }
+    } // function toggleAnnotateMoveOnMiddleClickInViewer(..)
+    lcvEl.addEventListener('mousedown', toggleAnnotateMoveOnMiddleClickInViewer);
+  }
+
+  function doCustomizeViewerGenericLevel() {
+    ajaxDbg('doCustomizeViewer() - start customization');
+
+    // also make the focus on svg so that built-in keyboard shortcuts would work too
+    clickViewerBtn('Move subject');
+
+    // expand the viewer
+    initToggleExpandedViewerUI();
+
+    // intercept browser's default wheel behavior when wheeling on the viewer SVG
+    tweakWheelOnViewer();
+
+    addKeyMapToViewer(); // additional keyboard shortcuts
+  }
+
+  // Customization that needs to be triggered only once (that applies for all subsequent subjects)
+  //
+  // Plumbing codes to trigger actual viewer customization exactly once upon initial ajax load
+  //
+  let customizeViewerGenericLevelCalled = false;
+  function customizeViewerGenericLevel() {
+    // to avoid being called repeatedly upon svg modification,
+    // as the modification is on the controls, not tied to the specific subject
+    if (customizeViewerGenericLevelCalled) {
+      return;
+    }
+    customizeViewerGenericLevelCalled = true;
+
+    doCustomizeViewerGenericLevel();
+  }
+
+
+  // Customization that needs to be triggered for every subject
+  function customizeViewerSubjectLevel() {
+    addDipDepthCalculator();
   }
 
   function customizeViewerOnSVGLoaded() {

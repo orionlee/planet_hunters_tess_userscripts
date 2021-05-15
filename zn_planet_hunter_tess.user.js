@@ -8,13 +8,14 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.6.1
+// @version     1.6.2
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
 
 // helper for debug messages used to understand timing of ajax loading (and related MutationObserver)
+console.debug("PHT Tweak userscript. To turn on AJAX debug:  localStorage['DEBUG_PHT_AJAX'] = true");
 const DEBUG_PHT_AJAX = (localStorage['DEBUG_PHT_AJAX'] === 'true');
 function ajaxDbg(... args) {
   if (DEBUG_PHT_AJAX) {
@@ -116,7 +117,10 @@ function onElementLoaded(elementSelector, msgHelper, handleFn) {
       ajaxDbg(`${msgHelper.prefix} - stop observing as hooks to wait for ajax load done. handleFn:`,
       (handleFn.name ? handleFn.name : handleFn));
       observer.disconnect();
-    } // else continue to observe
+    } else {
+      ajaxDbg(`${msgHelper.prefix} - continue to observe per handleFn's request (it is not done yet). handleFn:`,
+      (handleFn.name ? handleFn.name : handleFn));
+    }
   })
   mainObserver.observe(mainEl, { childList: true, subtree: true });
 }
@@ -412,7 +416,8 @@ function isElementOrAncestor(el, criteria) {
         return ctr;
       }
       const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
-      infoBtn.insertAdjacentHTML('beforebegin', `<div id="classifyHintOut" style="margin-right: 16px; margin-top: 4px; padding: 2px 4px; box-shadow: 2px 2px #ccc; border-bottom-right-radius: 6%;" title="Dip's depth estimate">
+      infoBtn.insertAdjacentHTML('beforebegin', `<div id="classifyHintOut" title="Dip's depth estimator. Press Alt-C to activate it if it is not present."
+          style="margin-right: 16px; margin-top: 4px; padding: 2px 4px; box-shadow: 2px 2px #ccc; border-bottom-right-radius: 6%;">
       R<sub>s</sub> <span style="font-size: 80%;">[R<sub>☉</sub>]</span>: <input name="r_*" type="number" style="width: 10ch;" step="0.1">&emsp;
       R<sub>p</sub> <span style="font-size: 80%;">[R<sub>j</sub>]</span>: <input name="r_p" type="number" style="width: 10ch;" step="0.1" value="1">
       <button id="dipDepthGoBtn">Go</button>
@@ -615,7 +620,7 @@ function isElementOrAncestor(el, criteria) {
   }
 
   function doCustomizeViewerGenericLevel() {
-    ajaxDbg('doCustomizeViewer() - start customization');
+    ajaxDbg('doCustomizeViewerGenericLevel()');
 
     // also make the focus on svg so that built-in keyboard shortcuts would work too
     clickViewerBtn('Move subject');
@@ -648,27 +653,40 @@ function isElementOrAncestor(el, criteria) {
 
   // Customization that needs to be triggered for every subject
   function customizeViewerSubjectLevel() {
+    ajaxDbg('customizeViewerSubjectLevel()');
     addDipDepthCalculator();
   }
 
-  function customizeViewerOnSVGLoaded() {
+  function customizeViewerOnSVGLoaded(force=false) {
+    function doCustomizeAll() {
+      // wrap the actual work
+      customizeViewerGenericLevel();
+      customizeViewerSubjectLevel();
+    }
+
     const lcvEl = getViewerSVGEl();
     const lcvObserver = new MutationObserver(function(mutations, observer) {
+      ajaxDbg('customizeViewerOnSVGLoaded() - viewer observer called');
       observer.disconnect();
       // The SVG will be modified a few times by zooniverse code (to load lightcurve, etc.)
       // So we wait a bit to let it finish before customizing
-      setTimeout(customizeViewerGenericLevel, 500);
-      setTimeout(customizeViewerSubjectLevel, 600);
+      setTimeout(doCustomizeAll, 500);
     });
 
     if (!lcvEl) {
       ajaxDbg('customizeViewerOnSVGLoaded() - svg not yet present. NO-OP');
       return false; // svg not yet there so wait
-
     }
-    ajaxDbg('customizeViewerOnSVGLoaded() - wait for svg loaded. svg children:', document.querySelector('svg.light-curve-viewer').children);
-    customizeViewerGenericLevelCalled = false;
-    lcvObserver.observe(lcvEl, { childList: true, subtree: true });
+    if (!force) {
+      // normal path
+      ajaxDbg('customizeViewerOnSVGLoaded() - wait for svg loaded. svg children:', document.querySelector('svg.light-curve-viewer').children);
+      lcvObserver.observe(lcvEl, { childList: true, subtree: true });
+    } else {
+      // path used by the retry hack, by the time the retry happened, the svg has been loaded.
+      // so we must not use the observer to trigger the work
+      ajaxDbg('customizeViewerOnSVGLoaded() - in force mode, i.e., during the retry hack');
+      doCustomizeAll();
+    }
     return true;
   }
 
@@ -685,7 +703,21 @@ function isElementOrAncestor(el, criteria) {
 
       // observe the changes so that once the new data is loaded to viewer
       // customization will be applied again.
-      return customizeViewerOnSVGLoaded();
+
+      // A hack: logically, we should call  onMainLoaded(customizeViewerOnSVGLoaded),
+      // but somehow calling it result in such timing that
+      // by the time the mutation observer for SVG in customizeViewerOnSVGLoaded is installed,
+      // the SVG usually has been loaded. Thus the SVG observer is never called.
+      // Workaround:
+      // 1. call customizeViewerOnSVGLoaded() directly solves the timing issue
+      // 2. But it does not handle edge case that occasionally, by the time
+      //    customizeViewerOnSVGLoaded is called, SVG element is not present yet
+      //    (it thus can do nothing)
+      // 3. Solve (2) by using a simple retry
+      let viewerCustomized = customizeViewerOnSVGLoaded();
+      if (!viewerCustomized) {
+        setTimeout(() => customizeViewerOnSVGLoaded(force=true), 2000);
+      }
     }
   } // function customizeViewerOnDoneClicked(..)
   window.addEventListener('click', customizeViewerOnDoneClicked);

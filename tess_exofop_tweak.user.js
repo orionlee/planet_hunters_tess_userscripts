@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.5.4
+// @version     1.6.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -94,7 +94,7 @@ function getDistance() {
 
 function getBandAndMagnitudeOfRow(rowIdx) {
   // - rows 1 and 2 are headers, so rowIdx: 0 should be row 3
-  const trEl = document.querySelector(`a[name="magnitudes"] ~ table tr:nth-child(${3 + rowIdx})`);
+  const trEl = document.querySelector(`a[name="magnitudes"] + table tr:nth-child(${3 + rowIdx})`);
   if (!trEl) {
     return null;
   }
@@ -102,6 +102,17 @@ function getBandAndMagnitudeOfRow(rowIdx) {
     band: trEl.querySelector('td:nth-child(1)').textContent,
     magnitude: trEl.querySelector('td:nth-child(2)').textContent,
   };
+}
+
+function getBandMagnitudeMap() {
+  // - rows 1 and 2 are headers skip them
+  const trEls = Array.from(document.querySelectorAll(`a[name="magnitudes"] + table tr:nth-child(n + 3)`));
+  const res = {}  // band: magnitude map
+  trEls.forEach(tr => {
+    res[tr.querySelector('td:nth-child(1)').textContent] =
+      parseFloat(tr.querySelector('td:nth-child(2)').textContent);
+  });
+  return res;
 }
 
 function getOtherParams() {
@@ -172,17 +183,47 @@ if (simbadLinkEl) {
   console.warn('Cannot find Links to SIMBAD');
 }
 
-// Show absolute magnitude
+// Show absolute magnitude and B-V index (for spectral type estimation)
 (() => {
+  const anchorEl = document.querySelector('a[name="magnitudes"] + table th'); // where the output is added too
+
   const distanceInPc = parseFloat(getDistance() || 0);
   const bandAndMag = getBandAndMagnitudeOfRow(0);
   if (distanceInPc > 0) {
     const magApparent = parseFloat(bandAndMag.magnitude || 0);
     const magAbsolute = magApparent - 5 * Math.log10(distanceInPc / 10);
-    document.querySelector('a[name="magnitudes"] + table th').insertAdjacentHTML('beforeend',
-      `<span style="padding: 0 2ch;background-color: white;font-size: 110%;"
-             >Abs. Magnitude: ${bandAndMag.band}  ${magAbsolute.toFixed(3)}</span>`);
+    anchorEl.insertAdjacentHTML('beforeend',
+      `<span style="padding: 0 1.5ch;background-color: white;font-size: 110%;"
+             >Abs. Mag: ${bandAndMag.band}  ${magAbsolute.toFixed(3)}</span>`);
   }
+
+  const bandMagMap = getBandMagnitudeMap();
+  const bvColorIndex = bandMagMap['B'] - bandMagMap['V'];
+  if (!isNaN(bvColorIndex)) {
+    const spectralType = (() => {
+      // The mapping is based on : https://en.wikipedia.org/wiki/Color_index
+      const bvColorIndexToSpectral = [
+        [-0.33, "> O"],
+        [-0.30, "O"],  // i.e, < -0.30 is O type
+        [-0.02, "B"],
+        [0.30, "A"],
+        [0.58, "F"],
+        [0.81, "G"],
+        [1.40, "K"],
+        [Number.POSITIVE_INFINITY, "M"],
+      ];
+      for (const entry of bvColorIndexToSpectral) {
+        if (bvColorIndex < entry[0]) {
+          return entry[1];
+        }
+      }
+    })();
+    anchorEl.insertAdjacentHTML('beforeend',`
+<span title="B-V color index, and estimated spectral type"
+      style="padding: 0 1.5ch;background-color: #ddd;">
+    B-V: ${bvColorIndex.toFixed(2)} (${spectralType})</span>`);
+  }
+
 })();
 
 //

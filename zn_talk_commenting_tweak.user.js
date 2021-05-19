@@ -4,12 +4,27 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.4.0
+// @version     1.5.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
 // @icon        https://www.zooniverse.org/favicon.ico
 // ==/UserScript==
+
+// BEGIN Misc generic helpers
+//
+
+function isElementOrAncestor(el, criteria) {
+  for (let elToTest = el; elToTest != null; elToTest = elToTest.parentElement) {
+    if (criteria(elToTest)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+//
+// END Misc generic helpers
 
 
 function insertAtCursor(textarea, text, transformFn, selectFn) {
@@ -235,3 +250,34 @@ function condenseSearchResultBySubject() {
 // better implementation would wait till SearchResult ajax is rendered.
 // Use setTimeout as a crude approximation
 setTimeout(condenseSearchResultBySubject, 4000);
+
+
+// Double click on talk sidebar heading to expand talk message body's width.
+// Useful when there is large graph in messages.
+GM_addStyle(`/* expand talk message body by shrinking right sidebar and left author */
+.talk.expand-body .talk-sidebar {
+  max-width: 40px;
+  white-space: nowrap;
+}
+.talk.expand-body .talk-comment-author {
+  width: 100px;
+}
+.talk.expand-body .talk-comment-body {
+  width: calc(100% - 100px);
+}
+
+.talk-sidebar h3 { /* visual hint that the heading is clickable */
+  cursor: pointer;
+}
+`);
+function toggleTalkBodyWidthOnDblClick(evt) {
+  if (!(isElementOrAncestor(evt.target, el => el.tagName === 'H3') &&
+        isElementOrAncestor(evt.target, el => el.classList.contains('talk-sidebar')))) {
+    return;
+  }
+  // we only accept double click in the heading of talk sidebar
+
+  document.querySelector('.talk').classList.toggle("expand-body");
+  evt.preventDefault();
+}
+window.addEventListener('dblclick', toggleTalkBodyWidthOnDblClick);

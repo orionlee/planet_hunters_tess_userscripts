@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.6.2
+// @version     1.6.3
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -808,8 +808,15 @@ function isElementOrAncestor(el, criteria) {
         if (ticThs.length < 1) {
           return null;
         }
-        // else return the TIC id
-        return ticThs[0].parentElement.querySelector('td').textContent;
+
+        // normal flow: return ticId and sector
+        const ticId = ticThs[0].parentElement.querySelector('td').textContent;
+
+        const sectorThs = Array.from(metadataCtr.querySelectorAll('th'))
+          .filter( th => th.textContent == 'Sector' );
+        const sector = sectorThs.length > 0 ? sectorThs[0].parentElement.querySelector('td').textContent : '';
+
+        return {ticId, sector};
       } finally {
         const closeBtn = document.querySelector('form.modal-dialog button.modal-dialog-close-button');
         if (closeBtn) {
@@ -825,36 +832,44 @@ function isElementOrAncestor(el, criteria) {
       if (!subjectCtr) {
         return null;
       }
-      return subjectCtr.dataset['tic']
+      const cacheStr = subjectCtr.dataset['meta'];
+      if (!cacheStr) {
+        return null;
+      }
+      return JSON.parse(cacheStr);
     }
 
-    function saveToCache(tic) {
+    function saveToCache(meta) {
       const subjectCtr = document.querySelector('.talk-comment-body');
       if (!subjectCtr) {
-        console.warn('Cannot save the TIC to cache.');
+        console.warn('Cannot save the TIC metadata to cache.');
         return false;
       }
-      subjectCtr.dataset['tic'] = tic;
+      subjectCtr.dataset['meta'] = JSON.stringify(meta);
       return true;
     }
 
-    // see if the TIC is cached so that I don't need to open popin
+    // see if the TIC metadata is cached so that I don't need to open popin
     // It also makes let us get TIC when the popin is temporarily available,
     // in the case when the user is editing the comment directly on the subject
 
-    let tic = getCached();
-    if (tic) {
-      return tic;
+    let meta = getCached();
+    if (meta) {
+      return meta;
     }
 
-    tic = getUncached();
-    if (tic) {
-      saveToCache(tic);
+    meta = getUncached();
+    if (meta) {
+      saveToCache(meta);
     }
-    return tic;
+    return meta;
   }
 
-  function showHideTicPopin(ticId) {
+  function showHideTicPopin(meta) {
+    if (!meta) {
+      return;
+    }
+    const ticId = meta.ticId;
     try {
       const popinCtr = document.getElementById('ticPopin');
       if (popinCtr) {
@@ -867,7 +882,7 @@ function isElementOrAncestor(el, criteria) {
   <a style="float: right; font-weight: bold;" href="javascript:void(0);" onclick="this.parentElement.style.display='none';">[X]</a>
 
   <br>
-  TIC <input id="ticIdForCopy" style="display: inline-block; border: 0;" readonly value="${ticId}">
+  TIC <input id="ticIdForCopy" style="display: inline-block; border: 0;" readonly value="${ticId}"> (S. ${meta.sector})
   &emsp;<button id="ticCopyCtl" accesskey="C" title="Copy shortcut: Alt-C"><u>C</u>opy</button>
   &emsp;<button id="ticCopyNAddToNoteCtl">Copy & Add to note</button>
   <br><br>
@@ -950,10 +965,8 @@ function isElementOrAncestor(el, criteria) {
   } // function showTicPopin()
 
   function extractTicIdIfAny() {
-    const ticId = getTicIdFromMetadataPopIn();
-    if (ticId) {
-      showHideTicPopin(ticId);
-    }
+    const meta = getTicIdFromMetadataPopIn();
+    showHideTicPopin(meta);
   } // function extractTicIdIfAny()
 
   function initExtractTicIdIfAnyUI() {
@@ -973,8 +986,9 @@ function isElementOrAncestor(el, criteria) {
   } // function initExtractTicIdIfAnyUI()
 
   function showTicOnTitleIfAny() {
-    const ticId = getTicIdFromMetadataPopIn();
-    if (ticId) {
+    const meta = getTicIdFromMetadataPopIn();
+    if (meta) {
+      const ticId = meta.ticId;
       const extra = (() => {
         const subjectNumberMatch = location.pathname.match(/\/subjects\/(\d+)/);
         if (subjectNumberMatch) {

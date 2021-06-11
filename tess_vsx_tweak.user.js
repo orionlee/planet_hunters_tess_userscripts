@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.1
+// @version     1.2.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -128,6 +128,9 @@ function tweakSearchResult() {
 
   let resRows = Array.from(document.querySelectorAll('.content table:nth-of-type(2) tr:nth-of-type(4) tbody > tr'));
   resRows = resRows.slice(2, resRows.length - 1); // remove 2 header rows and 1 footer row
+
+  // Add link to variable type helper
+  //
   const encodeJsLink = (text) => {
           // issue: the javascript link below doesn't work when the starType contains +, even though
           // the code has correctly encoded the + as %2B  by using encodeURIComponent.
@@ -147,6 +150,16 @@ function tweakSearchResult() {
           // (that exists in target detail page), so that encoding is done within the script
     }
   });
+
+  // expose the URL of 1st match in a text field so that it can be copied easily
+  //
+  if (resRows.length > 0) {
+    const oidUrl = resRows[0].querySelector('a');
+    document.querySelector('td.datasheethead').insertAdjacentHTML('beforeend', `\
+<input id="urlOf1stMatch" type="text" accesskey="L" title="URL of 1st match" value="${oidUrl}">
+    `);
+  }
+
 }
 tweakSearchResult();
 

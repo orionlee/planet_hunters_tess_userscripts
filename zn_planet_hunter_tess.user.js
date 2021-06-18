@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.6.3
+// @version     1.6.4
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -494,10 +494,12 @@ function isElementOrAncestor(el, criteria) {
     }
 
     function clickDone() {
-      const doneBtn = Array.from(document.querySelectorAll('button[type="submit"]'))
+      const doneBtn = Array.from(document.querySelectorAll('button[type="button"]'))
                       .find(btn => btn.textContent.toLowerCase() == 'done');
       if (doneBtn) {
         doneBtn.click();
+      } else {
+        console.warn('clickDone() - cannot find Done button. No Op.');
       }
     }
 

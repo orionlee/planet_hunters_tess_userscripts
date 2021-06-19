@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.6.4
+// @version     1.6.5
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -569,16 +569,18 @@ function isElementOrAncestor(el, criteria) {
 
     const lcvEl = getViewerSVGEl();
     if (lcvEl.tweakWheelOnViewerCalled) {
+      // console.debug('tweakWheelOnViewer() - already called. No Op.');
       return; // no need to init again
     }
     // else start the init
     lcvEl.tweakWheelOnViewerCalled = true;
+    // console.debug(`tweakWheelOnViewer() - to add listeners to 'svg.light-curve-viewer': `, lcvEl);
 
 
     function isBtnHighlighted(btnTitle) {
-      // .kvbqkE css class for active button in ZN light theme,
-      // .jmdHVm for dark theme
-      return document.querySelector(`button.kvbqkE[title="${btnTitle}"], button.jmdHVm[title="${btnTitle}"]`);
+      // .BGcVK css class for active button in ZN light theme,
+      // .cungWW for dark theme
+      return document.querySelector(`button.BGcVK[title="${btnTitle}"], button.cungWW[title="${btnTitle}"]`);
     }
 
     // make wheel scrolling within viewer work better part 1
@@ -624,14 +626,8 @@ function isElementOrAncestor(el, criteria) {
   function doCustomizeViewerGenericLevel() {
     ajaxDbg('doCustomizeViewerGenericLevel()');
 
-    // also make the focus on svg so that built-in keyboard shortcuts would work too
-    clickViewerBtn('Move subject');
-
     // expand the viewer
     initToggleExpandedViewerUI();
-
-    // intercept browser's default wheel behavior when wheeling on the viewer SVG
-    tweakWheelOnViewer();
 
     addKeyMapToViewer(); // additional keyboard shortcuts
   }
@@ -656,6 +652,13 @@ function isElementOrAncestor(el, criteria) {
   // Customization that needs to be triggered for every subject
   function customizeViewerSubjectLevel() {
     ajaxDbg('customizeViewerSubjectLevel()');
+
+    //  make the focus on svg so that built-in keyboard shortcuts would work too
+    clickViewerBtn('Move subject');
+
+    // intercept browser's default wheel behavior when wheeling on the viewer SVG
+    tweakWheelOnViewer();
+
     addDipDepthCalculator();
   }
 

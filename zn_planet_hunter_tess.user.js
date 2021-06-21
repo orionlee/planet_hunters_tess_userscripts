@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.6.6
+// @version     1.6.7
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -586,9 +586,16 @@ function isElementOrAncestor(el, criteria) {
 
 
     function isBtnHighlighted(btnTitle) {
-      // .BGcVK css class for active button in ZN light theme,
-      // .cungWW for dark theme
-      return document.querySelector(`button.BGcVK[title="${btnTitle}"], button.cungWW[title="${btnTitle}"]`);
+      // .fzAmVn css class for active button in ZN light theme,
+      // .bysTah for dark theme
+      // OPEN: instead of hard-coding css class for active button
+      // deduce it at runtime and cache it
+      // given a button element el,
+      // - it is active if
+      //   getComputedStyle(el).backgroundColor === "rgb(0, 151, 157)"
+      // - we might consider to cut down getComputedStyle by caching,
+      //   however, caching wil break when user switches theme.
+      return document.querySelector(`button.fzAmVn[title="${btnTitle}"], button.bysTah[title="${btnTitle}"]`);
     }
 
     // make wheel scrolling within viewer work better part 1

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.6.5
+// @version     1.6.6
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -469,6 +469,13 @@ function isElementOrAncestor(el, criteria) {
     });
   } // function addDipDepthCalculator()
 
+  // define a reference to customizeViewerSubjectLevel so that it can be referenced
+  // by key map customization.
+  // the real definition comes later.
+  let customizeViewerSubjectLevel = function() {
+    console.error("customizeViewerSubjectLevel(): the placeholder version is called. It should never happen");
+  };
+
   //
   // END Common helpers used by
   // 1) key map customization,  2) customizeViewerSubjectLevel()
@@ -523,10 +530,11 @@ function isElementOrAncestor(el, criteria) {
         "NumpadEnter": clickDone,
       },
       "!altKey": {
-        // Alt-C to bring up dip's depth calculator. It is needed as a workaround
+        // Alt-C to bring up dip's depth calculator, fixing on wheel listener to the subject, etc.
+        // It is needed as a workaround
         // when the calculator does not show up intermittently
         // (probably due to some issues related to subject ajax loading timing).
-        "KeyC": addDipDepthCalculator,
+        "KeyC": customizeViewerSubjectLevel,
       },
     };
 
@@ -650,7 +658,8 @@ function isElementOrAncestor(el, criteria) {
 
 
   // Customization that needs to be triggered for every subject
-  function customizeViewerSubjectLevel() {
+  // define the reference declared earlier on
+  customizeViewerSubjectLevel = function () {
     ajaxDbg('customizeViewerSubjectLevel()');
 
     //  make the focus on svg so that built-in keyboard shortcuts would work too
@@ -660,7 +669,7 @@ function isElementOrAncestor(el, criteria) {
     tweakWheelOnViewer();
 
     addDipDepthCalculator();
-  }
+  };
 
   function customizeViewerOnSVGLoaded(force=false) {
     function doCustomizeAll() {

@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.6.1
+// @version     1.7.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -326,3 +326,51 @@ if (coord) {
     evt.target.textContent = 'Copied';
   }
 }
+
+// Abbreviate the empty tables so that stellar parameters / Magnitudes are visible
+// without scrolling down for many cases.
+function abbrevEmptyTables() {
+GM_addStyle(`
+table.abbrev > tbody {
+  max-height: 12px;
+  display: block;
+  color: gray;
+}
+
+table.abbrev > tbody tr:nth-of-type(n+2) { /* show 1st row only */
+  display: none;
+}
+
+table.abbrev .myButt2 { /* buttons in header */
+  background-color: darkgray;
+  font-size: 8px;
+}
+
+table.abbrev .hsmall { /* header title */
+  font-size: 10px;
+}
+
+table.abbrev th { /* reduce padding given header is smaller */
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+table.abbrev + br { /* the table is followed by 2 <brs>, hide 1 of them */
+  display: none;
+}
+
+table.abbrev {  /* with <br> hidden, the vertical space is too tight. use margin to compensate */
+  margin-bottom: 6px;
+}
+
+`);
+
+  Array.from(document.querySelectorAll('a[name] + table'), (tab) => {
+    const numHeaderRows = ["tseries", "tois"].includes(tab.previousElementSibling.name)  ? 3 : 2;
+    if (tab.querySelectorAll('tbody tr').length <= numHeaderRows) {
+      // has headers only
+      tab.classList.add('abbrev');
+    }
+  });
+}
+abbrevEmptyTables();

@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.0.28
+// @version     1.1.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -203,3 +203,23 @@ ${typeWikiLinkHtml}
     startTitleEl.innerHTML = html;
   }
 }
+
+function highlightInterestingObjectTypes() {
+  const uninterestingTypes = (() => {
+    const baseTypes = ['*', '**', 'PM*', 'IR', 'UV', 'X', 'G'];
+    // include those that aren't uncertain (probably not needed)
+    // baseTypes + baseTypes.map(t => t + '?');
+    return baseTypes;
+  })();
+
+  Array.from(document.querySelectorAll('td > tt[title] > b'), el => {
+    const oType = el.textContent.trim();
+    if (!uninterestingTypes.includes(oType)) {
+      el.style.backgroundColor = "rgba(255, 255, 0, 0.5)";
+    }
+    el.innerHTML = `\
+<a href="/simbad/sim-display?data=otypes#:~:text=${oType}"
+   style="color: black;" target="_simbad_otype">${oType}</a>`;
+  });
+}
+highlightInterestingObjectTypes();

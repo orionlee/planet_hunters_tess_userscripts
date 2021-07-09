@@ -4,12 +4,15 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.2.0
+// @version     1.3.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
 
+//
+// Search Form
+//
 
 function fillAndSubmitSearchForm() {
   if (!location.href.startsWith('https://www.aavso.org/vsx/index.php?view=search.top')) {
@@ -21,7 +24,7 @@ function fillAndSubmitSearchForm() {
   }
 
   function getCoordRequested() {
-    const [, coordEncoded] = location.hash.match(/#coord=([^&]+)/) ||[null, null];
+    const [, coordEncoded] = location.hash.match(/#coord=([^&#]+)/) ||[null, null];
     if (coordEncoded) {
       return decodeURIComponent(coordEncoded);
     }
@@ -33,6 +36,12 @@ function fillAndSubmitSearchForm() {
     }
 
     return coordFromSession;
+  }
+
+  // Pre main logic: save the submitted aliases if any
+  // (they are to be used by search result page)
+  if (location.hash != "") {
+    sessionStorage["_hash"] = location.hash;
   }
 
   // Main logic
@@ -121,13 +130,123 @@ function tweakUIForMobile() {
 }
 tweakUIForMobile();
 
+// Copied from  tess_simbad_tweak.user.js
+// BEGIN generic cross match helpers / UI
+//
+
+function getMatchingInfoFromHash(aliasFilter = null) {
+  const aliasesMatch = location.hash.match(/aliases=([^&]+)/);
+  if (!aliasesMatch) {
+    return [null, null];
+  }
+
+  if (!aliasFilter) {
+    aliasFilter = (alias) => true;
+  }
+
+  const aliases = decodeURIComponent(aliasesMatch[1]);
+  // Now try to highlight the IDS in the result
+  const aliasList = aliases.split(',').filter(aliasFilter);
+
+  const otherParamsMatch = location.hash.match(/other_params=([^&]+)/);
+  let otherParams = otherParamsMatch ? decodeURIComponent(otherParamsMatch[1]) : '';
+  otherParams = annotateOtherParams(otherParams);
+  return [aliasList, otherParams];
+}
+
+// reset the hash, so that if an user copies the URL, the user won't copy the extra parameters in the hash
+// (that would be useless in general)
+// use pushState() rather than location.hash = '' so that
+// 1) there is no extra hash in the URL
+// 2) if there is a need, users could still get the hash back by going back.
+function resetMatchingInfoHash() {
+  history.pushState("", document.title, location.pathname + location.search);
+}
+
+function annotateOtherParams(otherParams) {
+  let res = otherParams;
+
+  // convert it to parallax in mas
+  // (easier to compare with the value in SIMBAD single result details page)
+  const distanceInPc = parseFloat((res.match(/Distance\(pc\):\s*([0-9.]+)/) || ['', '0'])[1]);
+  if (distanceInPc > 0) {
+    const parallaxInMas = 1000 / distanceInPc;
+    res = res.replace(/Distance\(pc\):[^;]+;/, `$& Parallax(mas): ${parallaxInMas.toFixed(4)} ; `);
+  }
+
+  // convert apparent magnitude to absolute one
+  // (just the first one)
+  const magMatch = otherParams.match(/Magnitudes:\s([^-]+-)([0-9.]+)/);
+  if (magMatch && distanceInPc > 0) {
+    const magBand = magMatch[1];
+    const magApparent = parseFloat(magMatch[2]);
+    const magAbsolute = magApparent - 5 * Math.log10(distanceInPc / 10);
+    res = res.replace(/Magnitudes:[^;]+;/,  `$& Abs. magnitude: ${magBand}${magAbsolute.toFixed(2)} ; `);
+  }
+  return res;
+}
+
+function showMatchingInfo(aliases, otherParams) {
+  document.body.insertAdjacentHTML('beforeend', `\
+  <div id="tessAliasesCtr" style="background-color:rgba(255,255,0,0.9);
+    position: fixed; top: 0px; right: 0px; padding: 0.5em 4ch 0.5em 2ch;
+  max-width: 15vw;
+  z-index: 99; font-size: 90%;
+    ">
+  <u>TESS Aliases:</u> <a href="javascript:void(0);" onclick="this.parentElement.style.display='none';" style="float: right;">[X]</a><br>
+  <span id="tessAliases">${aliases}</span>
+  <div id="tessAliasesMatchMsg" style="font-weight: bold;"></div>
+  <span id="tessOtherParams">${otherParams}</span>
+  </div>`);
+}
+
+//
+// END generic cross match helpers / UI
+
+
+//
+// Search Result
+//
+
+function getSearchResultRows() {
+  let resRows = Array.from(document.querySelectorAll('.content table:nth-of-type(2) tr:nth-of-type(4) tbody > tr'));
+
+  // remove 2 header rows and 1 footer row
+  resRows =  resRows.slice(2, resRows.length - 1);
+
+  if (resRows.length == 1 && resRows[0].querySelectorAll('td').length < 2) {
+    // case only 1 row, and the row is just for the text
+    // "There were no records that matched the search criteria.""
+    resRows = [];
+  }
+
+  return resRows;
+}
+
+function tweakSearchResultBasedOnHash() {
+  try {
+    // the hash comes from VSX search generated from ExoFOP tweak, containing infos
+    // such as IDs, for matches.
+    const hashFromSearchForm = sessionStorage["_hash"];
+    if (!hashFromSearchForm) {
+      return;
+    }
+    console.debug("Processing hash: ", hashFromSearchForm);
+    getSearchResultRows().forEach(tr => {
+      const oidLinkEl = tr.querySelector('a');
+      oidLinkEl.href = oidLinkEl + hashFromSearchForm;
+    });
+  } finally {
+    sessionStorage["_hash"] = "";
+  }
+}
+
 function tweakSearchResult() {
   if (location.href.indexOf('/vsx/index.php?view=results.submit1') < 0) {
     return;
   }
 
-  let resRows = Array.from(document.querySelectorAll('.content table:nth-of-type(2) tr:nth-of-type(4) tbody > tr'));
-  resRows = resRows.slice(2, resRows.length - 1); // remove 2 header rows and 1 footer row
+  const resRows = getSearchResultRows();
 
   // Add link to variable type helper
   //
@@ -160,13 +279,41 @@ function tweakSearchResult() {
     `);
   }
 
+  tweakSearchResultBasedOnHash();
 }
 tweakSearchResult();
 
 
+//
+// VSX Entry Detail Page
+//
 
 
+function tweakDetailPage() {
+  if (location.href.indexOf('/vsx/index.php?view=detail.top&oid=') < 0) {
+    return;
+  }
 
+  function aliasFilter(alias) {
+    // filter out aliases that won't be present in VSX based on communication with VSX moderators.
+    if (alias.match(/^(APASS|Gaia DR2)/)) {
+      return false;
+    }
+    return true;
+  }
 
+  // Tweak to facilitate matching: matching IDs given (from ExoFOP), show
+  // other helpful info such as magnitude (on ExoFOP).
+  // The logic is similar to those on SIMBAD script
 
+  const [aliasList, otherParams] = getMatchingInfoFromHash(aliasFilter);
+  if (!aliasList) {
+    return;
+  }
 
+  showMatchingInfo(aliasList, otherParams);
+
+  // resetMatchingInfoHash();
+}
+
+tweakDetailPage();

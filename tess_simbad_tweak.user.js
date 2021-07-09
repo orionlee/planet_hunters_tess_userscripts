@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.0
+// @version     1.1.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -28,24 +28,38 @@
 })(); // function injectCSS()
 
 
-// To normalize the IDs supplied in alias hash
-function normalizeAlias(aliasText) {
-  let res = aliasText.trim();
-  if (res.startsWith('TYC')) {
-    // for TYC, remove leading zeros, e.g., 123-01234
-    res = res.replace(/-0+(\d+)/g, '-$1');
+// BEGIN generic cross match helpers / UI
+//
+
+function getMatchingInfoFromHash(aliasFilter = null) {
+  const aliasesMatch = location.hash.match(/aliases=([^&]+)/);
+  if (!aliasesMatch) {
+    return [null, null];
   }
-  return res;
-} // function normalizeAlias(..)
 
+  if (!aliasFilter) {
+    aliasFilter = (alias) => true;
+  }
 
-// To normalize the IDs shown in SIMBAD, the textContent of the supplied element, typically an <a>
-function normalizeId(idEl) {
-  // sometimes the IDs have multiple spaces.
-  return idEl.textContent.trim().replace(/\s\s+/g, ' ');
+  const aliases = decodeURIComponent(aliasesMatch[1]);
+  // Now try to highlight the IDS in the result
+  const aliasList = aliases.split(',').filter(aliasFilter);
+
+  const otherParamsMatch = location.hash.match(/other_params=([^&]+)/);
+  let otherParams = otherParamsMatch ? decodeURIComponent(otherParamsMatch[1]) : '';
+  otherParams = annotateOtherParams(otherParams);
+  return [aliasList, otherParams];
 }
 
-// Show some parameters in additional units
+// reset the hash, so that if an user copies the URL, the user won't copy the extra parameters in the hash
+// (that would be useless in general)
+// use pushState() rather than location.hash = '' so that
+// 1) there is no extra hash in the URL
+// 2) if there is a need, users could still get the hash back by going back.
+function resetMatchingInfoHash() {
+  history.pushState("", document.title, location.pathname + location.search);
+}
+
 function annotateOtherParams(otherParams) {
   let res = otherParams;
 
@@ -69,34 +83,43 @@ function annotateOtherParams(otherParams) {
   return res;
 }
 
-// hash come from links from customized ExoFOP
-const aliasesMatch = location.hash.match(/aliases=([^&]+)/);
-if (aliasesMatch) { // match aliases to the identifiers
-  const aliases = decodeURIComponent(aliasesMatch[1]);
-  const otherParamsMatch = location.hash.match(/other_params=([^&]+)/);
-  let otherParams = otherParamsMatch ? decodeURIComponent(otherParamsMatch[1]) : '';
-  otherParams = annotateOtherParams(otherParams);
-
+function showMatchingInfo(aliases, otherParams) {
   document.body.insertAdjacentHTML('beforeend', `\
-<div id="tessAliasesCtr" style="background-color:rgba(255,255,0,0.9);
-  position: fixed; top: 0px; right: 0px; padding: 0.5em 4ch 0.5em 2ch;
-max-width: 15vw;
-z-index: 99; font-size: 90%;
-  ">
-<u>TESS Aliases:</u> <a href="javascript:void(0);" onclick="this.parentElement.style.display='none';" style="float: right;">[X]</a><br>
-<span id="tessAliases">${aliases}</span>
-<div id="tessAliasesMatchMsg" style="font-weight: bold;"></div>
-<span id="tessOtherParams">${otherParams}</span>
-</div>`);
+  <div id="tessAliasesCtr" style="background-color:rgba(255,255,0,0.9);
+    position: fixed; top: 0px; right: 0px; padding: 0.5em 4ch 0.5em 2ch;
+  max-width: 15vw;
+  z-index: 99; font-size: 90%;
+    ">
+  <u>TESS Aliases:</u> <a href="javascript:void(0);" onclick="this.parentElement.style.display='none';" style="float: right;">[X]</a><br>
+  <span id="tessAliases">${aliases}</span>
+  <div id="tessAliasesMatchMsg" style="font-weight: bold;"></div>
+  <span id="tessOtherParams">${otherParams}</span>
+  </div>`);
+}
+
+//
+// END generic cross match helpers / UI
 
 
-  // Now try to highlight the IDS in the result
-  const aliasList = aliases.split(',').map(t => normalizeAlias(t));
+// To normalize the IDs shown in SIMBAD, the textContent of the supplied element, typically an <a>
+function normalizeId(idEl) {
+  // sometimes the IDs have multiple spaces.
+  return idEl.textContent.trim().replace(/\s\s+/g, ' ');
+}
 
-  let numIdsMatched = 0;
+// Cross match info in hash, that come from links from customized ExoFOP
+function tweakUIWithCrossMatch() {
+  const [aliasList, otherParams] = getMatchingInfoFromHash();
+  if (!aliasList) {
+    return;
+  }
+
+  showMatchingInfo(aliasList, otherParams);
 
   // highlight the aliases
   // for case the coordinate has multiple results
+
+  let numIdsMatched = 0;
   console.debug('subject entries', document.querySelectorAll('#datatable tr td:nth-of-type(2) a'));
   Array.from(document.querySelectorAll('#datatable tr td:nth-of-type(2) a'), linkEl => {
     // propagate the aliases to the links of individual result
@@ -122,13 +145,10 @@ z-index: 99; font-size: 90%;
     document.querySelector('#tessAliasesMatchMsg').textContent = ` - ${numIdsMatched} IDs matched.`;
   }
 
-  // reset the hash, so that if an user copies the URL, the user won't copy the extra parameters in the hash
-  // (that would be useless in general)
-  // use pushState() rather than location.hash = '' so that
-  // 1) there is no extra hash in the URL
-  // 2) if there is a need, users could still get the hash back by going back.
-  history.pushState("", document.title, location.pathname + location.search);
-} // end of processing ExoFOP data from location.hash
+  resetMatchingInfoHash();
+}
+tweakUIWithCrossMatch();
+
 
 // For single result case,
 // link star type to wikipedia, if it exists, e.g., link Eclipsing binary in the following:

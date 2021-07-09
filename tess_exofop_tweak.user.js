@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.7.1
+// @version     1.8.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -79,13 +79,25 @@ function bjdToBtjdAndRelativeStr(bjd) {
   }
 }
 
+// Normalize the IDs to the canonical form when needed
+function normalizeAlias(aliasText) {
+  let res = aliasText.trim();
+  if (res.startsWith('TYC')) {
+    // for TYC, remove leading zeros, e.g., 123-01234
+    // both SIMBAD and VSX use the version without leading zeros
+    res = res.replace(/-0+(\d+)/g, '-$1');
+  }
+  return res;
+} // function normalizeAlias(..)
+
 //
 // Generate modified SIMBAD URLs to pass along TIC's identifiers, etc.
 // to aid in checking the result from SIMBAD link refers to the same object or not.
 // (The SIMBAD link is coordinate-based, so at times it might be off target if there are nearby stars.)
 //
-function getAliases() {
-  return document.querySelector('a[name="basic"] ~ table tr:last-of-type td:first-of-type').textContent;
+function getAliasesList() {
+  const aliasesText = document.querySelector('a[name="basic"] ~ table tr:last-of-type td:first-of-type').textContent;
+  return aliasesText.split(',').map(t => normalizeAlias(t));
 }
 
 function getDistance() {
@@ -177,8 +189,10 @@ if (simbadLinkEl) {
   <svg class="svg-inline--fa fa-external-link-alt fa-w-18" aria-hidden="true" data-prefix="fas" data-icon="external-link-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M576 24v127.984c0 21.461-25.96 31.98-40.971 16.971l-35.707-35.709-243.523 243.523c-9.373 9.373-24.568 9.373-33.941 0l-22.627-22.627c-9.373-9.373-9.373-24.569 0-33.941L442.756 76.676l-35.703-35.705C391.982 25.9 402.656 0 424.024 0H552c13.255 0 24 10.745 24 24zM407.029 270.794l-16 16A23.999 23.999 0 0 0 384 303.765V448H64V128h264a24.003 24.003 0 0 0 16.97-7.029l16-16C376.089 89.851 365.381 64 344 64H48C21.49 64 0 85.49 0 112v352c0 26.51 21.49 48 48 48h352c26.51 0 48-21.49 48-48V287.764c0-21.382-25.852-32.09-40.971-16.97z"></path></svg>
 </span>`);
 
-  // Add aliases to simbad links
-  Array.from(document.querySelectorAll('a[target="simbad"]'), (a) => a.href += `#aliases=${getAliases()}&other_params=${getOtherParams()}`);
+  // Add aliases to all external catalog links
+  const hashToAdd = `#aliases=${getAliasesList()}&other_params=${getOtherParams()}`;
+  Array.from(document.querySelectorAll('a[target="simbad"], a[target="_vsx"], a[target="_asas-sn"]'),
+    (a) => a.href += hashToAdd);
 
 } else {
   console.warn('Cannot find Links to SIMBAD');

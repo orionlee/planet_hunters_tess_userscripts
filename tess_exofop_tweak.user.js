@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.7.0
+// @version     1.7.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -222,7 +222,10 @@ if (simbadLinkEl) {
     anchorEl.insertAdjacentHTML('beforeend',`
 <span title="B-V color index, and estimated spectral type"
       style="padding: 0 1.5ch;background-color: #ddd;">
-    B-V: ${bvColorIndex.toFixed(2)} (${spectralType})</span>`);
+    <a href="https://en.wikipedia.org/wiki/Color_index"
+       target="_color_index" style="style="font-size: 1em; padding: 0.1em 0.5ch;">B-V:</a>
+    ${bvColorIndex.toFixed(2)} (${spectralType})
+</span>`);
   }
 
 })();

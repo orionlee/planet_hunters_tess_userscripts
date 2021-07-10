@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.8.0
+// @version     1.8.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -85,7 +85,7 @@ function normalizeAlias(aliasText) {
   if (res.startsWith('TYC')) {
     // for TYC, remove leading zeros, e.g., 123-01234
     // both SIMBAD and VSX use the version without leading zeros
-    res = res.replace(/-0+(\d+)/g, '-$1');
+    res = res.replace(/(-|TYC )0+(\d+)/g, '$1$2');
   }
   return res;
 } // function normalizeAlias(..)

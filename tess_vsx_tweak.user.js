@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.3.0
+// @version     1.4.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -294,6 +294,80 @@ function tweakDetailPage() {
     return;
   }
 
+  function getVSXName() {
+    return document.querySelector('table.datasheet table tr:nth-of-type(1) td:nth-of-type(2)').textContent.trim();
+  }
+
+  function getOid() {
+    const [_, oid] = location.search.match(/oid=(\d+)/) || [null, null];
+    return oid;
+  }
+
+  function showMatchResultMsg(aliasesMatched, aliasesNotMatched) {
+
+    const ctr = document.querySelector('#tessAliasesMatchMsg');
+    ctr.innerHTML = `
+${aliasesMatched.length} (aliases) matched.<br>
+Not matched:<br>
+<input id="notMatchedNamesForVSXSubmission" type="text" style="font-size: 80%; width: 90%;"
+       title="Names not matched in a form suitable for batch submission to VSX">
+`;
+    // in tab-delimited form for pasting to spreadsheet
+    const submissionText = (() => {
+      if (aliasesNotMatched.length < 1) {
+        return "";
+      }
+      return `\
+${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}`;
+    })();
+
+    const submissionInCtl = document.getElementById('notMatchedNamesForVSXSubmission');
+    if (submissionText) {
+      submissionInCtl.value = submissionText;
+    } else {
+      submissionInCtl.disabled = true;
+    }
+  }
+
+  function doMatchIds(aliasList) {
+    GM_addStyle(`
+.cross_matched::before {
+  content: "> ";
+}
+.cross_matched {
+  font-weight: bold;
+}
+`);
+
+    const idCtr = document.querySelector('a[href^="index.php?view=addname.top&"]')?.parentElement;
+    if (!idCtr) {
+      console.warn("doMatchIds(): Cannot find the element for IDs (Other names in UI). No-op");
+    }
+    const [aliasesMatched, aliasesNotMatchedSet] = [[], new Set(aliasList)];
+
+    Array.from(idCtr.querySelectorAll('td')).forEach(td => {
+      const id = td.textContent.trim();
+      if (id.startsWith('Please note')) {
+        // edge case not a real ID, but the text
+        // Please note that aliases shown in grey link to obsolete records.
+        // ignore it.
+        return;
+      }
+      if (aliasList.includes(id)) {
+        aliasesMatched.push(id);
+        td.classList.add("cross_matched");
+        aliasesNotMatchedSet.delete(id);
+      }
+    });
+
+    showMatchResultMsg(aliasesMatched, Array.from(aliasesNotMatchedSet));
+  }
+
+
+  // Tweak to facilitate matching: matching IDs given (from ExoFOP), show
+  // other helpful info such as magnitude (on ExoFOP).
+  // The logic is similar to those on SIMBAD script
+
   function aliasFilter(alias) {
     // filter out aliases that won't be present in VSX based on communication with VSX moderators.
     if (alias.match(/^(APASS|Gaia DR2)/)) {
@@ -302,18 +376,15 @@ function tweakDetailPage() {
     return true;
   }
 
-  // Tweak to facilitate matching: matching IDs given (from ExoFOP), show
-  // other helpful info such as magnitude (on ExoFOP).
-  // The logic is similar to those on SIMBAD script
-
   const [aliasList, otherParams] = getMatchingInfoFromHash(aliasFilter);
   if (!aliasList) {
     return;
   }
 
   showMatchingInfo(aliasList, otherParams);
+  doMatchIds(aliasList);
 
-  // resetMatchingInfoHash();
+  resetMatchingInfoHash();
 }
 
 tweakDetailPage();

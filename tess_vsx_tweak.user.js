@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.4.0
+// @version     1.4.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -303,6 +303,25 @@ function tweakDetailPage() {
     return oid;
   }
 
+  function getOtherNamesCtr() {
+    let idCtr = document.querySelector('a[href^="index.php?view=addname.top&"]')?.parentElement;
+    if (idCtr) {
+      return idCtr;
+    }
+    // if user is not logged in, idCtr will still be null
+    idCtr = document.querySelector('table.datasheet table tr:nth-of-type(8) td:nth-of-type(2)');
+    if (idCtr) {
+      if (idCtr.textContent?.indexOf("Add name") >= 0) {
+        return idCtr;
+      } else {
+        console.warn("The container for other names matched is not the correct one. ", idCtr);
+        return null;
+      }
+    }
+    // cannot find the container at all
+    return null;
+  }
+
   function showMatchResultMsg(aliasesMatched, aliasesNotMatched) {
 
     const ctr = document.querySelector('#tessAliasesMatchMsg');
@@ -339,9 +358,10 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}`;
 }
 `);
 
-    const idCtr = document.querySelector('a[href^="index.php?view=addname.top&"]')?.parentElement;
+    const idCtr = getOtherNamesCtr();
     if (!idCtr) {
       console.warn("doMatchIds(): Cannot find the element for IDs (Other names in UI). No-op");
+      return;
     }
     const [aliasesMatched, aliasesNotMatchedSet] = [[], new Set(aliasList)];
 

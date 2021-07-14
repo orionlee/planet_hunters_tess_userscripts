@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.4.2
+// @version     1.4.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -294,8 +294,14 @@ function tweakDetailPage() {
     return;
   }
 
-  function getVSXName() {
-    return document.querySelector('table.datasheet table tr:nth-of-type(1) td:nth-of-type(2)').textContent.trim();
+  function getVSXName(returnCtr=false) {
+    const ctr = document.querySelector('table.datasheet table tr:nth-of-type(1) td:nth-of-type(2) table td')
+    const id = ctr.textContent.trim();
+    if (returnCtr) {
+      return [id, ctr];
+    } else {
+      return id;
+    }
   }
 
   function getOid() {
@@ -361,14 +367,17 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}`;
     }
     const [aliasesMatched, aliasesNotMatchedSet] = [[], new Set(aliasList)];
 
-    Array.from(idCtr.querySelectorAll('td')).forEach(td => {
-      const id = td.textContent.trim();
-      if (id.startsWith('Please note')) {
-        // edge case not a real ID, but the text
-        // Please note that aliases shown in grey link to obsolete records.
-        // ignore it.
-        return;
-      }
+    const existingIdCtrPairs = (() => {
+      // Filter out edge case not a real ID, but the text
+      // "Please note that aliases shown in grey link to obsolete records."
+      const res = Array.from(idCtr.querySelectorAll('td'), td => [td.textContent.trim(), td])
+        .filter(idCtrPair => !idCtrPair[0].startsWith('Please note'));
+      res.push(getVSXName(true))
+      return res;
+    })();
+
+    existingIdCtrPairs.forEach(idCtrPair => {
+      const [id, td] = idCtrPair;
       if (aliasList.includes(id)) {
         aliasesMatched.push(id);
         td.classList.add("cross_matched");

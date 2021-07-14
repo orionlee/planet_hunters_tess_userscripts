@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.1
+// @version     1.1.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -88,7 +88,7 @@ function showMatchingInfo(aliases, otherParams) {
   <div id="tessAliasesCtr" style="background-color:rgba(255,255,0,0.9);
     position: fixed; top: 0px; right: 0px; padding: 0.5em 4ch 0.5em 2ch;
   max-width: 15vw;
-  z-index: 99; font-size: 90%;
+  z-index: 99; font-size: 14px; line-height: 1.2;
     ">
   <u>TESS Aliases:</u> <a href="javascript:void(0);" onclick="this.parentElement.style.display='none';" style="float: right;">[X]</a><br>
   <span id="tessAliases">${aliases}</span>

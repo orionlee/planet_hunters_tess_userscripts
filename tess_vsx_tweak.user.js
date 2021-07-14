@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.4.1
+// @version     1.4.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -304,22 +304,18 @@ function tweakDetailPage() {
   }
 
   function getOtherNamesCtr() {
-    let idCtr = document.querySelector('a[href^="index.php?view=addname.top&"]')?.parentElement;
+    const idCtr = document.querySelector('a[href^="index.php?view=addname.top&"]')?.parentElement;
     if (idCtr) {
       return idCtr;
     }
+
     // if user is not logged in, idCtr will still be null
-    idCtr = document.querySelector('table.datasheet table tr:nth-of-type(8) td:nth-of-type(2)');
-    if (idCtr) {
-      if (idCtr.textContent?.indexOf("Add name") >= 0) {
-        return idCtr;
-      } else {
-        console.warn("The container for other names matched is not the correct one. ", idCtr);
-        return null;
-      }
-    }
-    // cannot find the container at all
-    return null;
+    // we loop through entire data table to find the container
+    // (its actual row varies slightly from one page to another, so we have to loop)
+    const idCtrMatches =
+      Array.from(document.querySelectorAll('table.datasheet table tr td:nth-of-type(2)'))
+        .filter(td => td.textContent?.indexOf("Add name") >= 0);
+    return idCtrMatches?.[0];
   }
 
   function showMatchResultMsg(aliasesMatched, aliasesNotMatched) {

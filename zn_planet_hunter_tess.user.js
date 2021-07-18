@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.6.7
+// @version     1.6.8
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -894,89 +894,99 @@ function isElementOrAncestor(el, criteria) {
     try {
       const popinCtr = document.getElementById('ticPopin');
       if (popinCtr) {
-        // toggle hide show
-        popinCtr.style.display = popinCtr.style.display === 'none' ? 'block' : 'none';
-      } else {
-        // create one
-        document.body.insertAdjacentHTML('beforeend', `\
+        if (popinCtr.dataset['meta'] == JSON.stringify(meta)) {
+          // case there is an UI, that refers to the same subject
+          // toggle hide show
+          popinCtr.style.display = popinCtr.style.display === 'none' ? 'block' : 'none';
+          return;
+        } else {
+          // case existing UI, but for an old Tic
+          // remove it before creating a new one
+          popinCtr.remove();
+        }
+      }
+
+      // create one
+      document.body.insertAdjacentHTML('beforeend', `\
 <div id="ticPopin" style="display: block; position: fixed; top: 20px; right: 10vh; padding: 1em 3ch; z-index: 9999; background-color: lightgray; border: 1px solid black;">
-  <a style="float: right; font-weight: bold;" href="javascript:void(0);" onclick="this.parentElement.style.display='none';">[X]</a>
+<a style="float: right; font-weight: bold;" href="javascript:void(0);" onclick="this.parentElement.style.display='none';">[X]</a>
 
-  <br>
-  TIC <input id="ticIdForCopy" style="display: inline-block; border: 0;" readonly value="${ticId}"> (S. ${meta.sector})
-  &emsp;<button id="ticCopyCtl" accesskey="C" title="Copy shortcut: Alt-C"><u>C</u>opy</button>
-  &emsp;<button id="ticCopyNAddToNoteCtl">Copy & Add to note</button>
-  <br><br>
-  <a target="_pht_talk" href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC%20${ticId}">Search Talk for TIC</a>
-  <br><br>
-  Subject info., including TOI:<br>
-  <a target="_exofop" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
+<br>
+TIC <input id="ticIdForCopy" style="display: inline-block; border: 0;" readonly value="${ticId}"> (S. ${meta.sector})
+&emsp;<button id="ticCopyCtl" accesskey="C" title="Copy shortcut: Alt-C"><u>C</u>opy</button>
+&emsp;<button id="ticCopyNAddToNoteCtl">Copy & Add to note</button>
+<br><br>
+<a target="_pht_talk" href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC%20${ticId}">Search Talk for TIC</a>
+<br><br>
+Subject info., including TOI:<br>
+<a target="_exofop" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
 
-  <br><br>
-  Search TCEs:<br>
-  <a target="_exomast" href="https://exo.mast.stsci.edu/#search=TIC%20${ticId}" ref="noopener nofollow">https://exo.mast.stsci.edu/</a>
+<br><br>
+Search TCEs:<br>
+<a target="_exomast" href="https://exo.mast.stsci.edu/#search=TIC%20${ticId}" ref="noopener nofollow">https://exo.mast.stsci.edu/</a>
 
-  <br><br>
-  MAST Portal:<br>
-  <a target="_mast_portal" href="https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html?searchQuery=%7B%22service%22%3A%22CAOMDB%22%2C%22inputText%22%3A%22TIC%20${ticId}%22%2C%22paramsService%22%3A%22Mast.Caom.Cone%22%2C%22title%22%3A%22MAST%3A%20TIC%20${ticId}%22%2C%22columns%22%3A%22*%22%2C%22caomVersion%22%3Anull%7D"
-     ref="noopener nofollow">https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html</a>
+<br><br>
+MAST Portal:<br>
+<a target="_mast_portal" href="https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html?searchQuery=%7B%22service%22%3A%22CAOMDB%22%2C%22inputText%22%3A%22TIC%20${ticId}%22%2C%22paramsService%22%3A%22Mast.Caom.Cone%22%2C%22title%22%3A%22MAST%3A%20TIC%20${ticId}%22%2C%22columns%22%3A%22*%22%2C%22caomVersion%22%3Anull%7D"
+    ref="noopener nofollow">https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html</a>
 
-  <br><br>
-  When TIC will be observed:<br>
-  <a target="_wtv" href="https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}" ref="noopener nofollow">https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}</a>
+<br><br>
+When TIC will be observed:<br>
+<a target="_wtv" href="https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}" ref="noopener nofollow">https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}</a>
 
-  <br><br>
-  <button id="ticShowMetadataCtl" accesskey="I" title="Subject Metadata shortcut: Alt-I">Metadata (<u>I</u>)</button>
- </div>`);
+<br><br>
+<button id="ticShowMetadataCtl" accesskey="I" title="Subject Metadata shortcut: Alt-I">Metadata (<u>I</u>)</button>
+</div>`);
 
-        // bind buttons generated to actual logic
+      document.getElementById('ticPopin').dataset['meta'] = JSON.stringify(meta);
 
-        const hideTicPopin = () => {
+      // bind buttons generated to actual logic
+
+      const hideTicPopin = () => {
+        document.getElementById('ticPopin').style.display = 'none';
+      };
+
+      const copyTicToClipboard = () => {
+        document.getElementById('ticIdForCopy').focus();
+        document.getElementById('ticIdForCopy').select();
+        const success = document.execCommand('copy');
+        console.debug('Copy TIC success:', success);
+      };
+
+      const addTicToNote = () => {
+        const ticId = document.getElementById('ticIdForCopy').value;
+        const noteEl = document.querySelector('form.talk-comment-form textarea');
+        const addNewLine = !(['', '\n', '\r'].includes(noteEl.value.charAt(noteEl.value.length - 1)));
+        noteEl.value += `${addNewLine ? '\n' : ''}TIC ${ticId}\n`;
+        noteEl.focus();
+      };
+
+      document.getElementById('ticCopyCtl').onclick = () => {
+        copyTicToClipboard();
+        hideTicPopin();
+      };
+
+      document.getElementById('ticCopyNAddToNoteCtl').onclick = () => {
+        copyTicToClipboard();
+        addTicToNote();
+        hideTicPopin();
+      };
+
+      document.getElementById('ticShowMetadataCtl').onclick = () => {
+        document.querySelector('button[title="Metadata"]').click();
+        hideTicPopin();
+      };
+
+      // add a listener to auto-close the pop-in if users clicks outside of it
+      window.addEventListener('click', (evt) => {
+        if (!isElementOrAncestor(evt.target, el => {
+          return ['extractTicIdIfAnyCtl', 'ticPopin'].includes(el.id) || // ignore when it's clicked related to the pop-in
+            (el.tagName === 'BUTTON' && el.title === 'Metadata') || el.classList.contains('modal-dialog'); // also ignore when metadata button (because the pop-in logic clicks it)
+        })) {
           document.getElementById('ticPopin').style.display = 'none';
-        };
-
-        const copyTicToClipboard = () => {
-          document.getElementById('ticIdForCopy').focus();
-          document.getElementById('ticIdForCopy').select();
-          const success = document.execCommand('copy');
-          console.debug('Copy TIC success:', success);
-        };
-
-        const addTicToNote = () => {
-          const ticId = document.getElementById('ticIdForCopy').value;
-          const noteEl = document.querySelector('form.talk-comment-form textarea');
-          const addNewLine = !(['', '\n', '\r'].includes(noteEl.value.charAt(noteEl.value.length - 1)));
-          noteEl.value += `${addNewLine ? '\n' : ''}TIC ${ticId}\n`;
-          noteEl.focus();
-        };
-
-        document.getElementById('ticCopyCtl').onclick = () => {
-          copyTicToClipboard();
-          hideTicPopin();
-        };
-
-        document.getElementById('ticCopyNAddToNoteCtl').onclick = () => {
-          copyTicToClipboard();
-          addTicToNote();
-          hideTicPopin();
-        };
-
-        document.getElementById('ticShowMetadataCtl').onclick = () => {
-          document.querySelector('button[title="Metadata"]').click();
-          hideTicPopin();
-        };
-
-        // add a listener to auto-close the pop-in if users clicks outside of it
-        window.addEventListener('click', (evt) => {
-          if (!isElementOrAncestor(evt.target, el => {
-            return ['extractTicIdIfAnyCtl', 'ticPopin'].includes(el.id) || // ignore when it's clicked related to the pop-in
-              (el.tagName === 'BUTTON' && el.title === 'Metadata') || el.classList.contains('modal-dialog'); // also ignore when metadata button (because the pop-in logic clicks it)
-          })) {
-            document.getElementById('ticPopin').style.display = 'none';
-          }
-          return true;
-        }, { passive: true });
-      } // else of if(popInCtr)
+        }
+        return true;
+      }, { passive: true });
     } finally {
       // auto focus on exofop link if the pop in is displayed
       if (document.querySelector('#ticPopin').style.display != 'none') {

@@ -4,7 +4,7 @@
 // @match       https://aladin.u-strasbg.fr/AladinLite/*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.0.1
+// @version     1.0.2
 // @author      -
 // @description
 // ==/UserScript==
@@ -48,8 +48,48 @@ function tweakObjectDetailTable() {
     summaryCtr = targetCtr.querySelector('#objSummary');
   }
   summaryCtr.innerHTML = `${magType}:&emsp;&emsp;${magValue}`;
+
+  return true;
 }
 
+function tweakObjectDetailTableOnChange() {
+  // first tweak the existing table
+  tweakObjectDetailTable();
+
+  // Now setup the observer so that when the user clicks on a new star
+  // the tweak will be applied again to the new content
+
+  // the ancestor div.aladin-box that stays the same when user clicks on a new star
+  const ctrToObserve = getObjectDetailTable()?.parentElement?.parentElement;
+
+  if (!ctrToObserve) {
+    console.error('tweakObjectDetailTableOnChange() - cannot find the UI container to setup the observer. No-op');
+    return;
+  }
+
+  const observer = new MutationObserver((mutations, observer) => {
+    // console.debug("mutation caught:", mutations);
+    // console.debug("container:", ctrToObserve);
+
+    // case user clicks on a new target, we apply the tweak on the new content
+    // need to temporarily stop the observer to be on the safe side,
+    // as the code is going to update the box's content the observer is observing.
+    if (getObjectDetailTable() == null) {
+      // edge case the user clicks to empty space, the table is removed;
+      // nothing to tweak
+      return;
+    }
+
+    observer.disconnect();
+    try {
+      tweakObjectDetailTable();
+    } finally {
+      observer.observe(ctrToObserve, { childList: true, subtree: false });
+    }
+  });
+
+  observer.observe(ctrToObserve, { childList: true, subtree: false });
+}
 
 function initTweakObjectDetailTableUI() {
   // hack to place the control at the existing SIMBAD control, as it is the closest
@@ -67,7 +107,7 @@ function initTweakObjectDetailTableUI() {
           style="font-size: 12px;border-radius: 15%;max-width: 35px;margin-top: 6px;padding: 2px;"
           >Obj. mag.</button>
     `);
-    document.getElementById('tweakObjectDetailTableCtl').onclick = tweakObjectDetailTable;
+    document.getElementById('tweakObjectDetailTableCtl').onclick = tweakObjectDetailTableOnChange;
   }
   setTimeout(doInitTweakObjectDetailTableUI, 1500);
 }

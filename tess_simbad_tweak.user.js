@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.2
+// @version     1.1.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -243,3 +243,17 @@ function highlightInterestingObjectTypes() {
   });
 }
 highlightInterestingObjectTypes();
+
+function addAladinLiteLink() {
+  // recent SIMBAD UI updates take away link to Aladin Lite
+  const ctr = document.querySelector('div[name="sendBySAMP"]');
+  const targetId = startTitleEl?.querySelector('a')?.textContent;
+  if (ctr && targetId) {
+    // Set Field of View to 0.1 deg, about 6 arcmin, slightly larger than
+    // typical 11x11 pixel TESS TPF (~ 4arcmin)
+    ctr.insertAdjacentHTML('afterbegin', `<a
+      href="https://aladin.u-strasbg.fr/AladinLite/?target=${encodeURIComponent(targetId)}&fov=0.1"
+      target="_aladin_lite">Aladin Lite</a>&emsp;`);
+  }
+}
+addAladinLiteLink();

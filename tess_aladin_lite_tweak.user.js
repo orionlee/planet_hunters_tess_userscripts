@@ -4,7 +4,7 @@
 // @match       https://aladin.u-strasbg.fr/AladinLite/*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.0.2
+// @version     1.0.3
 // @author      -
 // @description
 // ==/UserScript==
@@ -58,6 +58,21 @@ function tweakObjectDetailTableOnChange() {
 
   // Now setup the observer so that when the user clicks on a new star
   // the tweak will be applied again to the new content
+  //
+  // Note: to further automate it, to eliminate user's need to invoke it initially
+  // (by clicking the "Obj. mag." button) would require an additional very busy MutationObserver,
+  // which observe the changes in the outer  div#aladin-lite-div element,
+  // the parent of the div.aladin-box that we're currently observing in this implementation
+  // the new observer would need to invoke tweakObjectDetailTableOnChange()
+  // to setup the changes.
+  // The actual invocation of tweakObjectDetailTableOnChange() will happen when user
+  // selects a star from a different catalog.
+  //
+  // Reason that the additional MutationObserver will be very busy
+  // the outer #aladin-lite-div element changes constantly, even with the shallow childList only:
+  // when user just moves around (when changes the displayed coordinate), the childList changes.
+  // Having an observer there with so frequent mutations might slow down the overall UI experience
+  // even if the observer does close to nothing most of the time.
 
   // the ancestor div.aladin-box that stays the same when user clicks on a new star
   const ctrToObserve = getObjectDetailTable()?.parentElement?.parentElement;

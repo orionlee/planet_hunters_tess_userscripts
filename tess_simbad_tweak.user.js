@@ -3,11 +3,11 @@
 // @namespace   astro.tess
 // @match       http*://simbad.u-strasbg.fr/simbad/sim-coo?Coord=*
 //                ^^^ links generated from ExoFOP, coordinate-based
-// @match       http*://simbad.u-strasbg.fr/simbad/sim-id?Ident=*
+// @match       http*://simbad.u-strasbg.fr/simbad/sim-id?*
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.3
+// @version     1.1.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg

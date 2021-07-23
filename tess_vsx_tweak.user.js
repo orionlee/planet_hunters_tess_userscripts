@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.4.4
+// @version     1.4.5
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -324,6 +324,18 @@ function tweakDetailPage() {
     return idCtrMatches?.[0];
   }
 
+  function moveNotUsefulAliasToEnd(aliases) {
+    // In practice, UCAC is rarely cross-matched successfully in SIMBAD and ultimately removed
+    // move it to the end
+    const aliasesWithSortKey = aliases.map((a, i) => {
+      const sortKey = a.startsWith("UCAC") ? 999 : i;
+      a._sortKey = sortKey;
+      return [a, sortKey];
+    });
+    aliasesWithSortKey.sort((a, b) => a[1] - b[1]);
+    return aliasesWithSortKey.map(e => e[0])
+  }
+
   function showMatchResultMsg(aliasesMatched, aliasesNotMatched) {
 
     const ctr = document.querySelector('#tessAliasesMatchMsg');
@@ -334,6 +346,7 @@ Not matched:<br>
        title="Names not matched in a form suitable for batch submission to VSX">
 `;
     // in tab-delimited form for pasting to spreadsheet
+    aliasesNotMatched = moveNotUsefulAliasToEnd(aliasesNotMatched);
     const submissionText = (() => {
       if (aliasesNotMatched.length < 1) {
         return "";

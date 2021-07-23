@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.5.0
+// @version     1.6.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -54,6 +54,52 @@ function insertAtCursor(textarea, text, transformFn, selectFn) {
 // if the text to be pasted is link / link to images, convert the text to markdown.
 //
 
+const titleForLinkifiedUrlImplList = []
+titleForLinkifiedUrlImplList.push(url => {
+  const [, title] = url.match(/.*[.]wikipedia[.]org\/wiki\/(.+)/) || [null, null];
+  return title?.replace(/_/g, ' ');
+});
+titleForLinkifiedUrlImplList.push(url => {
+  if (url.includes('simbad.u-strasbg.fr/simbad/sim-')) {
+    return 'SIMBAD';
+  }
+});
+titleForLinkifiedUrlImplList.push(url => {
+  if (url.includes('www.aavso.org/vsx/index.php?view=detail.top&oid=')) {
+    return 'VSX';
+  }
+});
+titleForLinkifiedUrlImplList.push(url => {
+  if (url.includes('asas-sn.osu.edu/variables/')) {
+    return 'ASAS-SN';
+  }
+});
+titleForLinkifiedUrlImplList.push(url => {
+  // TESS GI proposals
+  const [, proposalId] = url.match(/heasarc.gsfc.nasa.gov\/docs\/tess\/data\/approved-programs\/[^/]+\/(.+).txt/) || [null, null];
+  return proposalId;
+});
+titleForLinkifiedUrlImplList.push(url => {
+  // TESS TCE on exomast
+  const [, tceSubId] = url.match(/exo.mast.stsci.edu\/exomast_planet.html\?planet=.+TCE(\d)/) || [null, null];
+  return tceSubId ? `TCE${tceSubId}` : null;
+});
+titleForLinkifiedUrlImplList.push(url => {
+  // TESS TCE vetting summary. tceSubId: 1, 2, 3 (of a given sector / sectors)
+  const [, tceSubId] = url.match(/exo.mast.stsci.edu\/api\/v0.1\/Download\/file\?uri=mast:TESS\/.+-0*(.+)-\d+_dvs.pdf/) || [null, null];
+  return tceSubId ? `TCE${tceSubId} vetting summary` : null;
+});
+
+function createTitleForLinkifiedUrl(url) {
+  for (const implFn of titleForLinkifiedUrlImplList) {
+    const title = implFn(url);
+    if (title) {
+      return title;
+    }
+  }
+  return null;
+}
+
 function processLinksImages(text) {
   function isImage(link) {
     return /[.](png|jpg|jpeg|gif)$/.test(link);
@@ -69,7 +115,8 @@ function processLinksImages(text) {
       // case images
       return `![Alt Title](${text})`;
     } else {
-      return `[Title](${text})`;
+      const urlTitle = createTitleForLinkifiedUrl(text) || 'Title';
+      return `[${urlTitle}](${text})`;
     }
   }
   // else not a link, so return original

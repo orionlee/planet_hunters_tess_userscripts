@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.6.9
+// @version     1.6.10
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -342,7 +342,7 @@ function isElementOrAncestor(el, criteria) {
   // should only be called after a subject is loaded, as it relies on the subject's metadata
   function addDipDepthCalculator() {
 
-    function getSubjectMetaAndDo(key, handleFn) {
+    function getSubjectMetaAndDo(keys, handleFn) {
       // TODO: the codes are similar to getTicIdFromMetadataPopIn(), but
       // 1. the details, e.g., CSS path to elements, are different
       // 2. actual extraction is done asynchronously. (a necessity here), thus changing the api
@@ -363,15 +363,23 @@ function isElementOrAncestor(el, criteria) {
             return null;
           }
 
-          const filteredThs = Array.from(metadataCtr.querySelectorAll('th'))
+          const meta = (key) => {
+            const filteredThs = Array.from(metadataCtr.querySelectorAll('th'))
             .filter(th => th.textContent === key);
 
-          if (filteredThs.length < 1) {
-            return null;
+            if (filteredThs.length < 1) {
+              return null;
+            }
+            // else extract the value and pass it to handler
+            return filteredThs[0].parentElement.querySelector('td').textContent;
+          };
+
+          const values = []
+          for (const key of keys) {
+            values.push(meta(key));
           }
-          // else extract the value and pass it to handler
-          const metaValue =  filteredThs[0].parentElement.querySelector('td').textContent;
-          handleFn(metaValue);
+
+          handleFn(...values);
         } finally {
           // close the modal
           const closeBtn = document.querySelector('#lightCurveViewerExpandCtr ~ div button[aria-label="Close"]');
@@ -386,11 +394,11 @@ function isElementOrAncestor(el, criteria) {
     }
 
 
-    function getSubjectRadiusAndDo(handleFn) {
-      getSubjectMetaAndDo('Radius (solar radii)', radiusText => {
+    function getSubjectRadiusTempMagAndDo(handleFn) {
+      getSubjectMetaAndDo(['Radius (solar radii)', 'Magnitude', 'Temperature (K)'], (radiusText, magText, temperatureText) => {
         if (radiusText) {
           // if the text is "null", it will be parsed as NaN, the handler needs to deal with it.
-          handleFn(parseFloat(radiusText));
+          handleFn(parseFloat(radiusText), parseFloat(magText), parseFloat(temperatureText));
         }
       });
     }
@@ -425,6 +433,8 @@ function isElementOrAncestor(el, criteria) {
       <span style="font-size: 80%">Dip's depth ~=
           <input id="dipDepthOut" type="number" style="width: 10ch; font-style: italic;" step="0.1">%
       </span>
+      <span style="font-size: 60%; margin-left: 12px; font-family: Consolas, monospace;" id="stellarParamsOut"
+            title="Magnitude / Temperature"></span>
   </div>`);
       const calcDipDepthFromInput = () => {
         const ctr = document.querySelector('#classifyHintOut');
@@ -451,13 +461,14 @@ function isElementOrAncestor(el, criteria) {
       return document.querySelector('#classifyHintOut');
     })();
 
-    getSubjectRadiusAndDo(rStar => {
-      console.debug('Subject Radius: ', rStar);
-
+    getSubjectRadiusTempMagAndDo((rStar, mag, temperature)=> {
       const fillDipDepthCalculator = (ctr, rStar, rObject) => {
-        ctr.querySelector('input[name="r_*"]').value = rStar ? rStar : '';
+        // enter 0 when not available, as a way to signal to the user that no data is available
+        ctr.querySelector('input[name="r_*"]').value = rStar ? rStar : 0;
         ctr.querySelector('input[name="r_p"]').value = rObject ? rObject / R_JUPITER_IN_R_SUN : '';
-        document.querySelector('#classifyHintOut #dipDepthGoBtn').click();
+        if (rStar && rObject) {
+          document.querySelector('#classifyHintOut #dipDepthGoBtn').click();
+        }
       };
 
       if (!isNaN(rStar)) {
@@ -465,6 +476,11 @@ function isElementOrAncestor(el, criteria) {
       } else {
         fillDipDepthCalculator(outputCtr, null, null);
       }
+
+      // show other stellar parameters
+      mag = !isNaN(mag) ? mag : "";
+      temperature = !isNaN(temperature) ? `${temperature}K` : "";
+      document.querySelector('#stellarParamsOut').textContent = `${mag} / ${temperature}`;
 
     });
   } // function addDipDepthCalculator()

@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.4
+// @version     1.1.6
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -206,6 +206,146 @@ function simbadStarTypeToWikiLinkHtml(starType) {
   `<a target="wiki_star_type"
     href="https://en.wikipedia.org/w/index.php?title=Special:Search&search=${wikiTitle}">${starType}</a>`
 }
+
+function simbadStarIdToWikiUrl(starId) {
+  const mapConstellationAbbrev = {
+    // extracted from:
+    // https://skyandtelescope.org/astronomy-resources/constellation-names-and-abbreviations/
+    "And": "Andromedae",
+    "Ant": "Antliae",
+    "Aps": "Apodis",
+    "Aqr": "Aquarii",
+    "Aql": "Aquilae",
+    "Ara": "Arae",
+    "Ari": "Arietis",
+    "Aur": "Aurigae",
+    "Boo": "Boötis",
+    "Cae": "Caeli",
+    "Cam": "Camelopardalis",
+    "Cnc": "Cancri",
+    "CVn": "Canum Venaticorum",
+    "CMa": "Canis Majoris",
+    "CMi": "Canis Minoris",
+    "Cap": "Capricorni",
+    "Car": "Carinae",
+    "Cas": "Cassiopeiae",
+    "Cen": "Centauri",
+    "Cep": "Cephei",
+    "Cet": "Ceti",
+    "Cha": "Chamaeleontis",
+    "Cir": "Circini",
+    "Col": "Columbae",
+    "Com": "Comae Berenices",
+    "CrA": "Coronae Australis",
+    "CrB": "Coronae Borealis",
+    "Crv": "Corvi",
+    "Crt": "Crateris",
+    "Cru": "Crucis",
+    "Cyg": "Cygni",
+    "Del": "Delphini",
+    "Dor": "Doradus",
+    "Dra": "Draconis",
+    "Eql": "Equulei",
+    "Eri": "Eridani",
+    "For": "Fornacis",
+    "Gem": "Geminorum",
+    "Gru": "Gruis",
+    "Her": "Herculis",
+    "Hor": "Horologii",
+    "Hya": "Hydrae",
+    "Hyi": "Hydri",
+    "Ind": "Indi",
+    "Lac": "Lacertae",
+    "Leo": "Leonis",
+    "LMi": "Leonis Minoris",
+    "Lep": "Leporis",
+    "Lib": "Librae",
+    "Lup": "Lupi",
+    "Lyn": "Lyncis",
+    "Lyr": "Lyrae",
+    "Men": "Mensae",
+    "Mic": "Microscopii",
+    "Mon": "Monocerotis",
+    "Mus": "Muscae",
+    "Nor": "Normae",
+    "Oct": "Octantis",
+    "Oph": "Ophiuchi",
+    "Ori": "Orionis",
+    "Pav": "Pavonis",
+    "Peg": "Pegasi",
+    "Per": "Persei",
+    "Phe": "Phoenicis",
+    "Pic": "Pictoris",
+    "Psc": "Piscium",
+    "PsA": "Piscis Austrini",
+    "Pup": "Puppis",
+    "Pyx": "Pyxidis",
+    "Ret": "Reticulii",
+    "Sge": "Sagittae",
+    "Sgr": "Sagittarii",
+    "Sco": "Scorpii",
+    "Scl": "Sculptoris",
+    "Sct": "Scuti",
+    "Ser": "Serpentis",
+    "Sex": "Sextantis",
+    "Tau": "Tauri",
+    "Tel": "Telescopii",
+    "Tri": "Trianguli",
+    "TrA": "Trianguli Australis",
+    "Tuc": "Tucanae",
+    "UMa": "Ursae Majoris",
+    "UMi": "Ursae Minoris",
+    "Vel": "Velorum",
+    "Vir": "Virginis",
+    "Vol": "Volantis",
+    "Vul": "Vulpeculae"
+  };
+  // the greek character latin abbreviation used in SIMBAD, mapped it to the full english name
+  // used in wikipedia title
+  // source: http://simbad.u-strasbg.fr/guide/chA.htx , https://en.wikipedia.org/wiki/Greek_alphabet
+  const mapGreekAbbrev = {
+    "alf": "Alpha",
+    "bet": "Beta",
+    "gam": "Gamma",
+    'del': 'Delta',
+    'eps': 'Epsilon',
+    'zet': 'Zeta',
+    'eta': 'Eta',
+    'tet': 'Theta',
+    'iot': 'Iota',
+    'kap': 'Kappa',
+    'lam': 'Lambda',
+    'mu.': 'Mu',
+    "nu.": "Nu",
+    'ksi': 'Xi',
+    'omi': 'Omicron',
+    'pi.': 'Pi',
+    'rho': 'Rho',
+    'sig': 'Sigma',
+    'tau': 'Tau',
+    'ups': 'Upsilon',
+    'phi': 'Phi',
+    'khi': 'Chi',
+    'psi': 'Psi',
+    'ome': 'Omega',
+  };
+    let starIdCleanedUp = starId.replace(/^[*]+\s*/, '');
+  // check if it is a Bayer / Flamsteed designation, with 3 letter abbreviation for constellation
+  const [, id, constellationAbbrev] =
+    starIdCleanedUp.match(/^([a-zA-Z.]{1,3}|\p{Script_Extensions=Greek}|\d{1,3})\s+(\w{3})\s*$/u) || [null, null, null];
+  if (id) {
+    const constellationFull = mapConstellationAbbrev[constellationAbbrev];
+    if (constellationFull) {
+      // convert it to the pattern using constellation full name, the preferred format in wikipedia title
+      const idCleanedUp  = mapGreekAbbrev[id] ? mapGreekAbbrev[id] : id;
+      starIdCleanedUp = `${idCleanedUp} ${constellationFull}`;
+    } else {
+      console.warn("The ID has Bayer / Flamsteed designation pattern, but the abbreviation does not match a constellation: ", starIdCleanedUp);
+    }
+  }
+  return `https://en.wikipedia.org/w/index.php?title=Special:Search&search=${starIdCleanedUp}`;
+}
+
 const startTitleEl = document.querySelector('#basic_data font[size="+2"]');
 if (startTitleEl) {
   const reStarIdAndType = /<b>\s*\n*(.+)\s*\n*<\/b>\s*--\s*(.+)/;
@@ -213,9 +353,10 @@ if (startTitleEl) {
   const starIdAndTypeMatch = html.match(reStarIdAndType);
   if (starIdAndTypeMatch) {
     const typeWikiLinkHtml = simbadStarTypeToWikiLinkHtml(starIdAndTypeMatch[2]);
+    const starIdWikiUrl = simbadStarIdToWikiUrl(starIdAndTypeMatch[1]);
     html = html.replace(reStarIdAndType, `\
 <b><a target="wiki_star"
-      href="https://en.wikipedia.org/w/index.php?title=Special:Search&search=$1">$1</a></b> --
+      href="${starIdWikiUrl}">$1</a></b> --
 ${typeWikiLinkHtml}
 <svg style="height: 0.8em; width: 1em; background: transparent;" aria-hidden="true" data-prefix="fas" data-icon="external-link-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M576 24v127.984c0 21.461-25.96 31.98-40.971 16.971l-35.707-35.709-243.523 243.523c-9.373 9.373-24.568 9.373-33.941 0l-22.627-22.627c-9.373-9.373-9.373-24.569 0-33.941L442.756 76.676l-35.703-35.705C391.982 25.9 402.656 0 424.024 0H552c13.255 0 24 10.745 24 24zM407.029 270.794l-16 16A23.999 23.999 0 0 0 384 303.765V448H64V128h264a24.003 24.003 0 0 0 16.97-7.029l16-16C376.089 89.851 365.381 64 344 64H48C21.49 64 0 85.49 0 112v352c0 26.51 21.49 48 48 48h352c26.51 0 48-21.49 48-48V287.764c0-21.382-25.852-32.09-40.971-16.97z"></path></svg>
 `);

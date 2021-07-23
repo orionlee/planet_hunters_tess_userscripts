@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.6
+// @version     1.1.7
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -197,6 +197,7 @@ function simbadStarTypeToWikiLinkHtml(starType) {
       'CV DQ Her type (intermediate polar)': 'Intermediate polar',
       'CV of AM Her type (polar)': 'Polar (star)',
       'Variable of RS CVn type': 'RS Canum Venaticorum variable',
+      'Variable Star of Mira Cet type': 'Mira variable',
     });
 
   // default is starType, and the mapping takes care of special cases
@@ -329,7 +330,7 @@ function simbadStarIdToWikiUrl(starId) {
     'psi': 'Psi',
     'ome': 'Omega',
   };
-    let starIdCleanedUp = starId.replace(/^[*]+\s*/, '');
+    let starIdCleanedUp = starId.replace(/^V?[*]+\s*/, '');
   // check if it is a Bayer / Flamsteed designation, with 3 letter abbreviation for constellation
   const [, id, constellationAbbrev] =
     starIdCleanedUp.match(/^([a-zA-Z.]{1,3}|\p{Script_Extensions=Greek}|\d{1,3})\s+(\w{3})\s*$/u) || [null, null, null];

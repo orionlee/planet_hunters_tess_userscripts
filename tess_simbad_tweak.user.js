@@ -38,6 +38,7 @@ function getMatchingInfoFromHash(aliasFilter = null) {
   }
 
   if (!aliasFilter) {
+    // eslint-disable-next-line no-unused-vars
     aliasFilter = (alias) => true;
   }
 

@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.4.5
+// @version     1.4.7
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -141,6 +141,7 @@ function getMatchingInfoFromHash(aliasFilter = null) {
   }
 
   if (!aliasFilter) {
+    // eslint-disable-next-line no-unused-vars
     aliasFilter = (alias) => true;
   }
 
@@ -305,7 +306,7 @@ function tweakDetailPage() {
   }
 
   function getOid() {
-    const [_, oid] = location.search.match(/oid=(\d+)/) || [null, null];
+    const [, oid] = location.search.match(/oid=(\d+)/) || [null, null];
     return oid;
   }
 
@@ -343,7 +344,8 @@ function tweakDetailPage() {
 ${aliasesMatched.length} (aliases) matched.<br>
 Not matched:<br>
 <input id="notMatchedNamesForVSXSubmission" type="text" style="font-size: 80%; width: 90%;"
-       title="Names not matched in a form suitable for batch submission to VSX">
+       accessKey="L"
+       title="Names not matched in a form suitable for batch submission to VSX. Shortcut: Alt-L">
 `;
     // in tab-delimited form for pasting to spreadsheet
     aliasesNotMatched = moveNotUsefulAliasToEnd(aliasesNotMatched);

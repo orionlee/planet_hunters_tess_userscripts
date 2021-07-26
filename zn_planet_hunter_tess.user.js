@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.6.10
+// @version     1.6.11
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -452,7 +452,7 @@ function isElementOrAncestor(el, criteria) {
         const ctr = document.querySelector('#classifyHintOut');
         const rStar = parseFloat(ctr.querySelector('input[name="r_*"]').value);
         const depth = parseFloat(ctr.querySelector('#dipDepthOut').value) / 100;
-        const rObjectInRJupiter = calcCompanionRadius(rStar, depth) / R_JUPITER_IN_R_SUN; ;
+        const rObjectInRJupiter = calcCompanionRadius(rStar, depth) / R_JUPITER_IN_R_SUN;
 
         ctr.querySelector('input[name="r_p"]').value = rObjectInRJupiter ? rObjectInRJupiter.toFixed(3) : '';
       };
@@ -753,7 +753,7 @@ function isElementOrAncestor(el, criteria) {
       // 3. Solve (2) by using a simple retry
       let viewerCustomized = customizeViewerOnSVGLoaded();
       if (!viewerCustomized) {
-        setTimeout(() => customizeViewerOnSVGLoaded(force=true), 2000);
+        setTimeout(() => customizeViewerOnSVGLoaded(true), 2000);
       }
     }
   } // function customizeViewerOnDoneClicked(..)

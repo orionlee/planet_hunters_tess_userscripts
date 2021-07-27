@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.7
+// @version     1.1.9
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -175,6 +175,10 @@ function simbadStarTypeToWikiLinkHtml(starType) {
     return mapEscaped;
   }
 
+  function escapeTitle(title) {
+    return title.replace(/\s/g, '_');
+  }
+
   const NO_LINK = '[NO-LINK]';
   const wikiTitleExceptionsMap = toKeyEscaped({
       // exceptions to be added
@@ -199,14 +203,24 @@ function simbadStarTypeToWikiLinkHtml(starType) {
       'CV of AM Her type (polar)': 'Polar (star)',
       'Variable of RS CVn type': 'RS Canum Venaticorum variable',
       'Variable Star of Mira Cet type': 'Mira variable',
+      'Variable Star of R CrB type': 'R Coronae Borealis variable',
+      'Be Star': 'Be star',
+      'Hot subdwarf': 'Hot subdwarf',
     });
 
   // default is starType, and the mapping takes care of special cases
-  const wikiTitle = wikiTitleExceptionsMap[starType] || starType;
+  const wikiTitle = wikiTitleExceptionsMap[starType];
 
-  return wikiTitle === NO_LINK ? starType :
-  `<a target="wiki_star_type"
-    href="https://en.wikipedia.org/w/index.php?title=Special:Search&search=${wikiTitle}">${starType}</a>`
+  if (!wikiTitle) {
+    return   `<a target="wiki_star_type"
+                 href="https://en.wikipedia.org/w/index.php?title=Special:Search&search=${starType}">${starType}</a>`;
+  } else if (wikiTitle === NO_LINK) {
+    return starType;
+  } else {
+    // case there is a specific mapping, link to wiki page directly
+    return `<a target="wiki_star_type"
+               href="https://en.wikipedia.org/wiki/${escapeTitle(wikiTitle)}">${starType}</a>`
+  }
 }
 
 function simbadStarIdToWikiUrl(starId) {

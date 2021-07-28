@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.8.2
+// @version     1.8.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -235,7 +235,9 @@ if (simbadLinkEl) {
       }
     })();
     anchorEl.insertAdjacentHTML('beforeend',`
-<span title="B-V color index, and estimated spectral type"
+<span title="B-V color index, and estimated spectral type.
+O5V: -0.33 ; B0V: -0.30 ; A0V: -0.02 ;
+F0V: 0.30 ; G0V: 0.58; K0V: 0.81; M0V: 1.40"
       style="padding: 0 1.5ch;background-color: #ddd;">
     <a href="https://en.wikipedia.org/wiki/Color_index"
        target="_color_index" style="style="font-size: 1em; padding: 0.1em 0.5ch;">B-V:</a>

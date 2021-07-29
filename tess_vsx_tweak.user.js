@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.4.7
+// @version     1.4.8
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -354,7 +354,7 @@ Not matched:<br>
         return "";
       }
       return `\
-${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}`;
+${getVSXName()}\t${aliasesNotMatched.join()}\t\t${getOid()}`;
     })();
 
     const submissionInCtl = document.getElementById('notMatchedNamesForVSXSubmission');

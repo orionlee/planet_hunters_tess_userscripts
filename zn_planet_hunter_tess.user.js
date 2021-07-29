@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.6.11
+// @version     1.7.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -1219,10 +1219,32 @@ When TIC will be observed:<br>
     return true;
   }
 
+  // Support the workflow that when users want to remove a subject from a collection
+  // - users is on the subject talk page
+  // - click the collection from where they want to remove the subject
+  // - (The UI tweak) show the subject number to help users to locate it in the collection.
+  function indicateSubjectOfReferrer() {
+    const [, subject] = document.referrer?.match(/\/talk\/subjects\/(\d+)/) || [null, null];
+    if (!subject) {
+      return;
+    }
+    document.body.insertAdjacentHTML('beforeend', `
+<div style="position: fixed;top: 30px;right: 6px;padding: 6px;background-color: rgba(255, 255, 0, 0.95); z-index: 99;"
+     title="The subject you visit before traversing to this collection">
+<span style="float: right;cursor: pointer;" onclick="this.parentElement.remove();"> [X] </span>
+From subject:&emsp;<br>
+${subject}
+</div>
+`);
+  }
+
   // main logic
   urlChangeNotifier.addListener(() => {
     if (isPathNamePHTCollection()) {
       onPanoptesMainLoaded(showSubjectNumInThumbnails);
     }
   })
+  if (isPathNamePHTCollection()) {
+    indicateSubjectOfReferrer();
+  }
 })();

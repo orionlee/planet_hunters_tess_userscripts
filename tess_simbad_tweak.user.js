@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.9
+// @version     1.1.10
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -204,8 +204,10 @@ function simbadStarTypeToWikiLinkHtml(starType) {
       'Variable of RS CVn type': 'RS Canum Venaticorum variable',
       'Variable Star of Mira Cet type': 'Mira variable',
       'Variable Star of R CrB type': 'R Coronae Borealis variable',
+      'Variable Star of alpha2 CVn type': 'Alpha2 Canum Venaticorum variable',
       'Be Star': 'Be star',
       'Hot subdwarf': 'Hot subdwarf',
+      'Wolf-Rayet Star': 'Wolf–Rayet star',
     });
 
   // default is starType, and the mapping takes care of special cases

@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.8.5
+// @version     1.9.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -79,6 +79,11 @@ function bjdToBtjdAndRelativeStr(bjd) {
   } else {
     return btjdRes;
   }
+}
+
+function getTic() {
+  const[, tic] = location.search.match(/id=(\d+)/) || [null, null];
+  return tic;
 }
 
 // Normalize the IDs to the canonical form when needed
@@ -190,9 +195,11 @@ if (simbadLinkEl) {
 
   document.querySelector('a[href="/tess"]').insertAdjacentHTML('afterend', `\
 <span style="background-color: #ccc; padding: 0.3em 2ch;">
-  ${simbadLinkEl.outerHTML} |
+  ${simbadLinkEl.outerHTML.replace('>\nSIMBAD<', ' accesskey="S"> SIMBAD<')} |
   <a href="${vsxUrl}" target="_vsx" accesskey="V" title="Variable Star Index">VSX</a> |
   <a href="${asasSnUrl}" target="_asas-sn" accesskey="A" title="All-Sky Automated Survey for Supernovae">ASAS-SN</a> |
+  <a href="https://tev.mit.edu/data/search/?q=${getTic()}" name="_tev"
+   title="To MIT TEV: it contains similar information; but it also has QLP validation reports when applicable">MIT TEV</a> |
   <svg class="svg-inline--fa fa-external-link-alt fa-w-18" aria-hidden="true" data-prefix="fas" data-icon="external-link-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M576 24v127.984c0 21.461-25.96 31.98-40.971 16.971l-35.707-35.709-243.523 243.523c-9.373 9.373-24.568 9.373-33.941 0l-22.627-22.627c-9.373-9.373-9.373-24.569 0-33.941L442.756 76.676l-35.703-35.705C391.982 25.9 402.656 0 424.024 0H552c13.255 0 24 10.745 24 24zM407.029 270.794l-16 16A23.999 23.999 0 0 0 384 303.765V448H64V128h264a24.003 24.003 0 0 0 16.97-7.029l16-16C376.089 89.851 365.381 64 344 64H48C21.49 64 0 85.49 0 112v352c0 26.51 21.49 48 48 48h352c26.51 0 48-21.49 48-48V287.764c0-21.382-25.852-32.09-40.971-16.97z"></path></svg>
 </span>`);
 
@@ -297,6 +304,8 @@ table.highlighted tr:nth-of-type(1) th {
     background-color: rgba(255, 255, 0, 0.7);
 }`);
 
+  const numHeaderRowsTOIs = 3;
+  const numHeaderRowsCTOIs = 2;
   function highlightSectionTableIfNonEmpty(anchorName, numHeaderRows) {
     const numTrs = document.querySelectorAll(`a[name="${anchorName}"] + table tr`).length;
     if (numTrs > numHeaderRows) {
@@ -306,8 +315,8 @@ table.highlighted tr:nth-of-type(1) th {
     }
   }
 
-  highlightSectionTableIfNonEmpty('tois', 3);
-  highlightSectionTableIfNonEmpty('ctois', 2);
+  highlightSectionTableIfNonEmpty('tois', numHeaderRowsTOIs);
+  highlightSectionTableIfNonEmpty('ctois', numHeaderRowsCTOIs);
 
 
   // mark false positive varieties for disposition

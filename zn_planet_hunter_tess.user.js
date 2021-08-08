@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.8.0
+// @version     1.8.1
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -224,7 +224,6 @@ function isElementOrAncestor(el, criteria) {
   .lcv-expanded .annotations-layer rect.selection {
     height: 10000px;
   }
-
 }
 
 /* make the buttons below the view right-aligned, easier to access */
@@ -240,6 +239,18 @@ function isElementOrAncestor(el, criteria) {
     overflow-y: scroll;
 }
 
+
+/* dip's depth calculator, stellar parameters */
+#stellarParamsOut {
+  font-size: 60%;
+  margin-left: 12px;
+  font-family: Consolas, monospace;
+}
+
+#stellarParamsOut:hover {
+  font-size: 90%;
+  font-weight: bold;
+}
 `);
   })(); // function injectCSS()
 
@@ -433,7 +444,7 @@ function isElementOrAncestor(el, criteria) {
       <span style="font-size: 80%">Dip's depth ~=
           <input id="dipDepthOut" type="number" style="width: 10ch; font-style: italic;" step="0.1">%
       </span>
-      <span style="font-size: 60%; margin-left: 12px; font-family: Consolas, monospace;" id="stellarParamsOut"
+      <span id="stellarParamsOut"
             title="Magnitude / Temperature"></span>
   </div>`);
       const calcDipDepthFromInput = () => {

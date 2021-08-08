@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.7.0
+// @version     1.8.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -1201,6 +1201,14 @@ When TIC will be observed:<br>
       ||  /\/projects\/nora-dot-eisner\/planet-hunters-tess\/recents.*/.test(location.pathname);
   }
 
+  function addStyle() {
+    GM_addStyle(`
+.referred.subject-num {
+  background-color: rgba(255, 255, 0, 0.5);
+}
+    `);
+  }
+
   function showSubjectNumInThumbnails() {
     if (!isPathNamePHTCollection()) { // current path indicates it's not a collection, so no-op
       return false;
@@ -1210,10 +1218,14 @@ When TIC will be observed:<br>
       return false; // subjects not yet loaded by ajax, no-op
     }
 
+    // from indicateSubjectOfReferrer()
+    const referrerSubjectId = document.getElementById("referrerSubjectIdCtr")?.dataset?.["subjectId"];
+
     Array.from(document.querySelectorAll('.subject-viewer'), (ctr) => {
       if (ctr.subjectAdded) { return; }
       const [,  subjNum] = ctr.querySelector('.subject-container a.subject-link').href.match(/\/subjects\/(.+)$/);
-      ctr.querySelector('.subject-tools').insertAdjacentHTML('beforeend', `<span class="subject-num" title="Subject number">${subjNum}&nbsp;</span>`);
+      const extraCssClass = referrerSubjectId == subjNum ? "referred" : "";
+      ctr.querySelector('.subject-tools').insertAdjacentHTML('beforeend', `<span class="subject-num ${extraCssClass}" title="Subject number">${subjNum}&nbsp;</span>`);
       ctr.subjectAdded = true;
     });
     return true;
@@ -1230,7 +1242,8 @@ When TIC will be observed:<br>
     }
     document.body.insertAdjacentHTML('beforeend', `
 <div style="position: fixed;top: 30px;right: 6px;padding: 6px;background-color: rgba(255, 255, 0, 0.95); z-index: 99;"
-     title="The subject you visit before traversing to this collection">
+     title="The subject you visit before traversing to this collection"
+     id="referrerSubjectIdCtr" data-subject-id="${subject}">
 <span style="float: right;cursor: pointer;" onclick="this.parentElement.remove();"> [X] </span>
 From subject:&emsp;<br>
 ${subject}
@@ -1238,13 +1251,17 @@ ${subject}
 `);
   }
 
+
+
   // main logic
+  if (isPathNamePHTCollection()) {
+    indicateSubjectOfReferrer();
+    addStyle();
+  }
+  // showSubjectNumInThumbnails() should be called after the subjectOfReferrer is done
   urlChangeNotifier.addListener(() => {
     if (isPathNamePHTCollection()) {
       onPanoptesMainLoaded(showSubjectNumInThumbnails);
     }
   })
-  if (isPathNamePHTCollection()) {
-    indicateSubjectOfReferrer();
-  }
 })();

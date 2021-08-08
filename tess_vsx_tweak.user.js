@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.4.8
+// @version     1.4.9
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -276,7 +276,8 @@ function tweakSearchResult() {
   if (resRows.length > 0) {
     const oidUrl = resRows[0].querySelector('a');
     document.querySelector('td.datasheethead').insertAdjacentHTML('beforeend', `\
-<input id="urlOf1stMatch" type="text" accesskey="L" title="URL of 1st match" value="${oidUrl}">
+<input id="urlOf1stMatch" type="text" accesskey="L" title="URL of 1st match" value="${oidUrl}"
+       onclick="this.select();" readonly>
     `);
   }
 

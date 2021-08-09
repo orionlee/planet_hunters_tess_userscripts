@@ -3,7 +3,7 @@
 // @namespace   astro.tess
 // @match       https://asas-sn.osu.edu/variables*
 // @grant       GM_addStyle
-// @version     1.2
+// @version     1.3
 // @author      orionlee
 // @description
 // ==/UserScript==
@@ -12,31 +12,58 @@
 // Search UI
 //
 
-function tweakSearchUI() {
-  if (location.pathname === '/variables' && location.search) {
-    // cae the page has query string params, i.e., a search is done
-    // make search result above the fold
-
-    // - hide decorative UIs that take up vertical space
-    GM_addStyle(`
-  .project-banner {
-    display: none;
+function tweakSearchResult() {
+  if (!(location.pathname === '/variables' && location.search)) {
+    return;
   }
-  `);
+  // case the page has query string params, i.e., a search is done
+  // make search result above the fold
 
-    // - hide the search form to surface the result
-    document.querySelector('button.panel-header-btn').click();
-    // setTimeout(() => {
-    // }, 1000);
+  // - hide decorative UIs that take up vertical space
+  GM_addStyle(`
+.project-banner {
+  display: none;
+}`);
+
+  // - hide the search form to surface the result
+  document.querySelector('button.panel-header-btn').click();
+
+  function tweakSearchResultRows() {
+    Array.from(document.querySelectorAll('table tbody tr'), tr => {
+      const linkEl = tr.querySelector('a')
+      const distance = tr.querySelector('td:nth-of-type(5)').textContent
+      linkEl.setAttribute('href', linkEl.getAttribute('href') + `#distance=${distance}`);
+      linkEl.removeAttribute('target');
+    });
   }
+  tweakSearchResultRows();
+
+
+  function gotoObjectDetailIfOnly1ResultReturned() {
+    const rows = document.querySelectorAll('table tbody tr');
+    if (rows.length != 1) {
+      return;
+    }
+
+    // set location rather than clicking the link
+    // to avoid opening a new window
+    location.href = rows[0].querySelector('a').href;
+  }
+  gotoObjectDetailIfOnly1ResultReturned();
 }
-tweakSearchUI();
+tweakSearchResult();
 
 
 //
 // Object Detail UI
 //
 
+
+// reset the hash, so that if an user copies the URL, the user won't copy the extra parameters in the hash
+// (that would be useless in general)
+function resetHash() {
+  history.pushState("", document.title, location.pathname + location.search);
+}
 
 function isObjectDetailPage() {
   return location.pathname.match(/^\/variables\/\w+/);
@@ -46,11 +73,26 @@ function tweakObjectDetail() {
   if (!isObjectDetailPage()) {
     return;
   }
+
   GM_addStyle(`
 a#variable-db-atlas-link {
     text-decoration: underline;
 }
+
+/* To style distance from search coordinate output */
+#distance_ctr {
+  color: #999;
+  font-style: italic;
+}
 `);
+
+  const [, distance] = location.hash.match(/distance=([0-9.]+)/) || [null, null];
+  if (distance) {
+    document.querySelector('h3').insertAdjacentHTML('afterend', `
+<span id="distance_ctr">distance: ${distance}"</span>`);
+    resetHash();
+  }
+
 }
 tweakObjectDetail();
 

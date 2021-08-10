@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.13
+// @version     1.1.14
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -24,6 +24,10 @@
   content: "> ";
 }
 
+/* A subtle visual hint to indicate the wiki link is a direct link (rather than search) */
+a[href^="https://en.wikipedia.org/wiki/"] {
+    text-decoration: dotted underline;
+}
 `)
 })(); // function injectCSS()
 

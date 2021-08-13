@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.14
+// @version     1.1.16
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -212,10 +212,13 @@ function simbadStarTypeToWikiLinkHtml(starType) {
       'T Tau-type Star': 'T Tauri star',
       'Ellipsoidal variable Star': 'Rotating ellipsoidal variable',
       'Variable Star of W Vir type': 'W Virginis variable',
+      'Blue supergiant star': 'Blue supergiant',
+      'Variable Star of irregular type': 'Irregular variable',
       'Be Star': 'Be star',
       'Hot subdwarf': 'Hot subdwarf',
       'Wolf-Rayet Star': 'Wolf–Rayet star',
       'Carbon Star': 'Carbon star',
+      'Eclipsing binary': 'Eclipsing binary',
     });
 
   // default is starType, and the mapping takes care of special cases

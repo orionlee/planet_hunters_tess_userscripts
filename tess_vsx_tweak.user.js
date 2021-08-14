@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.4.10
+// @version     1.5.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -272,6 +272,18 @@ function tweakSearchResult() {
           // to make it really work, I probably need to recreate varTypeHelp function
           // (that exists in target detail page), so that encoding is done within the script
     }
+
+    // the third column is to the link of the object,
+    // if the search is sorted by angular distance from coordinate
+    // otherwise, link is in the second column. the logic here won't find it
+    // , which is fine, because the intention is to add angular distance to the link to begin with.
+    const objectLinkEl = tr.querySelector('td:nth-of-type(3) a');
+    if (objectLinkEl) {
+      const distance = tr.querySelector('td:nth-of-type(1)').textContent.trim();
+      objectLinkEl.setAttribute('href',
+        objectLinkEl.getAttribute('href') + `#distance_from_coord=${distance}`
+        );
+    }
   });
 
   // expose the URL of 1st match in a text field so that it can be copied easily
@@ -285,6 +297,12 @@ function tweakSearchResult() {
   }
 
   tweakSearchResultBasedOnHash();
+
+  // auto click the first result if only 1 is found
+  // need to be done last so that all processing to the result link has been completed.
+  if (resRows.length == 1) {
+    resRows[0].querySelector('td:nth-of-type(3) a')?.click();
+  }
 }
 tweakSearchResult();
 
@@ -419,6 +437,24 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t\t${getOid()}`;
     }
     return true;
   }
+
+  function showDistanceFromCoordIfAvailable() {
+    const [, distance] = location.hash.match(/#distance_from_coord=([^#]+)/) || [null, null];
+    if (!distance) {
+      return;
+    }
+
+    const td = document.querySelector('table.datasheet tbody > tr:nth-of-type(1) td')
+    // use the empty cell left of the rough distance message "within 2' of <co-ordinate"
+    td.textContent= `(${distance} arcmin)`;
+    td.title = 'Distance from search coordinate';
+  }
+
+  //
+  // main logic
+  //
+
+  showDistanceFromCoordIfAvailable();
 
   const [aliasList, otherParams] = getMatchingInfoFromHash(aliasFilter);
   if (!aliasList) {

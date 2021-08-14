@@ -7,7 +7,7 @@
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 // @grant       GM_addStyle
 // @noframes
-// @version     1.1.16
+// @version     1.2.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -89,16 +89,27 @@ function annotateOtherParams(otherParams) {
 }
 
 function showMatchingInfo(aliases, otherParams) {
+  const otherParamsFormatted = (()=> {
+    // make magnitude info more readable
+    let res = otherParams;
+    res = res.replace(/;/g, '<br>');
+    res = res.replace(/(?:,\s*)?([A-Z])-/g, '<br>$1:&emsp;');
+    res = res.replace(/\s*±\s([0-9.]+)/g, '<sub>±$1 </sub>');
+    return res;
+  })();
   document.body.insertAdjacentHTML('beforeend', `\
   <div id="tessAliasesCtr" style="background-color:rgba(255,255,0,0.9);
     position: fixed; top: 0px; right: 0px; padding: 0.5em 4ch 0.5em 2ch;
   max-width: 15vw;
   z-index: 99; font-size: 14px; line-height: 1.2;
     ">
-  <u>TESS Aliases:</u> <a href="javascript:void(0);" onclick="this.parentElement.style.display='none';" style="float: right;">[X]</a><br>
-  <span id="tessAliases">${aliases}</span>
-  <div id="tessAliasesMatchMsg" style="font-weight: bold;"></div>
-  <span id="tessOtherParams">${otherParams}</span>
+    <u>TESS Aliases:</u> <a href="javascript:void(0);" onclick="this.parentElement.style.display='none';" style="float: right;">[X]</a><br>
+    <details>
+      <summary id="tessAliasesMatchMsg" style="font-weight: bold;"></summary>
+      <span id="tessAliases">${aliases}</span>
+    </details>
+    <br>
+    <span id="tessOtherParams">${otherParamsFormatted}</span>
   </div>`);
 }
 
@@ -122,18 +133,34 @@ function tweakUIWithCrossMatch() {
   showMatchingInfo(aliasList, otherParams);
 
   // highlight the aliases
-  // for case the coordinate has multiple results
+  // BEGIN for case the coordinate has multiple results
+  // - we propagate the aliases to the result link
+  // - some minor UI tweak
 
   let numIdsMatched = 0;
-  console.debug('subject entries', document.querySelectorAll('#datatable tr td:nth-of-type(2) a'));
-  Array.from(document.querySelectorAll('#datatable tr td:nth-of-type(2) a'), linkEl => {
+  const resultLinks = Array.from(document.querySelectorAll('#datatable tr td:nth-of-type(2) a'));
+  /// console.debug('result links:', resultLinks);
+  resultLinks.forEach(linkEl => {
     // propagate the aliases to the links of individual result
     linkEl.href += location.hash;
+  });
 
+  // traverse to individual page automatically if applicable
+  // (the links have been processed to propagate the hash)
+  resultLinks.forEach(linkEl => {
+    // case multiple result, the one of them has matching ID
     if (aliasList.includes(normalizeId(linkEl))) {
       location.href = linkEl.href; // ID matched, go to the individual result page directly
     }
   });
+
+  // okay so we don't go to individual result page directly. make it easy to click first link instead
+  if (resultLinks.length > 1) {
+    resultLinks[0].focus(); // doesn't work if the tab is spawned as a background one
+    resultLinks.forEach( (a, i) => { a.accessKey = i+1; });  // assign keyboard short, Alt-1, Alt-2, ...
+  }
+
+  // END for case the coordinate has multiple results
 
   // case the coordinate matches a single result
   if (document.querySelector('a[name="lab_ident"]')) {
@@ -146,11 +173,16 @@ function tweakUIWithCrossMatch() {
     });
   }
 
+  const aliasMatchMsgCtr = document.querySelector('#tessAliasesMatchMsg');
   if (numIdsMatched > 0) {
-    document.querySelector('#tessAliasesMatchMsg').textContent = ` - ${numIdsMatched} IDs matched.`;
+    aliasMatchMsgCtr.textContent = ` ${numIdsMatched} IDs matched. `;
+  } else {
+    aliasMatchMsgCtr.textContent = ` No IDs matched. `;
+    aliasMatchMsgCtr.style.backgroundColor = 'red';
   }
 
   resetMatchingInfoHash();
+
 }
 tweakUIWithCrossMatch();
 
@@ -214,6 +246,7 @@ function simbadStarTypeToWikiLinkHtml(starType) {
       'Variable Star of W Vir type': 'W Virginis variable',
       'Blue supergiant star': 'Blue supergiant',
       'Variable Star of irregular type': 'Irregular variable',
+      'Emission-line Star': 'Emission-line star',
       'Be Star': 'Be star',
       'Hot subdwarf': 'Hot subdwarf',
       'Wolf-Rayet Star': 'Wolf–Rayet star',

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.8.2
+// @version     1.8.3
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -1047,17 +1047,32 @@ When TIC will be observed:<br>
     const meta = getTicIdFromMetadataPopIn();
     if (meta) {
       const ticId = meta.ticId;
-      const extra = (() => {
-        const subjectNumberMatch = location.pathname.match(/\/subjects\/(\d+)/);
-        if (subjectNumberMatch) {
-          // use S. short form to make subject number more likely to fit in the visible portion of the tab.
-          return `S.${subjectNumberMatch[1]} | `;
-        } else {
-          return '';
-        }
-      })();
 
-      document.title = 'TIC' + ticId + ' | ' + extra + document.title;
+      let title = document.title;
+
+      // Shorten subject, if it's in the title
+      title = title.replace(/^Subject (\d+)/, 'S.$1');
+
+      // add subject to the title if it's not there
+      if (!title.match(/^S.\d+/)) {
+        const extra = (() => {
+          const subjectNumberMatch = location.pathname.match(/\/subjects\/(\d+)/);
+          if (subjectNumberMatch) {
+            // use S. short form to make subject number more likely to fit in the visible portion of the tab.
+            return `S.${subjectNumberMatch[1]} | `;
+          } else {
+            return '';
+          }
+        })();
+        title = extra + title;
+      }
+
+      // add TIC to the title if it's not there
+      if (!title.match(/TIC\d+/)) {
+        title = 'TIC' + ticId + ' | ' + title;
+      } // else TIC has been added (in previous calls). No-op
+
+      document.title = title;
     } else {
       console.warn('showTicOnTitleIfAny() - tic id not available yet')
     }

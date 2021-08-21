@@ -9,7 +9,7 @@
 //                ^^^ links from SIMBAD basic search
 // @grant       GM_addStyle
 // @noframes
-// @version     1.2.4
+// @version     1.2.5
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -255,6 +255,7 @@ function simbadStarTypeToWikiLinkHtml(starType) {
       'Carbon Star': 'Carbon star',
       'Eclipsing binary': 'Eclipsing binary',
       'Long-period variable star': 'Long-period variable star',
+      'Spectroscopic binary': 'Spectroscopic binary',
     });
 
   // default is starType, and the mapping takes care of special cases

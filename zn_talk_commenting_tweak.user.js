@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.6.1
+// @version     1.7.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -318,11 +318,13 @@ GM_addStyle(`/* expand talk message body by shrinking right sidebar and left aut
 }
 `);
 function toggleTalkBodyWidthOnDblClick(evt) {
-  if (!(isElementOrAncestor(evt.target, el => el.tagName === 'H3') &&
-        isElementOrAncestor(evt.target, el => el.classList.contains('talk-sidebar')))) {
+  if (!( (isElementOrAncestor(evt.target, el => el.tagName === 'H3') &&
+          isElementOrAncestor(evt.target, el => el.classList.contains('talk-sidebar'))) ||
+          evt.target.classList.contains('talk-sidebar')
+          )) {
     return;
   }
-  // we only accept double click in the heading of talk sidebar
+  // we only accept double click in the heading of talk sidebar, or the sidebar empty area
 
   document.querySelector('.talk').classList.toggle("expand-body");
   evt.preventDefault();

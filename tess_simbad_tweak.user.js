@@ -9,7 +9,7 @@
 //                ^^^ links from SIMBAD basic search
 // @grant       GM_addStyle
 // @noframes
-// @version     1.2.5
+// @version     1.3.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -24,6 +24,12 @@
 
 .matched-id:before {
   content: "> ";
+}
+
+.filter-matched .un-matched-id {
+  /* Less jumping in UI when users toggle hide/show by hiding them (but keeping the space)
+    */
+  visibility: hidden;
 }
 
 /* A subtle visual hint to indicate the wiki link is a direct link (rather than search) */
@@ -171,8 +177,22 @@ function tweakUIWithCrossMatch() {
       if (aliasList.includes(normalizeId(tt))) {
         tt.classList.add('matched-id');
         numIdsMatched++;
+      } else {
+        tt.classList.add('un-matched-id');
       }
     });
+
+    if (numIdsMatched > 0) {
+      // add UI to hide-show unmatched IDs, defaulted to hiding them.
+      idTableEl.insertAdjacentHTML('beforebegin', `<button id="toggleUnmatchedIDsCtl"></button>`);
+      const hideShowUnmatchedIDs = () => {
+        idTableEl.classList.toggle('filter-matched');
+        const labelPrefix = idTableEl.classList.contains('filter-matched') ? 'Show' : 'Hide';
+        document.getElementById('toggleUnmatchedIDsCtl').textContent = `${labelPrefix} un-matched IDs`;
+      };
+      document.getElementById('toggleUnmatchedIDsCtl').onclick = hideShowUnmatchedIDs;
+      hideShowUnmatchedIDs(); // initialized, by first hiding them
+    }
   }
 
   const aliasMatchMsgCtr = document.querySelector('#tessAliasesMatchMsg');

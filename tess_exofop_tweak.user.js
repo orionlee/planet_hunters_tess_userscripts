@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.9.0
+// @version     1.9.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -54,6 +54,7 @@ function bjtdToRelative(tBjtd) {
   [37, 2307.265451933772, 2332.58443261356],
   [38, 2333.870701993338, 2360.544306094672],
   [39, 2361.771115909602, 2389.718112727824],
+  [48, 2607.93782493873, 2635.991052207522],
 ]; // Based on the one in tess_exomast_tce_tweak.user.js
 
 
@@ -99,6 +100,12 @@ function normalizeAlias(aliasText) {
     // use the allWISE ids format adopted by SIMBAD and VSX
     res = res.replace(/^WISE J/, 'WISEA J');
   }
+  // SDSS note:
+  // normalization is does not seem to be possible
+  // - ExoFOP uses a DR-specific ID, e.g.,
+  //     SDSS DR9 1237662225672700035  (for TIC 900138348)
+  // - SIMBAD uses a coordinate-based ID, e.g.
+  //     SDSS J111511.99+392144.0
   return res;
 } // function normalizeAlias(..)
 

@@ -12,7 +12,7 @@
 // @match       http*://simbad.cds.unistra.fr/simbad/sim-basic?Ident=*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.3.1
+// @version     1.5.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -435,6 +435,10 @@ function simbadStarIdToWikiUrl(starId) {
   return `https://en.wikipedia.org/w/index.php?title=Special:Search&search=${starIdCleanedUp}`;
 }
 
+function simbadStarIdToStellariumUrl(starId) {
+  return "https://stellarium-web.org/skysource/" + encodeURIComponent(starId)
+}
+
 const startTitleEl = document.querySelector('#basic_data font[size="+2"]');
 if (startTitleEl) {
   const reStarIdAndType = /<b>\s*\n*(.+)\s*\n*<\/b>\s*--\s*(.+)/;
@@ -443,9 +447,18 @@ if (startTitleEl) {
   if (starIdAndTypeMatch) {
     const typeWikiLinkHtml = simbadStarTypeToWikiLinkHtml(starIdAndTypeMatch[2]);
     const starIdWikiUrl = simbadStarIdToWikiUrl(starIdAndTypeMatch[1]);
+    const starIdStellariumUrl = simbadStarIdToStellariumUrl(starIdAndTypeMatch[1]);
     html = html.replace(reStarIdAndType, `\
-<b><a target="wiki_star"
-      href="${starIdWikiUrl}">$1</a></b> --
+<b><a target="stellarium_star"
+      href="${starIdStellariumUrl}">$1</a></b>
+<!-- style stellarium block to reduce horizontal space -->
+<sub style="
+font-size: 12px;
+font-family: 'Bahnschrift Light Condensed', ui-sans-serif;
+display: inline-block;
+margin-left: -10px;
+"><a target="wiki_star" href="${starIdWikiUrl}">wiki</a></sub>
+--
 ${typeWikiLinkHtml}
 <svg style="height: 0.8em; width: 1em; background: transparent;" aria-hidden="true" data-prefix="fas" data-icon="external-link-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M576 24v127.984c0 21.461-25.96 31.98-40.971 16.971l-35.707-35.709-243.523 243.523c-9.373 9.373-24.568 9.373-33.941 0l-22.627-22.627c-9.373-9.373-9.373-24.569 0-33.941L442.756 76.676l-35.703-35.705C391.982 25.9 402.656 0 424.024 0H552c13.255 0 24 10.745 24 24zM407.029 270.794l-16 16A23.999 23.999 0 0 0 384 303.765V448H64V128h264a24.003 24.003 0 0 0 16.97-7.029l16-16C376.089 89.851 365.381 64 344 64H48C21.49 64 0 85.49 0 112v352c0 26.51 21.49 48 48 48h352c26.51 0 48-21.49 48-48V287.764c0-21.382-25.852-32.09-40.971-16.97z"></path></svg>
 `);
@@ -487,3 +500,14 @@ function addAladinLiteLink() {
   }
 }
 addAladinLiteLink();
+
+
+function makeCanonicalLink() {
+  // normalize the link so that the copied link has less variation
+  // right now: remove useless query string parameters
+  const rePattern = /&submit=submit/
+  if (location.search.match(rePattern)) {
+    history.pushState("", document.title, location.pathname + location.search.replace(rePattern, ""));
+  }
+}
+makeCanonicalLink();

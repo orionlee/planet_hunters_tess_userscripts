@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.7.1
+// @version     1.8.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -21,6 +21,13 @@ function isElementOrAncestor(el, criteria) {
     }
   }
   return false;
+}
+
+function capitalize(text) {
+  function capitalize1stLetter(word) {
+    return word.substring(0, 1).toLocaleUpperCase() + word.substring(1);
+  }
+  return text.split(" ").map(capitalize1stLetter).join(" ");
 }
 
 //
@@ -90,6 +97,15 @@ titleForLinkifiedUrlImplList.push(url => {
   const [, tceSubId] = url.match(/exo.mast.stsci.edu\/api\/v0.1\/Download\/file\?uri=mast:TESS\/.+-0*(.+)-\d+_dvs.pdf/) || [null, null];
   return tceSubId ? `TCE${tceSubId} vetting summary` : null;
 });
+// A generic replacement scheme (should always be the last one!)
+titleForLinkifiedUrlImplList.push(url => {
+  // match the last portion of an URL path (ignoring query string)
+  // for many link, the last portion tends to be the readable name
+  let [, text] = url.match(/([^/]+)([/]|[?].+)?$/) || [null, null];
+  text = text?.replace(/[-_]/g, " ");
+  return capitalize(text);
+});
+
 
 function createTitleForLinkifiedUrl(url) {
   for (const implFn of titleForLinkifiedUrlImplList) {

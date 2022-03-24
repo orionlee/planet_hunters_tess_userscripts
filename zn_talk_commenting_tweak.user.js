@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.8.0
+// @version     1.8.1
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -24,6 +24,7 @@ function isElementOrAncestor(el, criteria) {
 }
 
 function capitalize(text) {
+  if (!text) return null;
   function capitalize1stLetter(word) {
     return word.substring(0, 1).toLocaleUpperCase() + word.substring(1);
   }
@@ -62,10 +63,11 @@ function insertAtCursor(textarea, text, transformFn, selectFn) {
 //
 
 const titleForLinkifiedUrlImplList = []
-titleForLinkifiedUrlImplList.push(url => {
-  const [, title] = url.match(/.*[.]wikipedia[.]org\/wiki\/(.+)/) || [null, null];
-  return title?.replace(/_/g, ' ');
-});
+// subsumed by the default extraction logic.
+// titleForLinkifiedUrlImplList.push(url => {
+//   const [, title] = url.match(/.*[.]wikipedia[.]org\/wiki\/([^#]+)/) || [null, null];
+//   return title?.replace(/_/g, ' ');
+// });
 titleForLinkifiedUrlImplList.push(url => {
   if (url.includes('simbad.u-strasbg.fr/simbad/sim-') ||
       url.includes('simbad.cds.unistra.fr/simbad/sim-')) {
@@ -101,7 +103,19 @@ titleForLinkifiedUrlImplList.push(url => {
 titleForLinkifiedUrlImplList.push(url => {
   // match the last portion of an URL path (ignoring query string)
   // for many link, the last portion tends to be the readable name
-  let [, text] = url.match(/([^/]+)([/]|[?].+)?$/) || [null, null];
+  // urls pattern to handle include:
+  // - static page (possibly with an extension)
+  //   https://heasarc.gsfc.nasa.gov/docs/tess/approved-programs.html
+  // - with query string:
+  //   https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html?searchQuery=%7B%22service%22FooBar
+  // - no extension, nor query string
+  //   https://en.wikipedia.org/wiki/Gamma_Doradus
+  //  - hashes:
+  //    https://en.wikipedia.org/wiki/Gamma_Doradus_variable#List
+  //  - end with slash
+  //    https://en.wikipedia.org/wiki/Gamma_Doradus/
+
+  let [, text] = url.match(/.+\/([a-zA-Z0-9-_]+)([/.?#].*)?$/) || [null, null];
   text = text?.replace(/[-_]/g, " ");
   return capitalize(text);
 });

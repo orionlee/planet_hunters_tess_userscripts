@@ -12,7 +12,7 @@
 // @match       http*://simbad.cds.unistra.fr/simbad/sim-basic?Ident=*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.5.0
+// @version     1.5.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -30,9 +30,9 @@
 }
 
 .filter-matched .un-matched-id {
-  /* Less jumping in UI when users toggle hide/show by hiding them (but keeping the space)
-    */
-  visibility: hidden;
+  /* use display:none as it looks better when hidden, but some jumping in UI when users toggle hide/show */
+  display: none;
+  /* visibility: hidden; */
 }
 
 /* A subtle visual hint to indicate the wiki link is a direct link (rather than search) */
@@ -181,7 +181,8 @@ function tweakUIWithCrossMatch() {
         tt.classList.add('matched-id');
         numIdsMatched++;
       } else {
-        tt.classList.add('un-matched-id');
+        // hide but the <td>s, not just the <tt> elements
+        tt.parentElement.parentElement.classList.add('un-matched-id');
       }
     });
 

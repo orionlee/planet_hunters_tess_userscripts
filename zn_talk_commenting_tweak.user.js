@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.8.1
+// @version     1.9.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -98,6 +98,14 @@ titleForLinkifiedUrlImplList.push(url => {
   // TESS TCE vetting summary. tceSubId: 1, 2, 3 (of a given sector / sectors)
   const [, tceSubId] = url.match(/exo.mast.stsci.edu\/api\/v0.1\/Download\/file\?uri=mast:TESS\/.+-0*(.+)-\d+_dvs.pdf/) || [null, null];
   return tceSubId ? `TCE${tceSubId} vetting summary` : null;
+});
+titleForLinkifiedUrlImplList.push(url => {
+  // Vizier entry link, e.g.,
+  // https://vizier.u-strasbg.fr/viz-bin/VizieR-S?Gaia%20EDR3%203449035248963961216
+  const [, targetId] = url.match(/vizier[.].+[/]VizieR-S[?]([^&]+)/) || [null, ""];
+  // e.g, extract Gaia EDR3
+  const [, prefix] = decodeURIComponent(targetId).match(/(^.+)\s+\d+\s*$/) || [null, null];
+  return prefix ? `${prefix} entry` : null;
 });
 // A generic replacement scheme (should always be the last one!)
 titleForLinkifiedUrlImplList.push(url => {

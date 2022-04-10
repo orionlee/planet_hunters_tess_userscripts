@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.10.0
+// @version     1.11.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -343,6 +343,14 @@ table.highlighted tr:nth-of-type(1) th {
   highlightIfFalseAlarm(document.querySelectorAll('a[name="tois"] + table tr td:nth-of-type(13)'));
 
 })();
+
+(() => { // Highlight previous exoplanet mission targets
+  if (getAliasesList().some(alias => alias.match(/EPIC|K2|Kepler|WASP/))) {
+    const headerEl = document.querySelector('a[name="basic"] ~ table tr:nth-of-type(2) th:first-of-type');
+    headerEl?.insertAdjacentHTML('beforeend', `<span style="background-color: yellow; padding: 1px 2ch;"> Kepler/K2 </span>`);
+  }
+})();
+
 
 // Convert Epoch from BJD to BTJD , sector / relative time in planet parameters table
 function showEpochInBTJDAndRelative() {

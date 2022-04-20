@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.5.2
+// @version     1.6.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -359,7 +359,7 @@ function tweakDetailPage() {
     return aliasesWithSortKey.map(e => e[0])
   }
 
-  function showMatchResultMsg(aliasesMatched, aliasesNotMatched) {
+  function showMatchResultMsg(aliasesMatched, aliasesNotMatched, extraNamesToShow) {
 
     const ctr = document.querySelector('#tessAliasesMatchMsg');
     ctr.innerHTML = `
@@ -376,7 +376,7 @@ Not matched:<br>
         return "";
       }
       return `\
-${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}`;
+${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.join()}`;
     })();
 
     const submissionInCtl = document.getElementById('notMatchedNamesForVSXSubmission');
@@ -422,7 +422,18 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}`;
       }
     });
 
-    showMatchResultMsg(aliasesMatched, Array.from(aliasesNotMatchedSet));
+    // not matched per-se, but they are of interests
+    // currently, if VSX entry has ASAS-SN names, I'd like to know
+    // as it could be helpful when I indirectly cross match with ASAS-SN
+    const extraNamesToShow = [];
+    existingIdCtrPairs.forEach(idCtrPair => {
+      const [id,] = idCtrPair;
+      if (id.startsWith("ASASSN-V")) {
+        extraNamesToShow.push(id);
+      }
+    });
+
+    showMatchResultMsg(aliasesMatched, Array.from(aliasesNotMatchedSet), extraNamesToShow);
   }
 
 

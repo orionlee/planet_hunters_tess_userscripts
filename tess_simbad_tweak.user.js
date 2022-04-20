@@ -12,7 +12,7 @@
 // @match       http*://simbad.cds.unistra.fr/simbad/sim-basic?Ident=*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.5.1
+// @version     1.5.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -437,7 +437,9 @@ function simbadStarIdToWikiUrl(starId) {
 }
 
 function simbadStarIdToStellariumUrl(starId) {
-  return "https://stellarium-web.org/skysource/" + encodeURIComponent(starId)
+  // the logic is also used in the WikiUrl function (which does more mapping)
+  const starIdCleanedUp = starId.replace(/^V?[*]+\s*/, '');
+  return "https://stellarium-web.org/skysource/" + encodeURIComponent(starIdCleanedUp)
 }
 
 const startTitleEl = document.querySelector('#basic_data font[size="+2"]');

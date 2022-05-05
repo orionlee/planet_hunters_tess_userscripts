@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.8.3
+// @version     1.8.4
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -941,7 +941,7 @@ function isElementOrAncestor(el, criteria) {
 <br>
 <span style="font-weight: bold;">S. ${meta.sector}</span>, TIC <input id="ticIdForCopy" style="display: inline-block; border: 0;" readonly value="${ticId}">
 &emsp;<button id="ticCopyCtl" accesskey="C" title="Copy shortcut: Alt-C"><u>C</u>opy</button>
-&emsp;<button id="ticCopyNAddToNoteCtl">Copy & Add to note</button>
+&emsp;<button id="ticCopyNAddToNoteCtl" accesskey="A" title="Copy & Add to note shortcut: Alt-A">Copy & <u>A</u>dd to note</button>
 <br><br>
 <a target="_pht_talk" href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC%20${ticId}">Search Talk for TIC</a>
 <br><br>
@@ -1015,9 +1015,9 @@ When TIC will be observed:<br>
         return true;
       }, { passive: true });
     } finally {
-      // auto focus on exofop link if the pop in is displayed
+      // auto focus on Search PHT Talk link if the pop in is displayed
       if (document.querySelector('#ticPopin').style.display != 'none') {
-        document.querySelector('#ticPopin a[target="_exomast"]').focus();
+        document.querySelector('#ticPopin a[target="_pht_talk"]').focus();
       }
     }
   } // function showTicPopin()

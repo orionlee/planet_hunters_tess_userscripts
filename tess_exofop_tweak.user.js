@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.20.0
+// @version     1.21.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -249,35 +249,37 @@ if (simbadLinkEl) {
 
   const bandMagMap = getBandMagnitudeMap();
   const bvColorIndex = bandMagMap['B'] - bandMagMap['V'];
-  if (!isNaN(bvColorIndex)) {
-    const spectralType = (() => {
-      // The mapping is based on : https://en.wikipedia.org/wiki/Color_index
-      const bvColorIndexToSpectral = [
-        [-0.33, "> O"],
-        [-0.30, "O"],  // i.e, < -0.30 is O type
-        [-0.02, "B"],
-        [0.30, "A"],
-        [0.58, "F"],
-        [0.81, "G"],
-        [1.40, "K"],
-        [Number.POSITIVE_INFINITY, "M"],
-      ];
-      for (const entry of bvColorIndexToSpectral) {
-        if (bvColorIndex < entry[0]) {
-          return entry[1];
-        }
+  const spectralType = (() => {
+    if (isNaN(bvColorIndex)) {
+      return '';
+    }
+    // The mapping is based on : https://en.wikipedia.org/wiki/Color_index
+    const bvColorIndexToSpectral = [
+      [-0.33, "> O"],
+      [-0.30, "O"],  // i.e, < -0.30 is O type
+      [-0.02, "B"],
+      [0.30, "A"],
+      [0.58, "F"],
+      [0.81, "G"],
+      [1.40, "K"],
+      [Number.POSITIVE_INFINITY, "M"],
+    ];
+    for (const entry of bvColorIndexToSpectral) {
+      if (bvColorIndex < entry[0]) {
+        return entry[1];
       }
-    })();
-    anchorEl.insertAdjacentHTML('beforeend',`
+    }
+  })();
+  const bvColorIndexStr = isNaN(bvColorIndex) ? 'N/A': bvColorIndex.toFixed(2)
+  anchorEl.insertAdjacentHTML('beforeend',`
 <span title="B-V color index, and estimated spectral type.
 O5V: -0.33 ; B0V: -0.30 ; A0V: -0.02 ;
 F0V: 0.30 ; G0V: 0.58; K0V: 0.81; M0V: 1.40"
       style="padding: 0 1.5ch;background-color: #ddd;">
     <a href="https://en.wikipedia.org/wiki/Color_index"
-       target="_color_index" style="style="font-size: 1em; padding: 0.1em 0.5ch;">B-V:</a>
-    ${bvColorIndex.toFixed(2)} (${spectralType})
+        target="_color_index" style="style="font-size: 1em; padding: 0.1em 0.5ch;">B-V:</a>
+    ${bvColorIndexStr} (${spectralType})
 </span>`);
-  }
 
 })();
 

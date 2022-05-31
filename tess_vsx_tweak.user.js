@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.6.0
+// @version     1.6.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -443,7 +443,9 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
 
   function aliasFilter(alias) {
     // filter out aliases that won't be present in VSX based on communication with VSX moderators.
-    if (alias.match(/^(APASS|Gaia DR2)/)) {
+    // For SDSS, ExoFOP provides SDSS DR 9 ids, but it is not the canonical / preferred form
+    // used in VSX, SIMBAD, etc. The canonical form is `SDSS J<co-ordinate>`
+    if (alias.match(/^(APASS|Gaia DR2|SDSS DR)/)) {
       return false;
     }
     return true;

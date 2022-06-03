@@ -3,7 +3,7 @@
 // @namespace   astro.tess
 // @match       https://asas-sn.osu.edu/variables*
 // @grant       GM_addStyle
-// @version     1.3
+// @version     1.3.1
 // @author      orionlee
 // @description
 // ==/UserScript==
@@ -28,8 +28,15 @@ function tweakSearchResult() {
   // - hide the search form to surface the result
   document.querySelector('button.panel-header-btn').click();
 
+  function getSearchResultRows() {
+    return Array.from(document.querySelectorAll('table tbody tr'));
+  }
+
+  // indicate num entries found. 0 would be helpful to ignore the result without opening the tab
+  document.title = `(${getSearchResultRows().length}) - ${document.title}`;
+
   function tweakSearchResultRows() {
-    Array.from(document.querySelectorAll('table tbody tr'), tr => {
+    getSearchResultRows().forEach(tr => {
       const linkEl = tr.querySelector('a')
       const distance = tr.querySelector('td:nth-of-type(5)').textContent
       linkEl.setAttribute('href', linkEl.getAttribute('href') + `#distance=${distance}`);
@@ -40,7 +47,7 @@ function tweakSearchResult() {
 
 
   function gotoObjectDetailIfOnly1ResultReturned() {
-    const rows = document.querySelectorAll('table tbody tr');
+    const rows = getSearchResultRows();
     if (rows.length != 1) {
       return;
     }

@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.6.1
+// @version     1.6.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -251,6 +251,9 @@ function tweakSearchResult() {
   }
 
   const resRows = getSearchResultRows();
+
+  // indicate num entries found. 0 would be helpful to ignore the result without opening the tab
+  document.title = `(${resRows.length}) - ${document.title}`;
 
   // Add link to variable type helper
   //

@@ -12,7 +12,7 @@
 // @match       http*://simbad.cds.unistra.fr/simbad/sim-basic?Ident=*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.5.2
+// @version     1.5.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -144,36 +144,42 @@ function tweakUIWithCrossMatch() {
   showMatchingInfo(aliasList, otherParams);
 
   // highlight the aliases
+
+  let numIdsMatched = 0;
+
   // BEGIN for case the coordinate has multiple results
   // - we propagate the aliases to the result link
   // - some minor UI tweak
+  if (!document.querySelector('a[name="lab_ident"]')) {
+    const resultLinks = Array.from(document.querySelectorAll('#datatable tr td:nth-of-type(2) a'));
+    /// console.debug('result links:', resultLinks);
 
-  let numIdsMatched = 0;
-  const resultLinks = Array.from(document.querySelectorAll('#datatable tr td:nth-of-type(2) a'));
-  /// console.debug('result links:', resultLinks);
-  resultLinks.forEach(linkEl => {
-    // propagate the aliases to the links of individual result
-    linkEl.href += location.hash;
-  });
+    // indicate num entries found. 0 would be helpful to ignore the result without opening the tab
+    document.title = `(${resultLinks.length}) - ${document.title}`;
 
-  // traverse to individual page automatically if applicable
-  // (the links have been processed to propagate the hash)
-  resultLinks.forEach(linkEl => {
-    // case multiple result, the one of them has matching ID
-    if (aliasList.includes(normalizeId(linkEl))) {
-      location.href = linkEl.href; // ID matched, go to the individual result page directly
+    resultLinks.forEach(linkEl => {
+      // propagate the aliases to the links of individual result
+      linkEl.href += location.hash;
+    });
+
+    // traverse to individual page automatically if applicable
+    // (the links have been processed to propagate the hash)
+    resultLinks.forEach(linkEl => {
+      // case multiple result, the one of them has matching ID
+      if (aliasList.includes(normalizeId(linkEl))) {
+        location.href = linkEl.href; // ID matched, go to the individual result page directly
+      }
+    });
+
+    // okay so we don't go to individual result page directly. make it easy to click first link instead
+    if (resultLinks.length > 1) {
+      resultLinks[0].focus(); // doesn't work if the tab is spawned as a background one
+      resultLinks.forEach( (a, i) => { a.accessKey = i+1; });  // assign keyboard short, Alt-1, Alt-2, ...
     }
-  });
-
-  // okay so we don't go to individual result page directly. make it easy to click first link instead
-  if (resultLinks.length > 1) {
-    resultLinks[0].focus(); // doesn't work if the tab is spawned as a background one
-    resultLinks.forEach( (a, i) => { a.accessKey = i+1; });  // assign keyboard short, Alt-1, Alt-2, ...
   }
-
   // END for case the coordinate has multiple results
 
-  // case the coordinate matches a single result
+  // BEGIN case the coordinate matches a single result
   if (document.querySelector('a[name="lab_ident"]')) {
     const idTableEl = document.querySelector('a[name="lab_ident"]').parentElement.nextElementSibling.nextElementSibling.nextElementSibling;
     Array.from(idTableEl.querySelectorAll('tt'), tt => {
@@ -198,6 +204,7 @@ function tweakUIWithCrossMatch() {
       hideShowUnmatchedIDs(); // initialized, by first hiding them
     }
   }
+  // END case the coordinate matches a single result
 
   const aliasMatchMsgCtr = document.querySelector('#tessAliasesMatchMsg');
   if (numIdsMatched > 0) {

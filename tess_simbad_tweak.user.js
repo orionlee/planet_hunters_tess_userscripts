@@ -12,7 +12,7 @@
 // @match       http*://simbad.cds.unistra.fr/simbad/sim-basic?Ident=*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.5.3
+// @version     1.5.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -485,15 +485,23 @@ function highlightInterestingObjectTypes() {
     return baseTypes;
   })();
 
+  const interestingTypesFound = [];
   Array.from(document.querySelectorAll('td > tt[title] > b'), el => {
     const oType = el.textContent.trim();
     if (!uninterestingTypes.includes(oType)) {
       el.style.backgroundColor = "rgba(255, 255, 0, 0.5)";
+      interestingTypesFound.push(oType);
     }
     el.innerHTML = `\
 <a href="/simbad/sim-display?data=otypes#:~:text=${oType}"
    style="color: black;" target="_simbad_otype">${oType}</a>`;
   });
+
+  // add interesting type to tab bar title
+  if (interestingTypesFound.length > 0) {
+    const typeText = interestingTypesFound.map(t => t.replace(/[*]/g, '')).join(', ');
+    document.title = `${typeText} | ${document.title}`;
+  }
 }
 highlightInterestingObjectTypes();
 

@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.21.2
+// @version     1.22.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -210,6 +210,11 @@ if (simbadLinkEl) {
         '&sort_by=distance&sort_order=asc&show_non_periodic=true&show_without_class=true&asassn_discov_only=false&'
         : '');
 
+  // Gaia DR3 variables.
+  // documentation: https://gea.esac.esa.int/archive/documentation/GDR3/Gaia_archive/chap_datamodel/sec_dm_variability_tables/
+  const gaiaDr3VarUrl = 'https://cdsarc.cds.unistra.fr/viz-bin/VizieR-3?-source=I/358/vclassre' +
+    ((coord != null) ? `#-c=${encodeURIComponent(coord.ra + ' ' + coord.dec)}`  : '');
+
   const tic = getTic();
 
   document.querySelector('a[href="/tess"]').insertAdjacentHTML('afterend', `\
@@ -217,6 +222,7 @@ if (simbadLinkEl) {
   ${simbadLinkEl.outerHTML.replace('>\nSIMBAD<', ' accesskey="S"> SIMBAD<')} |
   <a href="${vsxUrl}" target="_vsx" accesskey="V" title="Variable Star Index">VSX</a> |
   <a href="${asasSnUrl}" target="_asas-sn" accesskey="A" title="All-Sky Automated Survey for Supernovae">ASAS-SN</a> |
+  <a href="${gaiaDr3VarUrl}" target=_gaia-dr3-var" accesskey="G" title="Gaia DR3 Variables">GDR3 Var</a> |
   <a href="http://tessebs.villanova.edu/search_results?tic=${tic}" target="_tess-eb" accesskey="T">TESS-EB</a> |
   <a href="https://tev.mit.edu/data/search/?q=${tic}" target="_tev"
     title="To MIT TEV: it contains similar information; but it also has QLP validation reports when applicable">MIT TEV</a> |

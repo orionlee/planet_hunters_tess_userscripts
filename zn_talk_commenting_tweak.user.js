@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.9.0
+// @version     1.9.1
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -85,6 +85,16 @@ titleForLinkifiedUrlImplList.push(url => {
   }
 });
 titleForLinkifiedUrlImplList.push(url => {
+  if (url.includes('heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv')) {
+    return 'WTV';
+  }
+});
+titleForLinkifiedUrlImplList.push(url => {
+  if (url.includes('exofop.ipac.caltech.edu/tess/edit_obsnotes.php')) {
+    return 'Observation notes';
+  }
+});
+titleForLinkifiedUrlImplList.push(url => {
   // TESS GI proposals
   const [, proposalId] = url.match(/heasarc.gsfc.nasa.gov\/docs\/tess\/data\/approved-programs\/[^/]+\/(.+).txt/) || [null, null];
   return proposalId;
@@ -105,7 +115,7 @@ titleForLinkifiedUrlImplList.push(url => {
   const [, targetId] = url.match(/vizier[.].+[/]VizieR-S[?]([^&]+)/) || [null, ""];
   // e.g, extract Gaia EDR3
   const [, prefix] = decodeURIComponent(targetId).match(/(^.+)\s+\d+\s*$/) || [null, null];
-  return prefix ? `${prefix} entry` : null;
+  return prefix ? `${prefix} data` : null;
 });
 // A generic replacement scheme (should always be the last one!)
 titleForLinkifiedUrlImplList.push(url => {

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.8.4
+// @version     1.8.5
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -783,6 +783,7 @@ function isElementOrAncestor(el, criteria) {
     GM_openInTab(searchUrl, true); // open the search in the a new tab in background.
   }
 
+
   function tweakTalkSearch() {
     const talkForm = document.querySelector('form.talk-search-form');
 
@@ -794,6 +795,11 @@ function isElementOrAncestor(el, criteria) {
       return; // avoid repeated init
     }
     talkForm.tweakCalled = true;
+
+    // Add keyboard shortcut to Search input field
+    talkForm.querySelector('input').accessKey = "/";
+    talkForm.querySelector('input').placeholder = "Search or enter a #tag. Alt-/ : shortcut";
+
 
     // Open talk search in a new tab for:
 

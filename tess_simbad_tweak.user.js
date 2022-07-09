@@ -10,9 +10,10 @@
 // @match       http*://simbad.cds.unistra.fr/simbad/sim-coo?Coord=*
 // @match       http*://simbad.cds.unistra.fr/simbad/sim-id?*
 // @match       http*://simbad.cds.unistra.fr/simbad/sim-basic?Ident=*
+// @match       https://simbad.cds.unistra.fr/guide/otypes.htx*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.5.4
+// @version     1.6.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -493,7 +494,7 @@ function highlightInterestingObjectTypes() {
       interestingTypesFound.push(oType);
     }
     el.innerHTML = `\
-<a href="/simbad/sim-display?data=otypes#:~:text=${oType}"
+<a href="/simbad/sim-display?data=otypes#otype=${oType}"
    style="color: black;" target="_simbad_otype">${oType}</a>`;
   });
 
@@ -529,3 +530,25 @@ function makeCanonicalLink() {
   }
 }
 makeCanonicalLink();
+
+
+function tweakOTypesGuide() {
+  if (location.pathname != '/guide/otypes.htx') {
+    return;
+  }
+  console.debug("In OTypes Guide tweak");
+
+  const [, otype] = location.hash.match('#otype=([^&]+)') || [null, null]
+  if (!otype) {
+    return;
+  }
+  // auto search the specified otype
+  // use setTimeout to ensure the page is initialized with the otype nodes
+  setTimeout(() => {
+    // console.debug("otypes :", unsafeWindow.otypes);  // defined by SIMBAD's otypes_main.js
+    document.querySelector('input#txtSearch').value = otype;
+    document.querySelector('button#btnSearch').click();
+  }, 1000);
+
+}
+tweakOTypesGuide();

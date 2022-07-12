@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.24.0
+// @version     1.24.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -206,11 +206,13 @@ const coord = getCoord();
 const simbadLinkEl = document.querySelector('a[target="simbad"]');
 if (simbadLinkEl) {
   // fix, fix simbad urls, with
-  // for star with dec between -1, and 1, the ExoFOP generated link
+  // for star with ra or dec between -1, and 1, the ExoFOP generated link
   // is in the form of ".../sim-coo?Coord=<ra>+-.665&Radius=2...", there is no "0" before the "."
   // SIMBAD, however, requires the 0 before the "."
-  simbadLinkEl.href = simbadLinkEl.href.replace(/(\d)[+][.](\d)/, '$1+0.$2');     // e.g.,  .123 => 0.123
-  simbadLinkEl.href = simbadLinkEl.href.replace(/(\d)[+][-][.](\d)/, '$1+-0.$2'); // e.g., -.123 => -0.123
+  // for -1 < DEC < 1, e.g., -.123 => -0.123 ; .123 => 0.123
+  simbadLinkEl.href = simbadLinkEl.href.replace(/(\d[+]-?)[.](\d)/, '$10.$2');
+  // for -1 < RA < 1
+  simbadLinkEl.href = simbadLinkEl.href.replace(/(Coord=-?)[.](\d)+/, '$10.$2');
 
   // add links to SIMBAD, VSX to the top
 

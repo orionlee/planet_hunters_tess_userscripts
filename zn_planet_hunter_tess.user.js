@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.8.5
+// @version     1.8.6
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -288,9 +288,18 @@ function isElementOrAncestor(el, criteria) {
     if (btn) {
       btn.click();
       // focus on viewer so that built-in viewer shortcuts will work
+      // also reset scrolling so that the viewer is entirely above the fold
+      // useful for
+      // 1. users have scrolled down and clicked classify,
+      //    when the next subject is loaded and this function is called to reset the viewer
+      //    by customizeViewerSubjectLevel(), the window will scroll back to the preferred position.
+      // 2. users have scrolled down inadvertently due to mousewheel position, one can get back
+      //    to preferred scrolling by keyboard shortcut of any of the buttons
+      //    (e.g., 0 for reset, M for view/annotate toggle)
       const rootEl = annotateViewerRoot();
       if (rootEl) {
         rootEl.querySelector('svg').focus();
+        rootEl.scrollIntoView();
       }
       return true;
     }

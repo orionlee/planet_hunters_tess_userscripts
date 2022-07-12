@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.23.0
+// @version     1.24.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -176,7 +176,14 @@ function getOtherParams() {
       + getMagnitudeOfRow(2);
   }
 
-  return `Distance(pc): ${getDistance()} ; Magnitudes: ${getMagnitudes()} ;`;
+  function getProperMotion() {
+    // use innerHTML instead of textContent, to easily remove the errors from the result, e.g.,
+    // '7.54136 <span class="error">± 0.075189</span><br>-65.6934 <span class="error">± 0.07388</span>'
+    return document.querySelector('a[name="basic"] ~table tbody tr:nth-of-type(3) td:nth-of-type(6)')
+      ?.innerHTML?.replace(/(<span.+?<\/span>|<br>)/g, '')?.trim();
+  }
+
+  return `Distance(pc): ${getDistance()} ; PM: ${getProperMotion()}; Magnitudes: ${getMagnitudes()} ;`;
 } // function getOtherParams()
 
 

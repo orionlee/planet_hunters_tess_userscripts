@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.9.1
+// @version     1.9.2
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -117,6 +117,16 @@ titleForLinkifiedUrlImplList.push(url => {
   const [, prefix] = decodeURIComponent(targetId).match(/(^.+)\s+\d+\s*$/) || [null, null];
   return prefix ? `${prefix} data` : null;
 });
+titleForLinkifiedUrlImplList.push(url => {
+  // Vizier Gaia DR3 variable entry link, e.g.,
+  // https://vizier.u-strasbg.fr/viz-bin/VizieR-S?Gaia%20EDR3%203449035248963961216
+  // https://cdsarc.cds.unistra.fr/viz-bin/VizieR-5?-ref=VIZ62ce31bb45b5&-out.add=.&-source=I/358/vclassre&recno=1562935&-out.orig=o
+  if (url.match(/[/]viz-bin[/]VizieR-5[?].*-source=I[/]358[/]vclassre&/)) {
+    return "Gaia DR3 variable entry";
+  }
+  return null;
+});
+//
 // A generic replacement scheme (should always be the last one!)
 titleForLinkifiedUrlImplList.push(url => {
   // match the last portion of an URL path (ignoring query string)

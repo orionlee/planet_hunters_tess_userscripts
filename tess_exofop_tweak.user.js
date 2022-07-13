@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.24.1
+// @version     1.24.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -229,7 +229,7 @@ if (simbadLinkEl) {
 
   // Gaia DR3 variables.
   // documentation: https://gea.esac.esa.int/archive/documentation/GDR3/Gaia_archive/chap_datamodel/sec_dm_variability_tables/
-  const gaiaDr3VarUrl = 'https://cdsarc.cds.unistra.fr/viz-bin/VizieR-3?-source=I/358/vclassre' +
+  const gaiaDr3VarUrl = 'https://vizier.u-strasbg.fr/viz-bin/VizieR-3?-source=I/358/vclassre' +
     ((coord != null) ? `#-c=${encodeURIComponent(coord.ra + ' ' + coord.dec)}`  : '');
 
   const tic = getTic();

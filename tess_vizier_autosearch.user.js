@@ -1,14 +1,15 @@
 // ==UserScript==
 // @name        Vizier Auto Search from URL
 // @namespace   astro.tess
+// @match       https://vizier.u-strasbg.fr/viz-bin/VizieR-*?-source=*
 // @match       https://cdsarc.cds.unistra.fr/viz-bin/VizieR-*?-source=*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.0
+// @version     1.0.1
 // @author      -
 // @description Auto-search a Vizier source using the parameter from hash.
 //              Use cases includes creating URLs for Gaia DR3 variable on Vizier.
-// @icon        https://cdsarc.cds.unistra.fr/favicon.ico
+// @icon        https://vizier.u-strasbg.fr/favicon.ico
 // ==/UserScript==
 
 

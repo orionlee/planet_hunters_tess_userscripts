@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.24.2
+// @version     1.24.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -126,34 +126,39 @@ function normalizeAlias(aliasText) {
 // (The SIMBAD link is coordinate-based, so at times it might be off target if there are nearby stars.)
 //
 function getAliasesList() {
-  const aliasesText = document.querySelector('a[name="basic"] ~ table tr:last-of-type td:first-of-type').textContent;
+  let aliasesText = document.querySelector('.overview_header > span:nth-of-type(1) > ul >li:nth-of-type(1)')?.textContent;
+  if (!aliasesText) {
+    console.error('getAliasesList(): cannot find aliases. No-op');
+    return;
+  }
+  aliasesText = aliasesText.replace('Star Name(s): ', '').trim();
   return aliasesText.split(',').map(t => normalizeAlias(t));
 }
 
 function getDistance() {
-  return (document.querySelector('a[name="stellar"] ~ table tr:nth-child(4) > td:nth-child(17)') || { textContent: ''})
+  // distance: 17th column of the table of the stellar parameters table
+  return (document.querySelector('#myGrid4 div.ag-center-cols-container > div:nth-of-type(1) > div:nth-of-type(17)') || { textContent: ''})
     .textContent;
 } // function getDistance()
 
 function getBandAndMagnitudeOfRow(rowIdx) {
-  // - rows 1 and 2 are headers, so rowIdx: 0 should be row 3
-  const trEl = document.querySelector(`a[name="magnitudes"] + table tr:nth-child(${3 + rowIdx})`);
-  if (!trEl) {
+  // - rowIdx 0 is first row, or div:nth-of-type(1)
+  const rowEl = document.querySelector(`#myGrid6 div.ag-center-cols-container > div:nth-of-type(${1 + rowIdx})`);
+  if (!rowEl) {
     return null;
   }
   return {
-    band: trEl.querySelector('td:nth-child(1)').textContent,
-    magnitude: trEl.querySelector('td:nth-child(2)').textContent,
+    band: rowEl.querySelector('div:nth-child(1)').textContent,
+    magnitude: rowEl.querySelector('div:nth-child(2)').textContent,
   };
 }
 
 function getBandMagnitudeMap() {
-  // - rows 1 and 2 are headers skip them
-  const trEls = Array.from(document.querySelectorAll(`a[name="magnitudes"] + table tr:nth-child(n + 3)`));
+  const rowEls = Array.from(document.querySelectorAll(`#myGrid6 div.ag-center-cols-container > div`));
   const res = {}  // band: magnitude map
-  trEls.forEach(tr => {
-    res[tr.querySelector('td:nth-child(1)').textContent] =
-      parseFloat(tr.querySelector('td:nth-child(2)').textContent);
+  rowEls.forEach(rowEl => {
+    res[rowEl.querySelector('div:nth-child(1)').textContent] =
+      parseFloat(rowEl.querySelector('div:nth-child(2)').textContent);
   });
   return res;
 }
@@ -177,10 +182,11 @@ function getOtherParams() {
   }
 
   function getProperMotion() {
-    // use innerHTML instead of textContent, to easily remove the errors from the result, e.g.,
+    // get PM without error
     // '7.54136 <span class="error">± 0.075189</span><br>-65.6934 <span class="error">± 0.07388</span>'
-    return document.querySelector('a[name="basic"] ~table tbody tr:nth-of-type(3) td:nth-of-type(6)')
-      ?.innerHTML?.replace(/(<span.+?<\/span>|<br>)/g, '')?.trim();
+    let pmText = document.querySelector('.overview_header > span:nth-of-type(2) > ul > li:last-of-type table tr:first-of-type')?.textContent || '';
+    pmText = pmText.replace(/\n/g, '').trim();
+    return pmText;
   }
 
   return `Distance(pc): ${getDistance()} ; PM: ${getProperMotion()}; Magnitudes: ${getMagnitudes()} ;`;
@@ -188,8 +194,8 @@ function getOtherParams() {
 
 
 function getCoord() {
-  const raDecEl = document.querySelector('a[name="basic"] ~table tbody tr:nth-of-type(3) td:nth-of-type(3)');
-  const raDecMatch = raDecEl ? raDecEl.textContent.match(/([0-9:.]+)\s([0-9:.+-]+)[.\n\r]+([0-9.+-]+)°\s+([0-9.+-]+)°/) : null;
+  const raDecEl = document.querySelector('.overview_header > span:nth-of-type(2) > ul > li:nth-of-type(1)');
+  const raDecMatch = raDecEl?.textContent?.match(/:\n([0-9:.]+)\s([0-9:.+-]+)\s+[(]([0-9.+-]+)°\s*([0-9.+-]+)°/);
   if (raDecMatch) {
     return {
              ra:      raDecMatch[1],
@@ -262,7 +268,11 @@ if (simbadLinkEl) {
 
 // Show absolute magnitude and B-V index (for spectral type estimation)
 (() => {
-  const anchorEl = document.querySelector('a[name="magnitudes"] + table th'); // where the output is added too
+  const anchorEl = document.querySelector('a[name="magnitudes"] ~ div.grid_header'); // where the output is added too
+  if (!anchorEl) {
+    console.error('Cannot find UI container for B-V index. No-op.');
+    return;
+  }
 
   const distanceInPc = parseFloat(getDistance() || 0);
   const bandAndMag = getBandAndMagnitudeOfRow(0);
@@ -270,7 +280,7 @@ if (simbadLinkEl) {
     const magApparent = parseFloat(bandAndMag.magnitude || 0);
     const magAbsolute = magApparent - 5 * Math.log10(distanceInPc / 10);
     anchorEl.insertAdjacentHTML('beforeend',
-      `<span style="padding: 0 1.5ch;background-color: white;font-size: 110%;"
+      `<span style="padding: 0 1.5ch;background-color: white;font-size: 90%; font-weight: normal;"
              >Abs. Mag: ${bandAndMag.band}  ${magAbsolute.toFixed(3)}</span>`);
   }
 
@@ -302,9 +312,9 @@ if (simbadLinkEl) {
 <span title="B-V color index, and estimated spectral type.
 O5V: -0.33 ; B0V: -0.30 ; A0V: -0.02 ;
 F0V: 0.30 ; G0V: 0.58; K0V: 0.81; M0V: 1.40"
-      style="padding: 0 1.5ch;background-color: #ddd;">
+      style="padding: 0 1.5ch;background-color: #ddd; font-size: 90%; font-weight: normal;">
     <a href="https://en.wikipedia.org/wiki/Color_index"
-        target="_color_index" style="style="font-size: 1em; padding: 0.1em 0.5ch;">B-V:</a>
+        target="_color_index" style="font-size: 1em; padding: 0.1em 0.5ch;">B-V:</a>
     ${bvColorIndexStr} (${spectralType})
 </span>`);
 
@@ -357,6 +367,7 @@ table.highlighted tr:nth-of-type(1) th {
   const numHeaderRowsTOIs = 3;
   const numHeaderRowsCTOIs = 2;
   function highlightSectionTableIfNonEmpty(anchorName, numHeaderRows) {
+    // TODO: highlight logic needs to be updated with the base UI changes
     const numTrs = document.querySelectorAll(`a[name="${anchorName}"] + table tr`).length;
     if (numTrs > numHeaderRows) {
       document.querySelector(`a[name="${anchorName}"] + table`).classList.add('highlighted');

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.8.7
+// @version     1.8.8
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -393,9 +393,9 @@ function isElementOrAncestor(el, criteria) {
       // the logic once the modal is brought up
       function doGetSubjectMetaAndDo() {
         try {
-          // the pop-in div has no id, but it's always added at the end
-          // so use ~ to make the matching more flexible
-          const metadataCtr = document.querySelector('#lightCurveViewerExpandCtr ~ div table');
+          // the pop-in div has no id, but it's always added at the end of <body>
+          // so we use body > > div:last-of-type to match it.
+          const metadataCtr = document.querySelector('body > div:last-of-type table');
           if (!metadataCtr) {
             console.warn('getSubjectMeta(): cannot find metadata modal dialog. no-op');
             return null;
@@ -420,7 +420,7 @@ function isElementOrAncestor(el, criteria) {
           handleFn(...values);
         } finally {
           // close the modal
-          const closeBtn = document.querySelector('#lightCurveViewerExpandCtr ~ div button[aria-label="Close"]');
+          const closeBtn = document.querySelector('body > div:last-of-type button[aria-label="Close"]');
           if (closeBtn) {
             closeBtn.click();
           }

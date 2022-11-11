@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.8.6
+// @version     1.8.7
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -268,14 +268,18 @@ function isElementOrAncestor(el, criteria) {
   function annotateViewerRoot() {
     // find the container that controls the size of the light-curve
     // annotate it for the use with SVG
-    const lightCurveEl = document.querySelector('div.light-curve-viewer');
-    if (lightCurveEl) {
-      const rootEl = lightCurveEl.parentElement.parentElement.parentElement;
-      rootEl.classList.add('x-light-curve-root');
-      return rootEl;
-    } else {
-      return null;
-    }
+    const rootEl = document.querySelector('main > div > div');  // with CSS class binCyn
+    rootEl?.classList?.add('x-light-curve-root');
+    return rootEl;
+    // 2022111: old codes for the previous version of the UI
+    // const lightCurveEl = document.querySelector('div.light-curve-viewer');
+    // if (lightCurveEl) {
+    //   const rootEl = lightCurveEl.parentElement.parentElement.parentElement;
+    //   rootEl.classList.add('x-light-curve-root');
+    //   return rootEl;
+    // } else {
+    //   return null;
+    // }
   } // function annotateViewerRoot()
 
   // for the buttons to the right of the lightcurve,
@@ -315,6 +319,7 @@ function isElementOrAncestor(el, criteria) {
 
     // add expanded at doc root, so that in case LC viewer is not yet loaded, we can still let it be in expanded state
     document.documentElement.classList.toggle('lcv-expanded');
+
     const rootEl = annotateViewerRoot()
     if (rootEl) {
       rootEl.scrollIntoView();
@@ -325,19 +330,32 @@ function isElementOrAncestor(el, criteria) {
   } // function toggleExpandedViewer()
 
   function initToggleExpandedViewerUI() {
-    if (document.getElementById('lightCurveViewerExpandCtr')) {
-      return false; // already created. no need to do it again
-    }
-
-    document.body.insertAdjacentHTML('beforeend', `
-  <div id="lightCurveViewerExpandCtr" style="z-index: 9; position: fixed; top: 10px; right: 4px; padding: 4px 8px; background-color: rgba(255,255,0,0.5);">
-      <button id="lightCurveViewerExpandCtl"></button>
-  </div>`);
-    document.getElementById('lightCurveViewerExpandCtl').onclick = toggleExpandedViewer;
-
-    toggleExpandedViewer(); // set viewer to expanded state
+    // 20221111: disable expand UI feature. Because with the changes in the classify UI, expand does not work in that
+    // 1. the lightcurve area does expand correctly, but
+    // 2. the lightcurve plot and the x-axis do not expand correspondingly
+    // 3. lightcurve plot can be compensated by using setting width=100% for clipPath#data-mask-99343 > rect
+    // 4. but there does not seem to have an easy way to fix the x-axis, the svg are a series of <g class="tick"> elements,
+    //    representing the ticks, with hardcoded coordinates, e.g.,     transform: translate(57.9601, 0);
+    //
+    // If the issues are fixed, the feature can be re-enabled by using the old initToggleExpandedViewerUI() codes
     return true;
-  } // function initToggleExpandedViewerUI()
+  }
+
+  // function initToggleExpandedViewerUI() {
+
+  //   if (document.getElementById('lightCurveViewerExpandCtr')) {
+  //     return false; // already created. no need to do it again
+  //   }
+
+  //   document.body.insertAdjacentHTML('beforeend', `
+  // <div id="lightCurveViewerExpandCtr" style="z-index: 9; position: fixed; top: 10px; right: 4px; padding: 4px 8px; background-color: rgba(255,255,0,0.5);">
+  //     <button id="lightCurveViewerExpandCtl"></button>
+  // </div>`);
+  //   document.getElementById('lightCurveViewerExpandCtl').onclick = toggleExpandedViewer;
+
+  //   toggleExpandedViewer(); // set viewer to expanded state
+  //   return true;
+  // } // function initToggleExpandedViewerUI()
 
 
   // BEGIN Common helpers used by

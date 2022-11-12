@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.24.3
+// @version     1.24.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -357,27 +357,28 @@ if (observationNoteBtn && observationNoteBtn.textContent.trim() !== 'Open Observ
   document.addEventListener("visibilitychange", startAnimate, false);
 } // if (observationNoteBtn ...
 
-// Highlight TOI / CTOI tables if there are entries.
+// Highlight various elements
 (() => {
-  GM_addStyle(`\
-table.highlighted tr:nth-of-type(1) th {
-    background-color: rgba(255, 255, 0, 0.7);
-}`);
+  // TODO: highlight TOI/CTOI table logic needs to be updated with the base UI changes
+  // (possibly not too useful in the updated base UI)
+//   GM_addStyle(`\
+// table.highlighted tr:nth-of-type(1) th {
+//     background-color: rgba(255, 255, 0, 0.7);
+// }`);
 
-  const numHeaderRowsTOIs = 3;
-  const numHeaderRowsCTOIs = 2;
-  function highlightSectionTableIfNonEmpty(anchorName, numHeaderRows) {
-    // TODO: highlight logic needs to be updated with the base UI changes
-    const numTrs = document.querySelectorAll(`a[name="${anchorName}"] + table tr`).length;
-    if (numTrs > numHeaderRows) {
-      document.querySelector(`a[name="${anchorName}"] + table`).classList.add('highlighted');
-    } else if (numTrs < 1) {
-      console.warn('highlightSectionTableIfNonEmpty() no Rows founds, CSS path to the table possibly outdated. anchor:', anchorName);
-    }
-  }
+//   const numHeaderRowsTOIs = 3;
+//   const numHeaderRowsCTOIs = 2;
+//   function highlightSectionTableIfNonEmpty(anchorName, numHeaderRows) {
+//     const numTrs = document.querySelectorAll(`a[name="${anchorName}"] + table tr`).length;
+//     if (numTrs > numHeaderRows) {
+//       document.querySelector(`a[name="${anchorName}"] + table`).classList.add('highlighted');
+//     } else if (numTrs < 1) {
+//       console.warn('highlightSectionTableIfNonEmpty() no Rows founds, CSS path to the table possibly outdated. anchor:', anchorName);
+//     }
+//   }
 
-  highlightSectionTableIfNonEmpty('tois', numHeaderRowsTOIs);
-  highlightSectionTableIfNonEmpty('ctois', numHeaderRowsCTOIs);
+//   highlightSectionTableIfNonEmpty('tois', numHeaderRowsTOIs);
+//   highlightSectionTableIfNonEmpty('ctois', numHeaderRowsCTOIs);
 
 
   // mark false positive varieties for disposition
@@ -390,15 +391,17 @@ table.highlighted tr:nth-of-type(1) th {
     });
   }
 
-  highlightIfFalseAlarm(document.querySelectorAll('a[name="tois"] + table tr td:nth-of-type(12)'));
-  highlightIfFalseAlarm(document.querySelectorAll('a[name="tois"] + table tr td:nth-of-type(13)'));
+  // for TESS Disposition
+  highlightIfFalseAlarm(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(10)'));
+  // for TFOPWG Disposition
+  highlightIfFalseAlarm(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(11)'));
 
 })();
 
 (() => { // Highlight previous exoplanet mission targets
   if (getAliasesList().some(alias => alias.match(/EPIC|K2|Kepler|WASP/))) {
-    const headerEl = document.querySelector('a[name="basic"] ~ table tr:nth-of-type(2) th:first-of-type');
-    headerEl?.insertAdjacentHTML('beforeend', `<span style="background-color: yellow; padding: 1px 2ch;"> Kepler/K2 </span>`);
+    const headerEl = document.querySelector('.overview_header > span:first-of-type > span.purple-text');
+    headerEl?.insertAdjacentHTML('afterend', `<span style="background-color: yellow; padding: 1px 2ch;"> Kepler/K2 </span>`);
   }
 })();
 

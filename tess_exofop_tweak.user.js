@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.24.4
+// @version     1.24.5
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -408,25 +408,25 @@ if (observationNoteBtn && observationNoteBtn.textContent.trim() !== 'Open Observ
 
 // Convert Epoch from BJD to BTJD , sector / relative time in planet parameters table
 function showEpochInBTJDAndRelative() {
-  const tdEpochs = document.querySelectorAll('a[name="planets"] + table tr > td:nth-of-type(4)');
-  tdEpochs.forEach(td => {
-    const bjdStr = td.textContent;
+  const cellEpochs = document.querySelectorAll('#myGrid3 .ag-center-cols-container > div > div:nth-of-type(2)');
+  cellEpochs.forEach(cellWrapperEl => {
+    const cellValueEl = cellWrapperEl.querySelector('.ag-cell-value > div');
+    const bjdStr = cellValueEl.textContent;
     const bjd = parseFloat(bjdStr); // some of the epoch has error margin, which would be ignored by the parseFloat
     if (bjd) {
-      td.title = `BJD ${bjdStr}`;
-      td.textContent = bjdToBtjdAndRelativeStr(bjd);
+      cellValueEl.title = `BJD ${bjdStr}`;
+      cellValueEl.textContent = bjdToBtjdAndRelativeStr(bjd);
     }
   });
 
-  document.querySelector('a[name="planets"] + table tr th:nth-of-type(4) div.error').textContent = 'BTJD';
+  document.querySelector('#myGrid3 div.ag-header-container > div > div:nth-of-type(2)  span[ref="eText"]').textContent = 'Epoch (BTJD)';
 }
 showEpochInBTJDAndRelative();
 
 // Extract coordinate for ease of copy/paste
 if (coord) {
-  // put the copy button at the header, (reducing the need of horizontal scrolling)
-  const headerEl = document.querySelector('a[name="basic"] ~table tbody tr:nth-of-type(2) th:nth-of-type(3)');
-  headerEl.insertAdjacentHTML('beforeend', '<br><button id="raDecCopyCtl" style="font-size: 80%;">Copy</button>');
+  const headerEl = document.querySelector('.overview_header > span:nth-of-type(2) > span.purple-text');
+  headerEl.insertAdjacentHTML('afterend', '<button id="raDecCopyCtl" style="font-size: 80%; margin-left: 6px;">Copy</button>');
   document.getElementById('raDecCopyCtl').onclick = (evt) => {
     const raDecStr = `${coord.ra_deg} ${coord.dec_deg}`;
     GM_setClipboard(raDecStr);
@@ -436,48 +436,52 @@ if (coord) {
 
 // Abbreviate the empty tables so that stellar parameters / Magnitudes are visible
 // without scrolling down for many cases.
-function abbrevEmptyTables() {
-GM_addStyle(`
-table.abbrev > tbody {
-  max-height: 12px;
-  display: block;
-  color: gray;
-}
+// In the new UI, empty table abbreviation is less useful because the basic info takes up
+// so much space so I'd need to scroll down anyway even if I abbreviate empty tables.
+// Action: comment out the logic (that no longer works correctly anyway)
+//
+// function abbrevEmptyTables() {
+//   GM_addStyle(`
+// table.abbrev > tbody {
+//   max-height: 12px;
+//   display: block;
+//   color: gray;
+// }
 
-table.abbrev > tbody tr:nth-of-type(n+2) { /* show 1st row only */
-  display: none;
-}
+// table.abbrev > tbody tr:nth-of-type(n+2) { /* show 1st row only */
+//   display: none;
+// }
 
-table.abbrev .myButt2 { /* buttons in header */
-  background-color: darkgray;
-  font-size: 8px;
-}
+// table.abbrev .myButt2 { /* buttons in header */
+//   background-color: darkgray;
+//   font-size: 8px;
+// }
 
-table.abbrev .hsmall { /* header title */
-  font-size: 10px;
-}
+// table.abbrev .hsmall { /* header title */
+//   font-size: 10px;
+// }
 
-table.abbrev th { /* reduce padding given header is smaller */
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
+// table.abbrev th { /* reduce padding given header is smaller */
+//   padding-top: 4px;
+//   padding-bottom: 4px;
+// }
 
-table.abbrev + br { /* the table is followed by 2 <brs>, hide 1 of them */
-  display: none;
-}
+// table.abbrev + br { /* the table is followed by 2 <brs>, hide 1 of them */
+//   display: none;
+// }
 
-table.abbrev {  /* with <br> hidden, the vertical space is too tight. use margin to compensate */
-  margin-bottom: 6px;
-}
+// table.abbrev {  /* with <br> hidden, the vertical space is too tight. use margin to compensate */
+//   margin-bottom: 6px;
+// }
 
-`);
+// `);
 
-  Array.from(document.querySelectorAll('a[name] + table'), (tab) => {
-    const numHeaderRows = ["tseries", "tois"].includes(tab.previousElementSibling.name)  ? 3 : 2;
-    if (tab.querySelectorAll('tbody tr').length <= numHeaderRows) {
-      // has headers only
-      tab.classList.add('abbrev');
-    }
-  });
-}
-abbrevEmptyTables();
+//   Array.from(document.querySelectorAll('a[name] + table'), (tab) => {
+//     const numHeaderRows = ["tseries", "tois"].includes(tab.previousElementSibling.name)  ? 3 : 2;
+//     if (tab.querySelectorAll('tbody tr').length <= numHeaderRows) {
+//       // has headers only
+//       tab.classList.add('abbrev');
+//     }
+//   });
+// }
+// abbrevEmptyTables();

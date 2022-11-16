@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.24.5
+// @version     1.24.6
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -66,6 +66,11 @@ function bjtdToRelative(tBjtd) {
   [49, 2637.477835373729, 2664.320530030225],
   [50, 2665.276031989969, 2691.5154814254],
   [51, 2692.966536262185, 2717.540385317604],
+  [52, 2718.633952527452, 2743.075903463609],
+  [53, 2743.995359745024, 2768.97906121931],
+  [54, 2769.898524745069, 2796.129475030413],
+  [55, 2797.100319978378, 2824.26453933892],
+  [56, 2825.25760212576, 2853.139721496374],
 ]; // Based on the one in tess_exomast_tce_tweak.user.js
 
 

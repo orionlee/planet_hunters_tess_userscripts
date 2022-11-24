@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name        Vizier UI tweak
 // @namespace   astro.tess
+// @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-S?*
 // @match       http://vizier.u-strasbg.fr/viz-bin/VizieR-S?*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.0
+// @version     1.0.1
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico

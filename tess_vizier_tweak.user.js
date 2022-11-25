@@ -3,18 +3,22 @@
 // @namespace   astro.tess
 // @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-S?*
 // @match       http://vizier.u-strasbg.fr/viz-bin/VizieR-S?*
+// @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-*?-source=*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.0.1
+// @version     1.1.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
 // ==/UserScript==
 
-// For single targget page, in URL pattern
+// For single target page, in URL pattern
 // http://vizier.u-strasbg.fr/viz-bin/VizieR-S?*
 //
 function addExternalLinks() {
+  if (location.pathname != '/viz-bin/VizieR-S') {
+    return;
+  }
   const id = location.search?.replace(/^[?]/, '');
   if (!id) {
     return;
@@ -30,3 +34,67 @@ function addExternalLinks() {
   console.debug(document.getElementById('extLinksCtr'));
 }
 addExternalLinks();
+
+
+// For search result (possibly with multiple rows) pages with pattern
+//   https://vizier.cds.unistra.fr/viz-bin/VizieR-1?   (VizieR-2, VizieR-3, VizieR-4, ...)
+// This function tweak those that search across multiple tables, e.g.,
+// https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=+I%2F358&-from=nav&-nav=cat%3AI%2F358%26tab%3A%7BI%2F358%2Fvclassre%7D%26key%3Asource%3DI%2F358%2Fvclassre%26pos%3A20%3A41%3A37.07+%2B43%3A50%3A12.27%28+++2+arcmin+J2000%29%26HTTPPRM%3A%26%26-ref%3DVIZ637fa85316752f%26-out.max%3D50%26-out.form%3DHTML+Table%26-out.add%3D_r%26-sort%3D_r%26-order%3DI%26-oc.form%3Dsexa%26-c%3D20%3A41%3A37.07+%2B43%3A50%3A12.27%26-c.eq%3DJ2000%26-c.r%3D5%26-c.u%3Darcsec%26-c.geom%3Dr%26-out.src%3DI%2F358%2Fvclassre%26-out.orig%3Dstandard%26-out%3DSource%26-out%3DSolID%26-out%3DClassifier%26-out%3DClass%26-out%3DRA_ICRS%26-out%3DDE_ICRS%26-out%3D_RA.icrs%26-out%3D_DE.icrs%26-meta.ucd%3D2%26-meta%3D1%26-meta.foot%3D1%26-meta.form%3D1%26-usenav%3D1%26-bmark%3DPOST%26
+function hideEmptyTableInMulitTableSearchResults() {
+  // only support patterns like /viz-bin/VizieR-4
+  if (!location.pathname.match(/^\/viz-bin\/VizieR-\d+/)) {
+    return;
+  }
+
+  GM_addStyle(`
+.empty {
+  display: none;
+}
+
+/* table description element,
+  increase vetical spacing to distinguish one table from another */
+
+table.sort {  /* Search result of a Vizier table */
+  padding-bottom: 0.5em;
+  border-bottom: 1px lightgray dashed;
+}
+
+table.tablist { /* Description of a Vizier table */
+  margin-top: 1.0em !important;
+}
+
+table.tabList tr > td > b > a { /* Vizier table names. Make them stand out more */
+  font-family: serif;
+  font-size: 110%;
+}
+
+`);
+
+  let numTablesHidden = 0;
+  function hideOneEmptyTable(tabEl) {
+    // tabEl should be a message indicating there is no row for the given table, e.g.,
+    // <span class="warning">No object found around (ICRS) position 20:41:37.1+43:50:12</span>
+    if (!(
+      tabEl.tagName == 'SPAN' &&
+      tabEl.classList.contains('warning') &&
+      tabEl.textContent.startsWith('No object found')
+      )) {
+      return;
+    }
+    numTablesHidden++;
+    tabEl.classList.add('empty');
+    tabEl.previousElementSibling.classList.add('empty');  // The <div> for Start AladinLite
+    tabEl.previousElementSibling.previousElementSibling.classList.add('empty');  // The actual <table>
+  }
+
+  document.querySelectorAll('span.warning').forEach(hideOneEmptyTable);
+  console.debug('hideEmptyTableInMulitTableSearchResults(): Num. of tables hidden =', numTablesHidden);
+  if (numTablesHidden > 0) {
+    document.querySelector("#CDScore > table:last-of-type")?.insertAdjacentHTML('beforebegin', `
+<div id="hiddenTablesMsg" style="font-family: monospace; font-size: 0.9rem; padding-top: 0.5rem;">
+${numTablesHidden} empty tables(s) hidden.
+</div>`);
+  }
+
+}
+hideEmptyTableInMulitTableSearchResults();

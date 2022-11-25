@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.9.3
+// @version     1.9.4
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -120,13 +120,16 @@ titleForLinkifiedUrlImplList.push(url => {
 });
 titleForLinkifiedUrlImplList.push(url => {
   if (
-      // Vizier Gaia DR3 variable entry link, e.g.,
+      // Vizier Gaia DR3 variable entry link (for various tables under Gaia DR3), e.g.,
+      // - variable classification (I/358/vclassre)
       // https://cdsarc.cds.unistra.fr/viz-bin/VizieR-5?-ref=VIZ62ce31bb45b5&-out.add=.&-source=I/358/vclassre&recno=1562935&-out.orig=o
-      url.match(/[/]viz-bin[/]VizieR-5[?].*-source=I[/]358[/]vclassre&/) ||
+      // - eclipsing binary properties (I/358/veb)
+      // https://vizier.cds.unistra.fr/viz-bin/VizieR-5?-ref=VIZ638112dc1d2c37&-out.add=.&-source=I/358/veb&recno=321323&-out.orig=o
+      url.match(/[/]viz-bin[/]VizieR-\d[?].*-source=I[/]358[/].+&/) ||
 
       // Vizier Gaia DR3 variable search result page (possibly more than 1 row),
       // including single table and multi table cases
-      url.match(/[/]viz-bin[/]VizieR-4[?].*source=[+]?I%2F358/)
+      url.match(/[/]viz-bin[/]VizieR-\d[?].*source=[+]?I%2F358/)
     ) {
     return "Gaia DR3 Variable";
   }

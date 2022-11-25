@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.9.2
+// @version     1.9.3
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -101,7 +101,8 @@ titleForLinkifiedUrlImplList.push(url => {
 });
 titleForLinkifiedUrlImplList.push(url => {
   // TESS TCE on exomast
-  const [, tceSubId] = url.match(/exo.mast.stsci.edu\/exomast_planet.html\?planet=.+TCE(\d)/) || [null, null];
+
+  const [, tceSubId] = url.match(/exo.mast.stsci.edu\/exomast_planet.html\?planet=.+TCE_?(\d)/) || [null, null];
   return tceSubId ? `TCE${tceSubId}` : null;
 });
 titleForLinkifiedUrlImplList.push(url => {
@@ -118,11 +119,16 @@ titleForLinkifiedUrlImplList.push(url => {
   return prefix ? `${prefix} data` : null;
 });
 titleForLinkifiedUrlImplList.push(url => {
-  // Vizier Gaia DR3 variable entry link, e.g.,
-  // https://vizier.u-strasbg.fr/viz-bin/VizieR-S?Gaia%20EDR3%203449035248963961216
-  // https://cdsarc.cds.unistra.fr/viz-bin/VizieR-5?-ref=VIZ62ce31bb45b5&-out.add=.&-source=I/358/vclassre&recno=1562935&-out.orig=o
-  if (url.match(/[/]viz-bin[/]VizieR-5[?].*-source=I[/]358[/]vclassre&/)) {
-    return "Gaia DR3 variable entry";
+  if (
+      // Vizier Gaia DR3 variable entry link, e.g.,
+      // https://cdsarc.cds.unistra.fr/viz-bin/VizieR-5?-ref=VIZ62ce31bb45b5&-out.add=.&-source=I/358/vclassre&recno=1562935&-out.orig=o
+      url.match(/[/]viz-bin[/]VizieR-5[?].*-source=I[/]358[/]vclassre&/) ||
+
+      // Vizier Gaia DR3 variable search result page (possibly more than 1 row),
+      // including single table and multi table cases
+      url.match(/[/]viz-bin[/]VizieR-4[?].*source=[+]?I%2F358/)
+    ) {
+    return "Gaia DR3 Variable";
   }
   return null;
 });

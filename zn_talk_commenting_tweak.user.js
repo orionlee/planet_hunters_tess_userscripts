@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.9.4
+// @version     1.9.5
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -63,11 +63,13 @@ function insertAtCursor(textarea, text, transformFn, selectFn) {
 //
 
 const titleForLinkifiedUrlImplList = []
-// subsumed by the default extraction logic.
-// titleForLinkifiedUrlImplList.push(url => {
-//   const [, title] = url.match(/.*[.]wikipedia[.]org\/wiki\/([^#]+)/) || [null, null];
-//   return title?.replace(/_/g, ' ');
-// });
+  // It is similar to default extraction logic, but has special cases.
+  titleForLinkifiedUrlImplList.push(url => {
+    let [, title] = url.match(/.*[.]wikipedia[.]org\/wiki\/([^#]+)/) || [null, null];
+    title = title?.replace(/_/g, ' ');  // handle _
+    title = title.replace(/\s*[(][^)]+[)]/, '')  // handle disambiguation qualifiers, e.g., Eris(dwarf planet)
+    return title
+});
 titleForLinkifiedUrlImplList.push(url => {
   if (url.includes('simbad.u-strasbg.fr/simbad/sim-') ||
       url.includes('simbad.cds.unistra.fr/simbad/sim-')) {

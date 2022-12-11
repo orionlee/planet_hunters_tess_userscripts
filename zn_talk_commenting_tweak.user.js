@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.9.6
+// @version     1.9.7
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -151,12 +151,14 @@ titleForLinkifiedUrlImplList.push(url => {
   //   https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html?searchQuery=%7B%22service%22FooBar
   // - no extension, nor query string
   //   https://en.wikipedia.org/wiki/Gamma_Doradus
-  //  - hashes:
-  //    https://en.wikipedia.org/wiki/Gamma_Doradus_variable#List
-  //  - end with slash
-  //    https://en.wikipedia.org/wiki/Gamma_Doradus/
+  // - hashes:
+  //   https://en.wikipedia.org/wiki/Gamma_Doradus_variable#List
+  // - end with slash
+  //   https://en.wikipedia.org/wiki/Gamma_Doradus/
+  // - call decodeURI(url) below to handle URLs with escaped characters such as space (%20)
+  //   https://exoplanetarchive.ipac.caltech.edu/overview/WASP-1%20b
 
-  let [, text] = url.match(/.+\/([a-zA-Z0-9-_]+)([/.?#].*)?$/) || [null, null];
+  let [, text] = decodeURI(url).match(/.+\/([a-zA-Z0-9-_ ]+)([/.?#].*)?$/) || [null, null];
   text = text?.replace(/[-_]/g, " ");
   return capitalize(text);
 });

@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.24.8
+// @version     1.24.9
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -391,17 +391,38 @@ if (observationNoteBtn && observationNoteBtn.textContent.trim() !== 'Open Observ
   // mark false positive varieties for disposition
 
   function highlightIfFalseAlarm(elList) {
+    let highlighted = false;
     elList.forEach(el => {
-      if (el.textContent.match(/^(FA|FP)/)) {
+      // APC: ambiguous planetary candidate in TFOPWG
+      // they are usually determined to be SB by SG1 RV observation.
+      // For our purpose, I think we can treat it as if they are false positives
+      if (el.textContent.match(/^(FA|FP|APC)/)) {
         el.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
+        highlighted = true;
       }
     });
+    return highlighted;
   }
 
   // for TESS Disposition
-  highlightIfFalseAlarm(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(10)'));
+  const elsTESSDisp =  Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(10)'));
+  const isTESSHighlighted = highlightIfFalseAlarm(elsTESSDisp);
   // for TFOPWG Disposition
-  highlightIfFalseAlarm(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(11)'));
+  const elsTFOPWGDisp = Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(11)'));
+  const isTFOPWGHighlighted = highlightIfFalseAlarm(elsTFOPWGDisp);
+
+
+  // copy disposition to the header to avoid horizontal scrolling
+  const strTESSDisp = elsTESSDisp.map(e => e.textContent.trim()).join(",");
+  const strTFOPWGDisp = elsTFOPWGDisp.map(e => e.textContent.trim()).join(",");
+
+  const strCombinedDisp = (strTESSDisp || strTFOPWGDisp) ? `${strTESSDisp} / ${strTFOPWGDisp}` : '';
+  const styleExtras = (isTESSHighlighted || isTFOPWGHighlighted) ? "background-color: rgba(255, 0, 0, 0.8);" : "";
+
+  document.querySelector('a[name="tois"] ~ div.grid_header')?.insertAdjacentHTML('beforeend', `
+<span style="font-weight: normal; font-size: 85%; margin-left: 1ch; padding-left: 0.5ch; padding-right: 0.5ch; ${styleExtras}" title="TESS Disposition / TFOPWG Disposition">
+  ${strCombinedDisp}
+</span>`);
 
 })();
 

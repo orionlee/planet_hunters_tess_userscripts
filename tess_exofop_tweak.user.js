@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.24.9
+// @version     1.24.10
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -330,39 +330,19 @@ F0V: 0.30 ; G0V: 0.58; K0V: 0.81; M0V: 1.40"
 //
 // Highlight observation notes if any
 //
-const observationNoteBtn = document.querySelector('button.commentsbtn');
-if (observationNoteBtn && observationNoteBtn.textContent.trim() !== 'Open Observing Notes (0)') {
-  GM_addStyle(`
-@keyframes blink-color {
-  from {
-    color: white;
-    margin-left: 5px;
+(() => {
+  const observationNoteCtr = document.querySelector(".overview_header0 a[href^='edit_obsnotes.php']");
+  if (!observationNoteCtr) {
+    console.warn("Observation Note highlight failed: cannot find the element.  No-Op.");
+    return;
   }
-  to {
-    color: yellow;
-    margin-left: 0px;
+  const countText = observationNoteCtr.querySelector('.count')?.textContent;
+  if (countText != '0') {
+    // blinking yellow was used in the past, but with the new UI,
+    // yellow over blue background stands out pretty well without blinking.
+    observationNoteCtr.querySelector('.fa-comments').style.color = "yellow";
   }
-}
-
-.blinked {
-  animation-name: blink-color;
-  animation-duration: 1s;
-  animation-iteration-count: 5;
-  animation-play-state: paused; /* start only when the tab is visible */
-  font-weight: bold;
-  color: yellow;
-}
-`);
-  observationNoteBtn.classList.add('blinked');
-
-  // start blink animation only when the tab is visible
-  const startAnimate = () => {
-    if (!document.hidden) {
-      observationNoteBtn.style.animationPlayState = 'running';
-    }
-  };
-  document.addEventListener("visibilitychange", startAnimate, false);
-} // if (observationNoteBtn ...
+})();
 
 // Highlight various elements
 (() => {

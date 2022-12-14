@@ -4,20 +4,26 @@
 // @match       https://exo.mast.stsci.edu/
 // @grant       GM_openInTab
 // @noframes
-// @version     1.0.15
+// @version     1.1.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
 
 
+function getSearchTerm() {
+  const term = location.hash.replace('#search=', '')
+  return term ? decodeURIComponent(term) : null;
+}
+
+
 function fillSearchBoxByHash() {
   if (location.pathname == '/' && location.hash.startsWith('#search=')) {
-    const searchTerm = location.hash.replace('#search=', '');
+    const searchTerm = getSearchTerm()
 
     if (searchTerm) {
       const iBoxEl = document.querySelector('input#search');
-      iBoxEl.value = decodeURIComponent(searchTerm);
+      iBoxEl.value = searchTerm;
       iBoxEl.focus();
       // emulate keyboard press , to trigger ajax auto complete
       // see: https://stackoverflow.com/a/44190874
@@ -61,8 +67,9 @@ function showLinksToMatchingTCEs() {
     uiCtr = document.querySelector('#tceURLsCtr ul');
   }
 
+  const matchElList = document.querySelectorAll('#ui-id-1 li');
   let tceLinksHTML = '';
-  Array.from(document.querySelectorAll('#ui-id-1 li'), li => {
+  Array.from(matchElList, li => {
     const tceText = li.textContent;
     const tceUrl = createTCEUrl(tceText);
     tceLinksHTML += `  <li><a target="tce" href="${tceUrl}">${tceText}</a></li>\n`;
@@ -71,6 +78,8 @@ function showLinksToMatchingTCEs() {
     tceLinksHTML += `  <li>No TCE found</li>\n`;
   }
   uiCtr.innerHTML = tceLinksHTML;
+
+  document.title = `(${matchElList.length}) - exoMAST Search ${getSearchTerm()}`;
 }
 
 function openTCEinNewWindow(evt) {

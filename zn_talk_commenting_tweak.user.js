@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.9.7
+// @version     1.10.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -368,9 +368,49 @@ function condenseSearchResultBySubject() {
   return [threadCountMap, uniqThreadMap]; // only useful for debugging
 }
 
+function showSearchCountOnTitle() {
+  if (!location.pathname.endsWith("/talk/search")) {
+    return;
+  }
+
+  const searchTerm = (() => {
+    const [, term] = location.search.match(/query=([^&]+)/) || [null, ''];
+    return decodeURIComponent(term);
+  })();
+
+  const searchCountMsg = document.querySelector('.talk-search-counts')?.textContent;
+  if (searchCountMsg) {  // case search has matches
+    const [, count] = searchCountMsg.match(/returned\s+(\d+)/) || [null, null];
+    document.title = `(${count}) - Search ${searchTerm} | Zooniverse Talk`;
+    return;
+  }
+
+  if (document.querySelector('.talk-search button + p')) { // case No results found.
+    document.title = `(0) - Search ${searchTerm} | Zooniverse Talk`;
+    return;
+  }
+  console.warn("showSearchCountOnTitle(): Expected DOM elements not found. Perhaps the ajax load is not yet complete.");
+}
+
+function tweakSearchResult() {
+  if (!location.pathname.endsWith("/talk/search")) {
+    return;
+  }
+  console.debug("tweakSearchResult() called")
+  condenseSearchResultBySubject();
+
+  // tweak title, do it multiple times because some ZN's own ajax code
+  // could overwrite it.
+  setTimeout(showSearchCountOnTitle, 10);
+  setTimeout(showSearchCountOnTitle, 1000);
+  setTimeout(showSearchCountOnTitle, 4000);
+  // upon focus ZN codes change the title again, so we fight it.
+  window.addEventListener('focus', showSearchCountOnTitle);
+}
+
 // better implementation would wait till SearchResult ajax is rendered.
 // Use setTimeout as a crude approximation
-setTimeout(condenseSearchResultBySubject, 4000);
+setTimeout(tweakSearchResult, 4000);
 
 
 // Double click on talk sidebar heading to expand talk message body's width.

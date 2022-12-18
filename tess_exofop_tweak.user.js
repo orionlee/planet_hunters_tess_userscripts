@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.25.0
+// @version     1.25.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -389,10 +389,10 @@ F0V: 0.30 ; G0V: 0.58; K0V: 0.81; M0V: 1.40"
   }
 
   // for TESS Disposition
-  const elsTESSDisp =  Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(10)'));
+  const elsTESSDisp =  Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(11)'));
   const isTESSHighlighted = highlightIfFalseAlarm(elsTESSDisp);
   // for TFOPWG Disposition
-  const elsTFOPWGDisp = Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(11)'));
+  const elsTFOPWGDisp = Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(12)'));
   const isTFOPWGHighlighted = highlightIfFalseAlarm(elsTFOPWGDisp);
 
 

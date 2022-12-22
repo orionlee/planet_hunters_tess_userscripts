@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.10.0
+// @version     1.11.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -75,7 +75,26 @@ const titleForLinkifiedUrlImplList = []
 titleForLinkifiedUrlImplList.push(url => {
   if (url.includes('simbad.u-strasbg.fr/simbad/sim-') ||
       url.includes('simbad.cds.unistra.fr/simbad/sim-')) {
-    return 'SIMBAD';
+    // try to get object ID if it's in URL
+
+    // for pattern such as ?Ident=%4095658&Name=HD%20235542B
+    // (when Ident and Name both exists, Name has the more friendly ID)
+    let [, id] = url.match(/Name=([^&]+)/) || [null, null];
+
+    if (!id) {
+      // for pattern such as ?Ident=HD+235542B
+      [, id] = url.match(/Ident=([^&]+)/) || [null, null];
+    }
+
+    if (id) {
+      // decodeURI / decodeURIComponent can't handle + as space
+      // (used by SIMBAD in some cases but sometimes it uses %20)
+      // so we have to do it ourselves.
+      id = decodeURIComponent(id.replace(/\+/g, ' '));
+      return `${id} (SIMBAD)`;
+    } else {
+       return 'SIMBAD';
+    }
   }
 });
 titleForLinkifiedUrlImplList.push(url => {
@@ -121,6 +140,19 @@ titleForLinkifiedUrlImplList.push(url => {
   // e.g, extract Gaia EDR3
   const [, prefix] = decodeURIComponent(targetId).match(/(^.+)\s+\d+\s*$/) || [null, null];
   return prefix ? `${prefix} data` : null;
+});
+titleForLinkifiedUrlImplList.push(url => {
+  if (
+      // Vizier Gaia DR3 entry link (for various tables under Gaia DR3), e.g.,
+      url.match(/[/]viz-bin[/]VizieR-\d[?].*-source=I[/]355[/].+&/) ||
+
+      // Vizier Gaia DR3 search result page (possibly more than 1 row),
+      // including single table and multi table cases
+      url.match(/[/]viz-bin[/]VizieR-\d[?].*source=[+]?I%2F355/)
+    ) {
+    return "Gaia DR3";
+  }
+  return null;
 });
 titleForLinkifiedUrlImplList.push(url => {
   if (

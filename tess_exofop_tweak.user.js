@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.25.2
+// @version     1.26.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -240,11 +240,20 @@ if (simbadLinkEl) {
         '&sort_by=distance&sort_order=asc&show_non_periodic=true&show_without_class=true&asassn_discov_only=false&'
         : '');
 
-  // Gaia DR3 variables.
+  // Gaia DR3 variables, query 4 tables
+  // - vclassre: main classification
+  // - varisum:  basic params (magnitudes, whether it's classified to specific subtypes)
+  // - veb: eclipsing binary params
+  // - vst: short time scaled sources params (sometimes EB like variability goes there)
   // documentation: https://gea.esac.esa.int/archive/documentation/GDR3/Gaia_archive/chap_datamodel/sec_dm_variability_tables/
-  const gaiaDr3VarUrl = 'https://vizier.u-strasbg.fr/viz-bin/VizieR-3?-source=I/358/vclassre' +
-    ((coord != null) ? `#-c=${encodeURIComponent(coord.ra + ' ' + coord.dec)}`  : '');
+  const gaiaDr3VarUrl = 'https://vizier.u-strasbg.fr/viz-bin/VizieR-3?-source=+I%2F358%2Fvarisum+I%2F358%2Fvclassre+I%2F358%2Fveb+I%2F358%2Fvst' +
+    ((coord != null) ? `&-c=${encodeURIComponent(coord.ra + ' ' + coord.dec)}&-c.r=60&-c.u=arcsec#autoSubmit=true`  : '');
 
+  // Gaia DR3, query 2 tables
+  // - gaiadr3: the main
+  // - paramp: astrophysical params such as radius, mass, luminosity, etc.
+  const gaiaDr3Url = 'https://vizier.u-strasbg.fr/viz-bin/VizieR-3?-source=+I%2F355%2Fgaiadr3+I%2F355%2Fparamp' +
+    ((coord != null) ? `&-c=${encodeURIComponent(coord.ra + ' ' + coord.dec)}&-c.r=15&-c.u=arcsec#autoSubmit=true`  : '');
   const tic = getTic();
 
   document.querySelector('a[href="/tess"]').insertAdjacentHTML('afterend', `\
@@ -254,10 +263,11 @@ if (simbadLinkEl) {
   <a href="${asasSnUrl}" target="_asas-sn" accesskey="A" title="All-Sky Automated Survey for Supernovae">ASAS-SN</a> |
   <a href="${gaiaDr3VarUrl}" target=_gaia-dr3-var" accesskey="G" title="Gaia DR3 Variables">GDR3 Var</a> |
   <a href="http://tessebs.villanova.edu/search_results?tic=${tic}" target="_tess-eb" accesskey="T">TESS-EB</a> |
-  <a href="https://tev.mit.edu/data/search/?q=${tic}" target="_tev"
-    title="To MIT TEV: it contains similar information; but it also has QLP validation reports when applicable">MIT TEV</a> |
   <a href="http://cdsportal.u-strasbg.fr/gadgets/ifr?url=http://cdsportal.unistra.fr/widgets/SED_plotter.xml&SED_plot_object=TIC${tic}&SED_plot_radius=5"
     target="_sed" title="Spectral Energy Distributions Plot">SED</a>  |
+  <a href="${gaiaDr3Url}" target=_gaia-dr3" title="Gaia DR3 Main">GDR3</a> |
+  <a href="https://tev.mit.edu/data/search/?q=${tic}" target="_tev"
+    title="To MIT TEV: it contains similar information; but it also has QLP validation reports when applicable">MIT TEV</a> |
   <a href="https://exo.mast.stsci.edu/#search=TIC ${tic}"
     target="_exomast" title="TCEs on Exo.MAST">TCE</a>  |
   <a href="https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC ${tic}"

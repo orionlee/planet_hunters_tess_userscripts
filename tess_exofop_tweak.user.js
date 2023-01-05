@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.26.0
+// @version     1.26.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -252,6 +252,7 @@ if (simbadLinkEl) {
   // Gaia DR3, query 2 tables
   // - gaiadr3: the main
   // - paramp: astrophysical params such as radius, mass, luminosity, etc.
+  // Note: the default columns are tweaked by tess_vizier_autosearch.usr.js
   const gaiaDr3Url = 'https://vizier.u-strasbg.fr/viz-bin/VizieR-3?-source=+I%2F355%2Fgaiadr3+I%2F355%2Fparamp' +
     ((coord != null) ? `&-c=${encodeURIComponent(coord.ra + ' ' + coord.dec)}&-c.r=15&-c.u=arcsec#autoSubmit=true`  : '');
   const tic = getTic();

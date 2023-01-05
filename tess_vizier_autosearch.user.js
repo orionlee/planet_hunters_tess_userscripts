@@ -6,22 +6,44 @@
 // @match       https://cdsarc.cds.unistra.fr/viz-bin/VizieR-*?-source=*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.3.0
+// @version     1.4.0
 // @author      -
 // @description Auto-search a Vizier source using the parameter from hash.
 //              Use cases includes creating URLs for Gaia DR3 variable on Vizier.
 // @icon        https://vizier.u-strasbg.fr/favicon.ico
 // ==/UserScript==
 
-function tweakGaiaDR3DefaultColumns() {
+function tweakDefaultColumns() {
   let [, source] = location.search.match(/-source=([^&]+)/) || [null, ''];
   source = decodeURIComponent(source);
-  if (!source.match('I/355/gaiadr3')) {
-    return;
+
+  let colsToUnCheck = []
+  let colsToCheck = []
+
+  if (source.match('I/355/gaiadr3')) {
+    // tweaks for Gaia DR3 main table
+    colsToUnCheck = colsToUnCheck.concat(
+      ['e_RA_ICRS', 'e_DE_ICRS', 'e_Plx', 'e_pmRA', 'e_pmDE', 'FG', 'e_FG', 'FBP', 'e_FBP', 'FRP', 'e_FRP', 'QSO', 'Gal', 'And']
+    );
+    colsToCheck = colsToCheck.concat(
+      ['sepsi', 'RUWE', 'Dup', 'VarFlag', 'NSS'] // NSS: Non single star
+    );
   }
 
-  const colsToUnCheck = ['e_RA_ICRS', 'e_DE_ICRS', 'e_Plx', 'e_pmRA', 'e_pmDE', 'FG', 'e_FG', 'FBP', 'e_FBP', 'FRP', 'e_FRP', 'QSO', 'Gal', 'And'];
-  const colsToCheck = ['sepsi', 'RUWE', 'Dup', 'VarFlag', 'NSS'];  // NSS: Non single star
+  if (source.match('I/355/paramp')) {
+    // tweaks for Gaia DR3 Astrophysical parameters
+    colsToCheck = colsToCheck.concat(
+      ['SpType-ELS']  // spectral type from ESP-ELS
+    );
+  }
+
+  if (source.match('I/358/vclassre')) {
+    // tweaks for Gaia DR3 Variable main table
+    colsToCheck = colsToCheck.concat(
+      ['ClassSc']  // Classification score
+    );
+  }
+
 
   colsToUnCheck.forEach(col => {
     // note: in search result page, the inputs exist as input[name="-out"][type="hidden"], we don't want to change them
@@ -45,7 +67,7 @@ function autoSubmitSearchFromHash() {
     document.querySelector('#navcstout > input[name="-out.add"][value="_r"]').checked = true;
     document.querySelector('#navcstout > input[name="-sort"][value="_r"]').checked = true;
 
-    tweakGaiaDR3DefaultColumns();
+    tweakDefaultColumns();
   } finally {
     if (document.querySelector('input[name="-c"]').value) {
       // auto click submit if coordinate has been supplied in the URL

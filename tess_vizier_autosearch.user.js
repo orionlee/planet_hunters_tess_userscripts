@@ -6,7 +6,7 @@
 // @match       https://cdsarc.cds.unistra.fr/viz-bin/VizieR-*?-source=*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.4.0
+// @version     1.4.1
 // @author      -
 // @description Auto-search a Vizier source using the parameter from hash.
 //              Use cases includes creating URLs for Gaia DR3 variable on Vizier.
@@ -33,7 +33,13 @@ function tweakDefaultColumns() {
   if (source.match('I/355/paramp')) {
     // tweaks for Gaia DR3 Astrophysical parameters
     colsToCheck = colsToCheck.concat(
-      ['SpType-ELS']  // spectral type from ESP-ELS
+      ['SpType-ELS',  // spectral type from ESP-ELS
+       'Evol', // Evolutionary stage of the star from FLAME using stellar models
+       // For its value, refer to
+       // https://gea.esac.esa.int/archive/documentation/GDR3/Gaia_archive/chap_datamodel/sec_dm_astrophysical_parameter_tables/ssec_dm_astrophysical_parameters.html#:~:text=evolstage_flame
+       // for details (100: 0-age main sequence, 360: main sequence turnoff)
+       'Flags-Flame', // Flags indicating quality and processing information from FLAME
+      ]
     );
   }
 

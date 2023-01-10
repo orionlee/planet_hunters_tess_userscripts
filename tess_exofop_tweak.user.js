@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.28.0
+// @version     1.29.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -401,17 +401,27 @@ F0V: 0.30 ; G0V: 0.58; K0V: 0.81; M0V: 1.40"
   const isTFOPWGHighlighted = highlightIfFalseAlarm(elsTFOPWGDisp);
 
 
-  // copy disposition to the header to avoid horizontal scrolling
+  // copy disposition and notes to the header to avoid horizontal scrolling
+
   const strTESSDisp = elsTESSDisp.map(e => e.textContent.trim()).join(",");
   const strTFOPWGDisp = elsTFOPWGDisp.map(e => e.textContent.trim()).join(",");
 
   const strCombinedDisp = (strTESSDisp || strTFOPWGDisp) ? `${strTESSDisp} / ${strTFOPWGDisp}` : '';
   const styleExtras = (isTESSHighlighted || isTFOPWGHighlighted) ? "background-color: rgba(255, 0, 0, 0.8);" : "";
 
+  // Notes:
+  const elsNotes = Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(17)'));
+  const strNotes = elsNotes.map(e => e.textContent.trim()).join(" | ");
+
+  // Put them in header
+  // for Notes; add class "ag-cell-value" to the span so that
+  // it can be copied by ctrl-double click (see initCopyCellTextOnDblClick() logic)
   document.querySelector('a[name="tois"] ~ div.grid_header')?.insertAdjacentHTML('beforeend', `
 <span style="font-weight: normal; font-size: 85%; margin-left: 1ch; padding-left: 0.5ch; padding-right: 0.5ch; ${styleExtras}" title="TESS Disposition / TFOPWG Disposition">
   ${strCombinedDisp}
-</span>`);
+</span>
+<span style="margin-left: 2ch; font-size: 70%; font-weight: normal;" class="ag-cell-value">${strNotes}</span>
+`);
 
 })();
 

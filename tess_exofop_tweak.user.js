@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.26.1
+// @version     1.27.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -362,27 +362,20 @@ F0V: 0.30 ; G0V: 0.58; K0V: 0.81; M0V: 1.40"
 
 // Highlight various elements
 (() => {
-  // TODO: highlight TOI/CTOI table logic needs to be updated with the base UI changes
-  // (possibly not too useful in the updated base UI)
-//   GM_addStyle(`\
-// table.highlighted tr:nth-of-type(1) th {
-//     background-color: rgba(255, 255, 0, 0.7);
-// }`);
+  // Highlight the existence of TOI/CTOI
+  ['#tois', '#ctois'].forEach( (anchor) => {
+    const linkEl = document.querySelector(`.navbar0 a[href="${anchor}"]`);
+    if (!linkEl) {
+      console.warn(`Cannot find ${anchor} . Highlight no-op`);
+      return;
+    }
 
-//   const numHeaderRowsTOIs = 3;
-//   const numHeaderRowsCTOIs = 2;
-//   function highlightSectionTableIfNonEmpty(anchorName, numHeaderRows) {
-//     const numTrs = document.querySelectorAll(`a[name="${anchorName}"] + table tr`).length;
-//     if (numTrs > numHeaderRows) {
-//       document.querySelector(`a[name="${anchorName}"] + table`).classList.add('highlighted');
-//     } else if (numTrs < 1) {
-//       console.warn('highlightSectionTableIfNonEmpty() no Rows founds, CSS path to the table possibly outdated. anchor:', anchorName);
-//     }
-//   }
-
-//   highlightSectionTableIfNonEmpty('tois', numHeaderRowsTOIs);
-//   highlightSectionTableIfNonEmpty('ctois', numHeaderRowsCTOIs);
-
+    const numItemsText = linkEl?.querySelector('span.super')?.textContent;
+    if (numItemsText && numItemsText != '0') {
+      linkEl.style.backgroundColor = 'rgba(255, 255, 0, 0.7)';
+      linkEl.style.fontWeight = 'bold';
+    }
+  });
 
   // mark false positive varieties for disposition
 

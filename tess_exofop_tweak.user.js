@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.27.0
+// @version     1.28.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -427,12 +427,12 @@ F0V: 0.30 ; G0V: 0.58; K0V: 0.81; M0V: 1.40"
 function showEpochInBTJDAndRelative() {
   const cellEpochs = document.querySelectorAll('#myGrid3 .ag-center-cols-container > div > div:nth-of-type(2)');
   cellEpochs.forEach(cellWrapperEl => {
-    const cellValueEl = cellWrapperEl.querySelector('.ag-cell-value > div');
-    const bjdStr = cellValueEl.textContent;
+    const CellTextEl = cellWrapperEl.querySelector('.ag-cell-value > div');
+    const bjdStr = CellTextEl.textContent;
     const bjd = parseFloat(bjdStr); // some of the epoch has error margin, which would be ignored by the parseFloat
     if (bjd) {
-      cellValueEl.title = `BJD ${bjdStr}`;
-      cellValueEl.textContent = bjdToBtjdAndRelativeStr(bjd);
+      CellTextEl.title = `BJD ${bjdStr}`;
+      CellTextEl.textContent = bjdToBtjdAndRelativeStr(bjd);
     }
   });
 
@@ -450,6 +450,63 @@ if (coord) {
     evt.target.textContent = 'Copied';
   }
 }
+
+
+function showMessageTemporarily(msg, durationInSec=5) {
+  document.body.insertAdjacentHTML('beforeend', `
+<div id="tempMsgPopIn" style="z-index: 9999; position: fixed; right: 10px; top: 20px; padding: 6px; max-width: 20vw; background-color: rgba(255, 255, 0, 0.7);">
+${msg}
+</div>
+`);
+  setTimeout(() => { document.getElementById('tempMsgPopIn')?.remove();  }, durationInSec* 1000);
+} // function showMessageTemporarily()
+
+
+// Helper to copy the text of a cell text to clipboard. Use cases
+// 1. copy TOI Notes (long notes are trimmed)
+// 2. smart copy of TOI with priority, to the form of #TOI 1234.01 (master priority 2)
+function initCopyCellTextOnDblClick() {
+  // console.debug('initCopyCellTextOnDblClick()...');
+  function getTextToCopy(cellEl) {
+    let text = cellEl?.textContent?.trim() || '';
+    const titleText = cellEl?.title;
+    if (titleText) {
+      // copy titleText use case:
+      // copy epoch in BJD (stored in title after our tweak above), in addition to BTJD
+      text = `${text}  ${titleText}`;
+    }
+    if (!text.startsWith('TOI ')) {
+      return text;
+    }
+
+    // special case for TOI,
+    text = `#${text}`;  // add hash to TOI
+
+    // try to get the master priority too.
+    // the logic only works for the TOI cell in TOIs table
+    // (it does not work for the one in CTOIs table or planet parameters table)
+    const masterPriority =
+      cellEl?.parentElement?.parentElement?.parentElement?.parentElement?.nextElementSibling?.querySelector('.ag-cell-value')?.textContent;
+    if (masterPriority) {
+      text = `${text} (master priority ${masterPriority})`;
+    }
+    return text;
+  }
+
+  function copyCellTextOnDblClick(evt) {
+    // console.debug('evt:', evt);
+    if ( (evt.ctrlKey || evt.altKey || evt.shiftKey) &&
+         (evt?.target?.classList?.contains('ag-cell-value') ||
+          evt?.target?.parentElement?.classList?.contains('ag-cell-value')) ) {
+          const text = getTextToCopy(evt.target);
+          GM_setClipboard(text);
+          showMessageTemporarily(`${text} copied to clipboard.`);
+    }
+  }
+
+  document.addEventListener('dblclick', copyCellTextOnDblClick);
+}
+initCopyCellTextOnDblClick();
 
 // Abbreviate the empty tables so that stellar parameters / Magnitudes are visible
 // without scrolling down for many cases.

@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.30.0
+// @version     1.31.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -216,18 +216,24 @@ function getCoord() {
 }
 const coord = getCoord();
 
-const simbadLinkEl = document.querySelector('a[target="simbad"]');
-if (simbadLinkEl) {
-  // fix, fix simbad urls, with
-  // for star with ra or dec between -1, and 1, the ExoFOP generated link
-  // is in the form of ".../sim-coo?Coord=<ra>+-.665&Radius=2...", there is no "0" before the "."
-  // SIMBAD, however, requires the 0 before the "."
-  // for -1 < DEC < 1, e.g., -.123 => -0.123 ; .123 => 0.123
-  simbadLinkEl.href = simbadLinkEl.href.replace(/(\d[+]-?)[.](\d)/, '$10.$2');
-  // for -1 < RA < 1
-  simbadLinkEl.href = simbadLinkEl.href.replace(/(Coord=-?)[.](\d)+/, '$10.$2');
 
-  // add links to SIMBAD, VSX to the top
+function addExternalLInks() {
+  const simbadLinkEl = document.querySelector('a[target="simbad"]');
+
+  if (simbadLinkEl) {
+    // fix simbad urls, with
+    // for star with ra or dec between -1, and 1, the ExoFOP generated link
+    // is in the form of ".../sim-coo?Coord=<ra>+-.665&Radius=2...", there is no "0" before the "."
+    // SIMBAD, however, requires the 0 before the "."
+    // for -1 < DEC < 1, e.g., -.123 => -0.123 ; .123 => 0.123
+    simbadLinkEl.href = simbadLinkEl.href.replace(/(\d[+]-?)[.](\d)/, '$10.$2');
+    // for -1 < RA < 1
+    simbadLinkEl.href = simbadLinkEl.href.replace(/(Coord=-?)[.](\d)+/, '$10.$2');
+  } else {
+    console.warn('Cannot find Links to SIMBAD');
+  }
+
+    // add links to SIMBAD, VSX, etc.  to the top
 
   const vsxUrl = 'https://www.aavso.org/vsx/index.php?view=search.top' +
     ((coord != null) ? `#coord=${encodeURIComponent(coord.ra + ' ' + coord.dec)}`  : '');
@@ -257,9 +263,10 @@ if (simbadLinkEl) {
     ((coord != null) ? `&-c=${encodeURIComponent(coord.ra + ' ' + coord.dec)}&-c.r=15&-c.u=arcsec#autoSubmit=true`  : '');
   const tic = getTic();
 
+  document.getElementById('extraExternalLinksCtr')?.remove();  // to support redo
   document.querySelector('a[href="/tess"]').insertAdjacentHTML('afterend', `\
-<span style="background-color: #ccc; padding: 0.3em 2ch;">
-  ${simbadLinkEl.outerHTML.replace('>\nSIMBAD<', ' accesskey="S"> SIMBAD<')} |
+<span id="extraExternalLinksCtr" style="background-color: #ccc; padding: 0.3em 2ch;">
+  ${simbadLinkEl?.outerHTML?.replace('>\nSIMBAD<', ' accesskey="S"> SIMBAD<')} |
   <a href="${vsxUrl}" target="_vsx" accesskey="V" title="Variable Star Index">VSX</a> |
   <a href="${asasSnUrl}" target="_asas-sn" accesskey="A" title="All-Sky Automated Survey for Supernovae">ASAS-SN</a> |
   <a href="${gaiaDr3VarUrl}" target=_gaia-dr3-var" accesskey="G" title="Gaia DR3 Variables">GDR3 Var</a> |
@@ -282,13 +289,22 @@ if (simbadLinkEl) {
 
   // Add aliases to all external catalog links
   const hashToAdd = `#aliases=${getAliasesList()}&other_params=${getOtherParams()}`;
-  Array.from(document.querySelectorAll('a[target="simbad"], a[target="_vsx"], a[target="_asas-sn"]'),
+  Array.from(document.querySelectorAll('a[target="simbad"]'),
+    (a) => {
+      let href = a.href;
+      // remove existing hash if any, needed for the original SIMBAD link below the fold
+      href = href.replace(/#.*$/, '');
+      href += hashToAdd;
+      a.href = href;
+    }
+  );
+  // for VSX , ASAS-SN, I must append to the existing href,
+  //as they  already have some hashes that need to be preserved
+  Array.from(document.querySelectorAll('a[target="_vsx"], a[target="_asas-sn"]'),
     (a) => a.href += hashToAdd);
 
-} else {
-  console.warn('Cannot find Links to SIMBAD');
-}
-
+} // function addExternalLinks()
+addExternalLInks();
 
 //
 // Show V, Gaia, above the fold for ease of access
@@ -381,6 +397,7 @@ function tweakMag() {
 
   // add the assembled HTML to the anchor
   // use a <div> so that they show in their own line (it's too long to append to existing one)
+  document.getElementById('magExtraCtr')?.remove();  // remove existing DOM if any to support redo
   anchorEl.insertAdjacentHTML('beforeend', `<div id="magExtraCtr">
 <span style="margin-left: 1ch;">${vMagText}</span>
 <span style="margin-left: 1ch;">${gaiaLikeMagText}</span>
@@ -483,22 +500,35 @@ tweakMag();
 })();
 
 
+//
 // Convert Epoch from BJD to BTJD , sector / relative time in planet parameters table
+//
 function showEpochInBTJDAndRelative() {
+  const headerEl = document.querySelector('#myGrid3 div.ag-header-container > div > div:nth-of-type(2)  span[ref="eText"]')
+  headerEl.textContent = 'Epoch (BTJD)'; // new header
+
+  // actual conversion cell by cel
   const cellEpochs = document.querySelectorAll('#myGrid3 .ag-center-cols-container > div > div:nth-of-type(2)');
   cellEpochs.forEach(cellWrapperEl => {
-    const CellTextEl = cellWrapperEl.querySelector('.ag-cell-value > div');
-    const bjdStr = CellTextEl.textContent;
+    const cellTextEl = cellWrapperEl.querySelector('.ag-cell-value > div');
+    if (!cellTextEl) {
+      return;
+    }
+    if (cellTextEl.title?.startsWith('BJD ')) {
+      // case conversion already done for the cell. No-op.
+      // (for redoTweaks workflow)
+      return;
+    }
+    const bjdStr = cellTextEl.textContent;
     const bjd = parseFloat(bjdStr); // some of the epoch has error margin, which would be ignored by the parseFloat
     if (bjd) {
-      CellTextEl.title = `BJD ${bjdStr}`;
-      CellTextEl.textContent = bjdToBtjdAndRelativeStr(bjd);
+      cellTextEl.title = `BJD ${bjdStr}`;
+      cellTextEl.textContent = bjdToBtjdAndRelativeStr(bjd);
     }
   });
-
-  document.querySelector('#myGrid3 div.ag-header-container > div > div:nth-of-type(2)  span[ref="eText"]').textContent = 'Epoch (BTJD)';
 }
 showEpochInBTJDAndRelative();
+
 
 // Extract coordinate for ease of copy/paste
 if (coord) {
@@ -567,6 +597,25 @@ function initCopyCellTextOnDblClick() {
   document.addEventListener('dblclick', copyCellTextOnDblClick);
 }
 initCopyCellTextOnDblClick();
+
+
+//
+// For some of the tweaks, they don't really work unless ExoFOP page is in foreground
+// when the codes are called.
+// Provide a keyboard shortcut Alt-R to redo them
+//
+function redoTweaks() {
+  addExternalLInks();
+  tweakMag();
+  showEpochInBTJDAndRelative();
+}
+document.addEventListener('keydown', function(evt) {
+  if (evt.altKey && evt.code == 'KeyR') {
+    evt.preventDefault();
+    redoTweaks();
+  }
+});
+
 
 // Abbreviate the empty tables so that stellar parameters / Magnitudes are visible
 // without scrolling down for many cases.

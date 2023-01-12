@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.29.0
+// @version     1.30.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -289,59 +289,108 @@ if (simbadLinkEl) {
   console.warn('Cannot find Links to SIMBAD');
 }
 
-// Show absolute magnitude and B-V index (for spectral type estimation)
-(() => {
-  const anchorEl = document.querySelector('a[name="magnitudes"] ~ div.grid_header'); // where the output is added too
+
+//
+// Show V, Gaia, above the fold for ease of access
+// Also derive absolute magnitude, B-V index (for spectral type estimation)
+//
+function tweakMag() {
+  // where the output is added to:
+  // mag info section in Basic info: "TESS mag: ..."
+  const anchorEl = document.querySelector(".overview_header > span:nth-child(1) > ul > li:nth-child(3)");
+  // const anchorEl = document.querySelector('a[name="magnitudes"] ~ div.grid_header');
   if (!anchorEl) {
     console.error('Cannot find UI container for B-V index. No-op.');
     return;
   }
 
-  const distanceInPc = parseFloat(getDistance() || 0);
-  const bandAndMag = getBandAndMagnitudeOfRow(0);
-  if (distanceInPc > 0) {
-    const magApparent = parseFloat(bandAndMag.magnitude || 0);
-    const magAbsolute = magApparent - 5 * Math.log10(distanceInPc / 10);
-    anchorEl.insertAdjacentHTML('beforeend',
-      `<span style="padding: 0 1.5ch;background-color: white;font-size: 90%; font-weight: normal;"
-             >Abs. Mag: ${bandAndMag.band}  ${magAbsolute.toFixed(3)}</span>`);
-  }
+
+  const absMagText = (() => {
+    const distanceInPc = parseFloat(getDistance() || 0);
+    const bandAndMag = getBandAndMagnitudeOfRow(0);
+    if (distanceInPc > 0) {
+      const magApparent = parseFloat(bandAndMag.magnitude || 0);
+      const magAbsolute = magApparent - 5 * Math.log10(distanceInPc / 10);
+      return `Abs. mag: ${bandAndMag.band}  ${magAbsolute.toFixed(1)}`;
+    }
+    return '';
+  })();
 
   const bandMagMap = getBandMagnitudeMap();
-  const bvColorIndex = bandMagMap['B'] - bandMagMap['V'];
-  const spectralType = (() => {
-    if (isNaN(bvColorIndex)) {
-      return '';
-    }
-    // The mapping is based on : https://en.wikipedia.org/wiki/Color_index
-    const bvColorIndexToSpectral = [
-      [-0.33, "> O"],
-      [-0.30, "O"],  // i.e, < -0.30 is O type
-      [-0.02, "B"],
-      [0.30, "A"],
-      [0.58, "F"],
-      [0.81, "G"],
-      [1.40, "K"],
-      [Number.POSITIVE_INFINITY, "M"],
-    ];
-    for (const entry of bvColorIndexToSpectral) {
-      if (bvColorIndex < entry[0]) {
-        return entry[1];
-      }
-    }
-  })();
-  const bvColorIndexStr = isNaN(bvColorIndex) ? 'N/A': bvColorIndex.toFixed(2)
-  anchorEl.insertAdjacentHTML('beforeend',`
-<span title="B-V color index, and estimated spectral type.
-O5V: -0.33 ; B0V: -0.30 ; A0V: -0.02 ;
-F0V: 0.30 ; G0V: 0.58; K0V: 0.81; M0V: 1.40"
-      style="padding: 0 1.5ch;background-color: #ddd; font-size: 90%; font-weight: normal;">
-    <a href="https://en.wikipedia.org/wiki/Color_index"
-        target="_color_index" style="font-size: 1em; padding: 0.1em 0.5ch;">B-V:</a>
-    ${bvColorIndexStr} (${spectralType})
-</span>`);
 
-})();
+  const vMagText = (() => {
+    // V Mag useful to compare with SIMBAD, VSX, ASAS-SN
+    let magV  = bandMagMap['V'];
+    if (magV) {
+      return `V mag: ${magV.toFixed(1)}`;
+    }
+    return '';
+  })();
+
+  const gaiaLikeMagText = (() => {
+    // Gaia Mag useful to compare with Gaia DR3 output
+    let magGaiaLike  = bandMagMap['Gaia'];  // peak at 673nm
+    if (magGaiaLike) {
+      return `Gaia mag: ${magGaiaLike.toFixed(1)}`;
+    }
+
+    magGaiaLike  = bandMagMap['r'];  // sloan r, peak at 623nm
+    // don't use sloan g, which is closer to V (peak at 477nm)
+    if (magGaiaLike) {
+      return `r mag: ${magGaiaLike.toFixed(1)}`;
+    }
+    return '';
+  })();
+
+  const colorIndexHTML = (() => {
+    const bvColorIndex = bandMagMap['B'] - bandMagMap['V'];
+    const spectralType = (() => {
+      if (isNaN(bvColorIndex)) {
+        return '';
+      }
+      // The mapping is based on : https://en.wikipedia.org/wiki/Color_index
+      const bvColorIndexToSpectral = [
+        [-0.33, "> O"],
+        [-0.30, "O"],  // i.e, < -0.30 is O type
+        [-0.02, "B"],
+        [0.30, "A"],
+        [0.58, "F"],
+        [0.81, "G"],
+        [1.40, "K"],
+        [Number.POSITIVE_INFINITY, "M"],
+      ];
+      for (const entry of bvColorIndexToSpectral) {
+        if (bvColorIndex < entry[0]) {
+          return entry[1];
+        }
+      }
+    })();
+    const bvColorIndexStr = isNaN(bvColorIndex) ? 'N/A': bvColorIndex.toFixed(2)
+    // we return the <span> even if B-V is not available.
+    // , because users can use use the color index link for information.
+    return `
+  <span title="B-V color index, and estimated spectral type.
+  O5V: -0.33 ; B0V: -0.30 ; A0V: -0.02 ;
+  F0V: 0.30 ; G0V: 0.58; K0V: 0.81; M0V: 1.40"
+        style="padding: 0 1.5ch;">
+      <a href="https://en.wikipedia.org/wiki/Color_index"
+          target="_color_index" style="font-size: 1em; padding: 0.1em 0.5ch;">B-V:</a>
+      ${bvColorIndexStr} (${spectralType})
+  </span>`;
+  })();
+
+  // add the assembled HTML to the anchor
+  // use a <div> so that they show in their own line (it's too long to append to existing one)
+  anchorEl.insertAdjacentHTML('beforeend', `<div id="magExtraCtr">
+<span style="margin-left: 1ch;">${vMagText}</span>
+<span style="margin-left: 1ch;">${gaiaLikeMagText}</span>
+<span style="margin-left: 1ch;">${absMagText}</span>
+${colorIndexHTML}
+</div>`);
+
+} // function tweakMag()
+tweakMag();
+
 
 //
 // Highlight observation notes if any
@@ -359,6 +408,7 @@ F0V: 0.30 ; G0V: 0.58; K0V: 0.81; M0V: 1.40"
     observationNoteCtr.querySelector('.fa-comments').style.color = "yellow";
   }
 })();
+
 
 // Highlight various elements
 (() => {

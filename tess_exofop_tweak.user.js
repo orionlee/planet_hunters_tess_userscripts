@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.31.0
+// @version     1.31.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -609,13 +609,18 @@ function redoTweaks() {
   tweakMag();
   showEpochInBTJDAndRelative();
 }
+// To support use case one switches to the ExoFOP tab
+// , by reapplying the tweaks (that did not work in the background)
+window.addEventListener('focus', () => {
+  setTimeout(redoTweaks, 500);
+});
+// let user press Alt-R as a last resort
 document.addEventListener('keydown', function(evt) {
   if (evt.altKey && evt.code == 'KeyR') {
     evt.preventDefault();
     redoTweaks();
   }
 });
-
 
 // Abbreviate the empty tables so that stellar parameters / Magnitudes are visible
 // without scrolling down for many cases.

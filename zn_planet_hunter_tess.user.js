@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.8.8
+// @version     1.9.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -946,7 +946,14 @@ function isElementOrAncestor(el, criteria) {
     return meta;
   }
 
-  function showHideTicPopin(meta) {
+  function showHideTicPopin(meta, autoClickDefaults=false) {
+    function doAutoClickDefaults() {
+      // call _pht_talk the last, it will then be put right next to the current tab
+      GM_openInTab(document.querySelector('a[target="_exofop"]').href, true);
+      GM_openInTab(document.querySelector('a[target="_pht_talk"]').href, true);
+      document.getElementById('ticCopyNAddToNoteCtl').click();
+    }
+
     if (!meta) {
       return;
     }
@@ -958,6 +965,9 @@ function isElementOrAncestor(el, criteria) {
           // case there is an UI, that refers to the same subject
           // toggle hide show
           popinCtr.style.display = popinCtr.style.display === 'none' ? 'block' : 'none';
+          if (autoClickDefaults && popinCtr.style.display === 'block') {
+            doAutoClickDefaults();
+          }
           return;
         } else {
           // case existing UI, but for an old Tic
@@ -1047,6 +1057,11 @@ When TIC will be observed:<br>
         }
         return true;
       }, { passive: true });
+
+
+      if (autoClickDefaults) {
+        doAutoClickDefaults();
+      }
     } finally {
       // auto focus on Search PHT Talk link if the pop in is displayed
       if (document.querySelector('#ticPopin').style.display != 'none') {
@@ -1055,9 +1070,9 @@ When TIC will be observed:<br>
     }
   } // function showTicPopin()
 
-  function extractTicIdIfAny() {
+  function extractTicIdIfAny(autoClickDefaults=false) {
     const meta = getTicIdFromMetadataPopIn();
-    showHideTicPopin(meta);
+    showHideTicPopin(meta, autoClickDefaults);
   } // function extractTicIdIfAny()
 
   function initExtractTicIdIfAnyUI() {
@@ -1072,7 +1087,16 @@ When TIC will be observed:<br>
 <div id="extractTicIdIfAnyCtr" style="z-index: 9; position: fixed; top: 50px; right: 4px; padding: 4px 8px; background-color: rgba(255,168,0,0.5);">
   <button id="extractTicIdIfAnyCtl" accesskey="T">TIC</button>
 </div>`);
-    document.getElementById('extractTicIdIfAnyCtl').onclick = extractTicIdIfAny;
+    document.getElementById('extractTicIdIfAnyCtl').onclick = () => { extractTicIdIfAny(); };
+
+    document.addEventListener('keydown', (evt) => {
+      // open Tic Pop-in, and auto click the defaults
+      if (evt.ctrlKey && evt.altKey && evt.code == 'KeyT') {
+        evt.preventDefault();
+        extractTicIdIfAny(true);
+      }
+    });
+
     return true;
   } // function initExtractTicIdIfAnyUI()
 

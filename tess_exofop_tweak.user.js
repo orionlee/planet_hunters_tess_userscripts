@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.31.1
+// @version     1.32.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -430,6 +430,7 @@ tweakMag();
 // Highlight various elements
 (() => {
   // Highlight the existence of TOI/CTOI
+  let maxNumTOIorCTOIs = 0;
   ['#tois', '#ctois'].forEach( (anchor) => {
     const linkEl = document.querySelector(`.navbar0 a[href="${anchor}"]`);
     if (!linkEl) {
@@ -442,7 +443,16 @@ tweakMag();
       linkEl.style.backgroundColor = 'rgba(255, 255, 0, 0.7)';
       linkEl.style.fontWeight = 'bold';
     }
+    const numItems = parseInt(numItemsText, 10);
+    if (numItems > maxNumTOIorCTOIs) {
+      maxNumTOIorCTOIs = numItems;
+    }
   });
+  if (maxNumTOIorCTOIs > 0) { // if any TOI/CTOI, indicate it in title
+    console.debug('tweak title');
+    document.title = `(${maxNumTOIorCTOIs}) ExoFOP TIC ${getTic()}`;
+  }
+
 
   // mark false positive varieties for disposition
 

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.9.0
+// @version     1.9.1
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -461,7 +461,10 @@ function isElementOrAncestor(el, criteria) {
       if (ctr) {
         return ctr;
       }
-      const infoBtn = document.querySelector('.x-light-curve-root > section > div:last-of-type > button:first-of-type');
+      // infoBtn selector: the UI is changed to require an extra layer of <div>,
+      // but the UI change might be some temporary regression, as the subject info pop-in in classification
+      // is changed too (probably by mistake), containing all extra metadata, e.g., ExoFOP link.
+      const infoBtn = document.querySelector('.x-light-curve-root > section > div:first-of-type > div:last-of-type > button:first-of-type');
       infoBtn.insertAdjacentHTML('beforebegin', `<div id="classifyHintOut" title="Dip's depth estimator. Press Alt-C to activate it if it is not present."
           style="margin-right: 16px; margin-top: 4px; padding: 2px 4px; box-shadow: 2px 2px #ccc; border-bottom-right-radius: 6%;">
       R<sub>s</sub> <span style="font-size: 80%;">[R<sub>☉</sub>]</span>: <input name="r_*" type="number" style="width: 10ch;" step="0.1" placeholder="Enter stellar radius">&emsp;

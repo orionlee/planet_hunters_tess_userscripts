@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.9.2
+// @version     1.10.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -194,6 +194,11 @@ function isElementOrAncestor(el, criteria) {
     GM_addStyle(`
 #lightCurveViewerExpandCtr {
   display: none;
+}
+
+/* Make The workflow is finished banner smaller */
+.x-light-curve-root > section > div.StyledBox-sc-13pk1d4-0.fgHeel > div.StyledBox-sc-13pk1d4-0.fqvxxV {
+  max-height: 10px;
 }
 
 @media (min-width: 701px) {

@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.13.2
+// @version     1.13.3
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -147,7 +147,7 @@ titleForLinkifiedUrlImplList.push(url => {
   // TESS TCE vetting summary pdfs . tceSubId: 1, 2, 3 (of a given sector / sectors)
   // Note: the regex can't be easily generalized to dvm , dvr pdfs, because those pdfs doe not have tceSubId
   let [, startSector, endSector, tceSubId] =
-    url.match(/exo.mast.stsci.edu\/api\/v0.1\/Download\/file\?uri=mast:TESS\/.+-s(\d+)-s(\d+).+-0*(\d+)-\d+_dvs.pdf/) || [null, null, null, null];
+    url.match(/(?:exo.)?mast.stsci.edu\/api\/v0.1\/Download\/file\?uri=mast:TESS\/.+-s(\d+)-s(\d+).+-0*(\d+)-\d+_dvs.pdf/) || [null, null, null, null];
   if (!tceSubId) {
       return null;
     }

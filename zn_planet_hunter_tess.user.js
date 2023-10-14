@@ -8,15 +8,15 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.10.0
+// @version     1.10.1
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
 
 // helper for debug messages used to understand timing of ajax loading (and related MutationObserver)
-console.debug("PHT Tweak userscript. To turn on AJAX debug:  localStorage['DEBUG_PHT_AJAX'] = true");
 const DEBUG_PHT_AJAX = (localStorage['DEBUG_PHT_AJAX'] === 'true');
+console.debug(`PHT Tweak userscript. AJAX debug: ${DEBUG_PHT_AJAX} . To turn on AJAX debug:  localStorage['DEBUG_PHT_AJAX'] = true; then reload the page.`);
 function ajaxDbg(... args) {
   if (DEBUG_PHT_AJAX) {
     console.debug(...(['[ADBG]'].concat(args)));
@@ -275,6 +275,9 @@ function isElementOrAncestor(el, criteria) {
     // annotate it for the use with SVG
     const rootEl = document.querySelector('main > div > div');  // with CSS class binCyn
     rootEl?.classList?.add('x-light-curve-root');
+    if (!rootEl) {
+      console.warn('annotateViewerRoot(): cannot find root container. CSS class x-light-curve-root not added.');
+    }
     return rootEl;
     // 2022111: old codes for the previous version of the UI
     // const lightCurveEl = document.querySelector('div.light-curve-viewer');
@@ -293,7 +296,7 @@ function isElementOrAncestor(el, criteria) {
     if (location.pathname !== PATH_CLASSIFY) {
       return false;
     }
-    const btn = document.querySelector(`button[title="${btnTitle}"]`);
+    const btn = document.querySelector(`button[aria-label="${btnTitle}"]`);
     if (btn) {
       btn.click();
       // focus on viewer so that built-in viewer shortcuts will work
@@ -312,6 +315,8 @@ function isElementOrAncestor(el, criteria) {
       }
       return true;
     }
+    // else case button not found.
+    console.warn(`clickViewerBtn() button '${btnTitle}' not found. No-op.`);
     return false;
   } // function clickViewerBtn(..)
 
@@ -372,6 +377,7 @@ function isElementOrAncestor(el, criteria) {
       return ;
     }
 
+    annotateViewerRoot(); // hack 2023-10-13. Somehow .x-light-curve-root is not added.
     // infoBtn selector: the UI is changed to require an extra layer of <div>,
     return document.querySelector('.x-light-curve-root > section > div:first-of-type > div:last-of-type > button:first-of-type');
   }
@@ -642,8 +648,12 @@ function isElementOrAncestor(el, criteria) {
   function tweakWheelOnViewer() {
 
     const lcvEl = getViewerSVGEl();
+    if (!lcvEl) {
+      console.warn('tweakWheelOnViewer(): Viewer <svg> element not found. Cannot apply the wheel customization. No-op');
+      return;
+    }
     if (lcvEl.tweakWheelOnViewerCalled) {
-      // console.debug('tweakWheelOnViewer() - already called. No Op.');
+      console.debug('tweakWheelOnViewer() - already called. No Op.');
       return; // no need to init again
     }
     // else start the init
@@ -652,8 +662,8 @@ function isElementOrAncestor(el, criteria) {
 
 
     function isBtnHighlighted(btnTitle) {
-      // .fzAmVn css class for active button in ZN light theme,
-      // .bysTah for dark theme
+      // .goRgga css class for active button in ZN light theme,
+      // .bXWwGw for dark theme
       // OPEN: instead of hard-coding css class for active button
       // deduce it at runtime and cache it
       // given a button element el,
@@ -661,7 +671,7 @@ function isElementOrAncestor(el, criteria) {
       //   getComputedStyle(el).backgroundColor === "rgb(0, 151, 157)"
       // - we might consider to cut down getComputedStyle by caching,
       //   however, caching wil break when user switches theme.
-      return document.querySelector(`button.fzAmVn[title="${btnTitle}"], button.bysTah[title="${btnTitle}"]`);
+      return document.querySelector(`button.goRgga[aria-label="${btnTitle}"], button.bXWwGw[aria-label="${btnTitle}"]`);
     }
 
     // make wheel scrolling within viewer work better part 1
@@ -757,7 +767,10 @@ function isElementOrAncestor(el, criteria) {
       observer.disconnect();
       // The SVG will be modified a few times by zooniverse code (to load lightcurve, etc.)
       // So we wait a bit to let it finish before customizing
-      setTimeout(doCustomizeAll, 500);
+      ajaxDbg('customizeViewerOnSVGLoaded(): about to do actual customization with a timeout call.');
+      // hack 2023-10-13: SVG seemed to have been destroyed in running doCustomizeAll() -> customizeViewerSubjectLevel() ->  tweakWheelOnViewer()
+      // increasing timeout from 500 to 1500 seem to ensure the SVG element can be found.
+      setTimeout(doCustomizeAll, 1500);
     });
 
     if (!lcvEl) {
@@ -768,6 +781,11 @@ function isElementOrAncestor(el, criteria) {
       // normal path
       ajaxDbg('customizeViewerOnSVGLoaded() - wait for svg loaded. svg children:', document.querySelector('svg.light-curve-viewer').children);
       lcvObserver.observe(lcvEl, { childList: true, subtree: true });
+      // Issue 2023-10-13: for the initial loading of the viewer page.
+      // It seems that the <svg> has been loaded successfully by the time observer is initialized.
+      // thus the actual work in doCustomizeAll() is not called.
+      // So we call it explicitly even after the observer has been set up.
+      doCustomizeAll();
     } else {
       // path used by the retry hack, by the time the retry happened, the svg has been loaded.
       // so we must not use the observer to trigger the work

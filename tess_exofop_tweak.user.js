@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.32.3
+// @version     1.33.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -473,6 +473,14 @@ tweakMag();
     document.title = `(${maxNumTOIorCTOIs}) ExoFOP TIC ${getTic()}`;
   }
 
+
+  // highlight the existence of stellar companion
+  const numCompanions = parseInt(document.querySelector('a[href="#stellarcomp"] > span')?.textContent, 10)
+  if (numCompanions > 0) {
+    const companionAnchorEl = document.querySelector('a[href="#stellarcomp"]');
+    companionAnchorEl.style.backgroundColor = 'rgba(255, 255, 0, 0.7)';
+    companionAnchorEl.style.fontWeight = 'bold';
+  }
 
   // mark false positive varieties for disposition
 

@@ -5,7 +5,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.32.2
+// @version     1.32.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -211,7 +211,16 @@ function getOtherParams() {
 
 
 function getCoord() {
-  const raDecEl = document.querySelector('.overview_header > span:nth-of-type(2) > ul > li:nth-of-type(1)');
+  // coordUiCtrIdx: for TIC with TOI, there is an extra box before the coordinate box, so a different CSS selector is needed.
+  // so the CSS selector used to  locate the coordinate UI varies.
+  // The coordUiCtrIdx is used to pass the information to relevant caller, currently
+  // the one in constructing copy coordinate UI.
+  let raDecEl = document.querySelector('.overview_header > span:nth-of-type(2) > ul > li:nth-of-type(1)');
+  let coordUiCtrIdx = 2
+  if (!raDecEl) {
+    raDecEl = document.querySelector('.overview_header > span:nth-of-type(3) > ul > li:nth-of-type(1)');
+    coordUiCtrIdx = 3
+  }
   const raDecMatch = raDecEl?.textContent?.match(/:\n([0-9:.]+)\s([0-9:.+-]+)\s+[(]([0-9.+-]+)°\s*([0-9.+-]+)°/);
   if (raDecMatch) {
     return {
@@ -219,6 +228,7 @@ function getCoord() {
              dec:     raDecMatch[2],
              ra_deg:  raDecMatch[3],
              dec_deg: raDecMatch[4],
+             uiCtrIdx: coordUiCtrIdx,
            };
   }
   console.warn('getCoord() - cannot find coordinate: ', raDecEl);
@@ -552,7 +562,9 @@ showEpochInBTJDAndRelative();
 
 // Extract coordinate for ease of copy/paste
 if (coord) {
-  const headerEl = document.querySelector('.overview_header > span:nth-of-type(2) > span.purple-text');
+  // The CSS selector used depends on if there is a TOI summary box preceding it.
+  // The info is encoded in `coord.uiCtrIdx`
+  const headerEl = document.querySelector(`.overview_header > span:nth-of-type(${coord.uiCtrIdx}) > span.purple-text`);
   headerEl.insertAdjacentHTML('afterend', '<button id="raDecCopyCtl" style="font-size: 80%; margin-left: 6px;">Copy</button>');
   document.getElementById('raDecCopyCtl').onclick = (evt) => {
     const raDecStr = `${coord.ra_deg} ${coord.dec_deg}`;

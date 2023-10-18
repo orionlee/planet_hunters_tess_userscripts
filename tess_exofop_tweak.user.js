@@ -4,8 +4,9 @@
 // @match       https://exofop.ipac.caltech.edu/tess/target.php?id=*
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
+// @grant       GM_openInTab
 // @noframes
-// @version     1.33.0
+// @version     1.34.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -639,6 +640,27 @@ function initCopyCellTextOnDblClick() {
 initCopyCellTextOnDblClick();
 
 
+function autoOpenLinks() {
+  const[, targetsStr] = location.hash.match(/open=([^&]+)/) || [null, null];
+  if (!targetsStr) {
+    return;
+  }
+
+  targetsStr.split('|').forEach(target => {
+    const linkEl = document.querySelector(`a[target="${target}"]`);
+    if (linkEl) {
+      GM_openInTab(linkEl.href, true); // in background
+    } else {
+      console.warn(`Cannot find Links to ${target} to be launched`);
+    }
+  });
+
+  // reset the hash so that
+  // if users reload (or reopen closed tab), the links won't be spawned again
+  history.pushState("", document.title, location.pathname + location.search);
+}
+
+
 //
 // For some of the tweaks, they don't really work unless ExoFOP page is in foreground
 // when the codes are called.
@@ -648,6 +670,13 @@ function redoTweaks() {
   addExternalLInks();
   tweakMag();
   showEpochInBTJDAndRelative();
+
+  // autoOpenLinks() is not part of tweaks logically speaking.
+  // But for it to function 100%, it needs the correct external links
+  // so we call it here
+  // A drawback is the links are opened a bit late.
+  // They won't be opened until the user focuses on the tab
+  autoOpenLinks();
 }
 // To support use case one switches to the ExoFOP tab
 // , by reapplying the tweaks (that did not work in the background)
@@ -661,6 +690,7 @@ document.addEventListener('keydown', function(evt) {
     redoTweaks();
   }
 });
+
 
 // Abbreviate the empty tables so that stellar parameters / Magnitudes are visible
 // without scrolling down for many cases.

@@ -14,7 +14,7 @@
 // @match       http*://simbad.cds.unistra.fr/simbad/sim-ref?bibcode=*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.7.0
+// @version     1.7.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -481,7 +481,7 @@ ${typeWikiLinkHtml}
 
 function highlightInterestingObjectTypes() {
   const uninterestingTypes = (() => {
-    const baseTypes = ['*', '**', 'PM*', 'IR', 'UV', 'X', 'G'];
+    const baseTypes = ['*', '**', 'PM*', 'IR', 'FIR', 'MIR', 'NIR', 'UV', 'X', 'G', ];
     // include those that aren't uncertain (probably not needed)
     // baseTypes + baseTypes.map(t => t + '?');
     return baseTypes;

@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.34.0
+// @version     1.34.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -670,19 +670,25 @@ function redoTweaks() {
   addExternalLInks();
   tweakMag();
   showEpochInBTJDAndRelative();
-
-  // autoOpenLinks() is not part of tweaks logically speaking.
-  // But for it to function 100%, it needs the correct external links
-  // so we call it here
-  // A drawback is the links are opened a bit late.
-  // They won't be opened until the user focuses on the tab
-  autoOpenLinks();
 }
-// To support use case one switches to the ExoFOP tab
-// , by reapplying the tweaks (that did not work in the background)
-window.addEventListener('focus', () => {
-  setTimeout(redoTweaks, 500);
-});
+
+// invoke redoTweaks() / autoOpenLinks()
+// depending on whether the tab is foreground/background
+if (document.visibilityState === 'visible') {
+  // case the tab is in foreground, we can apply the tweaks right
+  // no need to call redoTweaks() for foreground
+  autoOpenLinks(); // depends on external links working
+} else {
+  // case the tab is in background. use case:  one switches to the ExoFOP tab
+  // need to tweaks (that did not work in the background)
+  window.addEventListener('focus', () => {
+    setTimeout(() => {
+      redoTweaks();
+      autoOpenLinks();
+    }, 250);
+  });
+}
+
 // let user press Alt-R as a last resort
 document.addEventListener('keydown', function(evt) {
   if (evt.altKey && evt.code == 'KeyR') {

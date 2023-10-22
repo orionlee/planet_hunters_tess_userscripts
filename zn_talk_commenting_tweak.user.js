@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.13.3
+// @version     1.13.4
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -28,7 +28,14 @@ function capitalize(text) {
   function capitalize1stLetter(word) {
     return word.substring(0, 1).toLocaleUpperCase() + word.substring(1);
   }
-  return text.split(" ").map(capitalize1stLetter).join(" ");
+  let res = text.split(" ").map(capitalize1stLetter).join(" ");
+  if (res.length > 1) {
+    // ensure the last letter is lowercase,
+    // to handle planet name, e.g., Kepler 435 b
+    res = res.slice(0, res.length - 1) + res.slice(res.length -1).toLowerCase()
+  }
+
+  return res;
 }
 
 //
@@ -227,7 +234,7 @@ titleForLinkifiedUrlImplList.push(url => {
   //   https://exoplanetarchive.ipac.caltech.edu/overview/WASP-1%20b
 
   let [, text] = decodeURI(url).match(/.+\/([a-zA-Z0-9-_ ]+)([/.?#].*)?$/) || [null, null];
-  text = text?.replace(/[-_]/g, " ");
+  text = text?.replace(/[_]/g, " ");
   return capitalize(text);
 });
 

@@ -14,7 +14,7 @@
 // @match       http*://simbad.cds.unistra.fr/simbad/sim-ref?bibcode=*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.7.1
+// @version     1.8.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -138,6 +138,38 @@ function normalizeId(idEl) {
 
 // Cross match info in hash, that come from links from customized ExoFOP
 function tweakUIWithCrossMatch() {
+  (() => { // annotate distance from center from hash
+    // use case: if the SIMBAD entry page is from the link of a multi-result page
+    // the distance from center is lost in standard SIMBAD UI,
+    // we compensate it here.
+    // (The distance is hash is added by the `resultLinks` tweaks in the later part of the function)
+    const [, dist] = location.hash.match(/&dist_asec=([^&]+)/) || [null, null]
+    if (!dist) {
+      return;
+    }
+    const idRow = document.querySelector('#basic_data table tr:first-of-type');
+    if (!idRow) {
+      console.warn('tweakUIWithCrossMatch(): failed to annotate distance to the center because the ID row DOM not found.');
+      return;
+    }
+    // the placement of the data and the UI is consistent with how SIMBAD presents it
+    // (in the case of coordinate search with only 1 result)
+    idRow.insertAdjacentHTML('afterend',`
+  <tr>
+    <td align="LEFT" valign="TOP" nowrap="">
+Distance to the center <i>arcsec</i>:       </td>
+    <td>
+     <font size="+0" color="#969696">
+      <i>
+   ${dist}
+      </i>
+     </font>
+    </td>
+   </tr>
+`);
+  })();
+
+
   const [aliasList, otherParams] = getMatchingInfoFromHash();
   if (!aliasList) {
     return;
@@ -151,6 +183,8 @@ function tweakUIWithCrossMatch() {
 
   // BEGIN for case the coordinate has multiple results
   // - we propagate the aliases to the result link
+  // - also propagate distance from center as well.
+  //    - Note: it probably should be done separately.
   // - some minor UI tweak
   if (!document.querySelector('a[name="lab_ident"]')) {
     const resultLinks = Array.from(document.querySelectorAll('#datatable tr td:nth-of-type(2) a'));
@@ -162,6 +196,14 @@ function tweakUIWithCrossMatch() {
     resultLinks.forEach(linkEl => {
       // propagate the aliases to the links of individual result
       linkEl.href += location.hash;
+
+      // also propagate distance from center
+      const dist = linkEl?.parentElement?.nextElementSibling?.textContent?.trim();
+      if (dist) {
+        linkEl.href += `&dist_asec=${dist}`;
+      } else {
+        console.warn('tweakUIWithCrossMatch(): cannot annotate the distance from center for ' + linkEl.textContent);
+      }
     });
 
     // traverse to individual page automatically if applicable

@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.34.1
+// @version     1.35.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -267,13 +267,14 @@ function addExternalLInks() {
         '&sort_by=distance&sort_order=asc&show_non_periodic=true&show_without_class=true&asassn_discov_only=false&'
         : '');
 
-  // Gaia DR3 variables, query 4 tables
+  // Gaia DR3 variables, query the following tables
   // - vclassre: main classification
   // - varisum:  basic params (magnitudes, whether it's classified to specific subtypes)
   // - veb: eclipsing binary params
+  // - vcc: eclipsing binary with compact companion
   // - vst: short time scaled sources params (sometimes EB like variability goes there)
   // documentation: https://gea.esac.esa.int/archive/documentation/GDR3/Gaia_archive/chap_datamodel/sec_dm_variability_tables/
-  const gaiaDr3VarUrl = 'https://vizier.u-strasbg.fr/viz-bin/VizieR-3?-source=+I%2F358%2Fvarisum+I%2F358%2Fvclassre+I%2F358%2Fveb+I%2F358%2Fvst' +
+  const gaiaDr3VarUrl = 'https://vizier.u-strasbg.fr/viz-bin/VizieR-3?-source=+I%2F358%2Fvarisum+I%2F358%2Fvclassre+I%2F358%2Fveb+I%2F358%2Fvcc+I%2F358%2Fvst' +
     ((coord != null) ? `&-c=${encodeURIComponent(coord.ra + ' ' + coord.dec)}&-c.r=60&-c.u=arcsec#autoSubmit=true`  : '');
 
   // Gaia DR3, query 2 tables

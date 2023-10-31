@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.11.1
+// @version     1.11.2
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -921,11 +921,17 @@ function isElementOrAncestor(el, criteria) {
         }
 
         // normal flow: return ticId and sector
-        const ticId = ticThs[0].parentElement.querySelector('td').textContent;
+
+        // extra parsing of metadata textContent:
+        // to workaround a bug the the value would precede with some error message
+        // "Cannot use 'in' operator to search for 'message' in 66"
+        const ticIdText = ticThs[0].parentElement.querySelector('td').textContent;
+        const [, ticId] = ticIdText.match(/(\d+)/) || [null, ''];
 
         const sectorThs = Array.from(metadataCtr.querySelectorAll('th'))
           .filter( th => th.textContent == 'Sector' );
-        const sector = sectorThs.length > 0 ? sectorThs[0].parentElement.querySelector('td').textContent : '';
+        const sectorText = sectorThs.length > 0 ? sectorThs[0].parentElement.querySelector('td').textContent : '';
+        const [, sector] = sectorText.match(/(\d+)/) || [null, ''];
 
         return {ticId, sector};
       } finally {

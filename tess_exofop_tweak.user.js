@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.35.0
+// @version     1.35.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -612,13 +612,27 @@ function initCopyCellTextOnDblClick() {
     }
 
     // special case for TOI,
-    text = `#${text}`;  // add hash to TOI
+    // First, add hash to TOI
+    text = `#${text}`;
 
-    // try to get the master priority too.
+    // Then, try to get the master priority too.
     // the logic only works for the TOI cell in TOIs table
     // (it does not work for the one in CTOIs table or planet parameters table)
-    const masterPriority =
-      cellEl?.parentElement?.parentElement?.parentElement?.parentElement?.nextElementSibling?.querySelector('.ag-cell-value')?.textContent;
+    const masterPriority = (() => {
+      try {
+        // traverse up to find the row number of the current cell
+        const rowEl = cellEl.parentElement.parentElement.parentElement;
+        const tableEl = rowEl.parentElement;
+        const rowIdx = Array.from(tableEl.children).indexOf(rowEl);
+
+        // The Priority (and others) are placed as in the adjacent table
+        // logically on the same row identified by rowIdx
+        return tableEl.nextElementSibling.querySelector(`div[row-index="${rowIdx}"] .ag-cell-value`).textContent
+      } catch (err) {
+        console.warn("copy TOI priority failed.", err);
+        return null;
+      }
+    })();
     if (masterPriority) {
       text = `${text} (master priority ${masterPriority})`;
     }

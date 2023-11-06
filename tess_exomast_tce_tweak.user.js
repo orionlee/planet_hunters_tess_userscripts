@@ -4,7 +4,7 @@
 // @match       https://exo.mast.stsci.edu/exomast_planet.html?planet=*
 // @grant       none
 // @noframes
-// @version     1.0.23
+// @version     1.1.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -151,4 +151,24 @@ const dataObserver = new MutationObserver(function(mutations, observer) {
   observer.disconnect();
 });
 dataObserver.observe(document.querySelector('#data'), { childList: true });
+
+
+// To access related links for the pdfs
+// we must wait for Data Coverage tab loaded, which takes a while
+// Here we alert the users (via tab title) that Data Coverage tab has been loaded.
+let dataCoverageLoadDone = false;
+function alertWhenDataCoverageLoadDone() {
+  if (dataCoverageLoadDone) {
+    return;
+  }
+
+  const stillLoading = (document.querySelector('.jquery-loading-modal__text')?.textContent === 'Loading exoplanet data...');
+  if (stillLoading) {
+    setTimeout(alertWhenDataCoverageLoadDone, 2000);
+  } else {
+    dataCoverageLoadDone = true;
+    document.title = '✓' + document.title; // signify it's loaded with the tab title
+  }
+}
+setTimeout(alertWhenDataCoverageLoadDone, 2000);
 

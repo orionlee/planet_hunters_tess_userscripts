@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.35.2
+// @version     1.35.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -129,6 +129,20 @@ function normalizeAlias(aliasText) {
     // The WISE ids actually are allWISE ids
     // use the allWISE ids format adopted by SIMBAD and VSX
     res = res.replace(/^WISE J/, 'WISEA J');
+  }
+  if (res.startsWith('GSC ')) {
+    // for GSC, we need to pad with leading zeros, e.g.,
+    // for GSC 8763-00475 , 8673 is padded to 08763
+    // both SIMBAD and VSX use the version with leading zeros
+
+    let [, str1, str2] = res.match(/GSC (\d+)-(\d+)/) || [null, null, null];
+    if (str1 && str2) {
+      str1 = str1.padStart(5, '0');
+      str2 = str2.padStart(5, '0');
+      res = `GSC ${str1}-${str2}`;
+    } else {
+      console.warn(`normalizeAlias(): failed for ${res} ; No-op`);
+    }
   }
   // SDSS note:
   // normalization is does not seem to be possible

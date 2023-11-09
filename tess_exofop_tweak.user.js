@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.35.3
+// @version     1.36.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -298,6 +298,12 @@ function addExternalLInks() {
   // Note: the default columns are tweaked by tess_vizier_autosearch.usr.js
   const gaiaDr3Url = 'https://vizier.u-strasbg.fr/viz-bin/VizieR-3?-source=+I%2F355%2Fgaiadr3+I%2F355%2Fparamp' +
     ((coord != null) ? `&-c=${encodeURIComponent(coord.ra + ' ' + coord.dec)}&-c.r=15&-c.u=arcsec#autoSubmit=true`  : '');
+
+  // Gaia DR3 Non Single Star
+  const coordStrEncoded = (coord != null) ? encodeURIComponent(coord.ra + ' ' + coord.dec) : '';
+  // The following long URL would query all NSS tables
+  const gaiaDr3NSSUrl = `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-ref=VIZ654d41d6a6ba&-to=-4b&-from=-3&-this=-4&%2F%2Fsource=I%2F357&%2F%2Ftables=I%2F357%2Ftboasb1c&%2F%2Ftables=I%2F357%2Ftboeb&%2F%2Ftables=I%2F357%2Ftboes&%2F%2Ftables=I%2F357%2Ftbooc&%2F%2Ftables=I%2F357%2Ftbooac&%2F%2Ftables=I%2F357%2Ftbooavc&%2F%2Ftables=I%2F357%2Ftbootsc&%2F%2Ftables=I%2F357%2Ftbootsvc&%2F%2Ftables=I%2F357%2Ftbosb1&%2F%2Ftables=I%2F357%2Ftbosb1c&%2F%2Ftables=I%2F357%2Ftbosb2&%2F%2Ftables=I%2F357%2Ftbosb2c&%2F%2Ftables=I%2F357%2Facc7&%2F%2Ftables=I%2F357%2Facc9&%2F%2Ftables=I%2F357%2Flinspec1&%2F%2Ftables=I%2F357%2Flinspec2&%2F%2Ftables=I%2F357%2Fvimfl&-out.max=50&%2F%2FCDSportal=http%3A%2F%2Fcdsportal.u-strasbg.fr%2FStoreVizierData.html&-out.form=HTML+Table&%2F%2Foutaddvalue=default&-order=I&-oc.form=sexa&-nav=cat%3AI%2F357%26tab%3A%7BI%2F357%2Ftboasb1c%7D%26tab%3A%7BI%2F357%2Ftboeb%7D%26tab%3A%7BI%2F357%2Ftboes%7D%26tab%3A%7BI%2F357%2Ftbooc%7D%26tab%3A%7BI%2F357%2Ftbooac%7D%26tab%3A%7BI%2F357%2Ftbooavc%7D%26tab%3A%7BI%2F357%2Ftbootsc%7D%26tab%3A%7BI%2F357%2Ftbootsvc%7D%26tab%3A%7BI%2F357%2Ftbosb1%7D%26tab%3A%7BI%2F357%2Ftbosb1c%7D%26tab%3A%7BI%2F357%2Ftbosb2%7D%26tab%3A%7BI%2F357%2Ftbosb2c%7D%26tab%3A%7BI%2F357%2Facc7%7D%26tab%3A%7BI%2F357%2Facc9%7D%26tab%3A%7BI%2F357%2Flinspec1%7D%26tab%3A%7BI%2F357%2Flinspec2%7D%26tab%3A%7BI%2F357%2Fvimfl%7D%26key%3Asource%3DI%2F357%26pos%3A${coordStrEncoded}%28+15+arcsec+J2000%29%26HTTPPRM%3A&-c=${coordStrEncoded}&-c.eq=J2000&-c.r=+15&-c.u=arcsec&-c.geom=r&-source=&-out.src=I%2F357%2Ftboasb1c%2CI%2F357%2Ftboeb%2CI%2F357%2Ftboes%2CI%2F357%2Ftbooc%2CI%2F357%2Ftbooac%2CI%2F357%2Ftbooavc%2CI%2F357%2Ftbootsc%2CI%2F357%2Ftbootsvc%2CI%2F357%2Ftbosb1%2CI%2F357%2Ftbosb1c%2CI%2F357%2Ftbosb2%2CI%2F357%2Ftbosb2c%2CI%2F357%2Facc7%2CI%2F357%2Facc9%2CI%2F357%2Flinspec1%2CI%2F357%2Flinspec2%2CI%2F357%2Fvimfl&-x.rs=10&-source=I%2F357%2Ftboasb1c+I%2F357%2Ftboeb+I%2F357%2Ftboes+I%2F357%2Ftbooc+I%2F357%2Ftbooac+I%2F357%2Ftbooavc+I%2F357%2Ftbootsc+I%2F357%2Ftbootsvc+I%2F357%2Ftbosb1+I%2F357%2Ftbosb1c+I%2F357%2Ftbosb2+I%2F357%2Ftbosb2c+I%2F357%2Facc7+I%2F357%2Facc9+I%2F357%2Flinspec1+I%2F357%2Flinspec2+I%2F357%2Fvimfl&-out.orig=standard&-out=Source&Source=6657958594597962112&-out=NSSmodel&-out=RA_ICRS&-out=DE_ICRS&-out=Plx&-out=pmRA&-out=pmDE&-out=ATI&-out=BTI&-out=FTI&-out=GTI&-out=CTI&-out=HTI&-out=Per&-out=Tperi&-out=ecc&-out=Vcm&-out=Flags&-out=_RA.icrs&-out=_DE.icrs&-out=ffactp&-out=ffacts&-out=inc&-out=Tratio&-out=Teclp&-out=Tecls&-out=Durp&-out=Durs&-out=K1&-out=MassRatio&-out=K2&-out=dpmRA&-out=dpmDE&-out=ddpmRA&-out=ddpmDE&-out=Velmean&-out=dVel%2Fdt&-out=dVel%2Fdt2&-out=RAVIM&-out=DEVIM&-meta.ucd=2&-meta=1&-meta.foot=1&-meta.form=1&-usenav=1&-bmark=GET`;
+
   const tic = getTic();
 
   document.getElementById('extraExternalLinksCtr')?.remove();  // to support redo
@@ -311,6 +317,7 @@ function addExternalLInks() {
   <a href="http://cdsportal.u-strasbg.fr/gadgets/ifr?url=http://cdsportal.unistra.fr/widgets/SED_plotter.xml&SED_plot_object=TIC${tic}&SED_plot_radius=5"
     target="_sed" title="Spectral Energy Distributions Plot">SED</a>  |
   <a href="${gaiaDr3Url}" target=_gaia-dr3" title="Gaia DR3 Main">GDR3</a> |
+  <a href="${gaiaDr3NSSUrl}" target=_gaia-dr3-nss" title="Gaia DR3 Non Single Star">NSS</a> |
   <a href="https://tev.mit.edu/data/search/?q=${tic}" target="_tev"
     title="To MIT TEV: it contains similar information; but it also has QLP validation reports when applicable">MIT TEV</a> |
   <a href="https://exo.mast.stsci.edu/#search=TIC ${tic}"

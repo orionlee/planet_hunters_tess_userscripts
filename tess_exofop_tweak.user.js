@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.36.0
+// @version     1.37.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -675,6 +675,29 @@ function initCopyCellTextOnDblClick() {
   document.addEventListener('dblclick', copyCellTextOnDblClick);
 }
 initCopyCellTextOnDblClick();
+
+
+// Helper to copy the link to an section (with anchor)
+function initCopySectionLinkOnDblClick() {
+  function copySectionLinkOnDblClick(evt) {
+    // console.debug('evt:', evt);
+    if ( (evt.ctrlKey || evt.altKey || evt.shiftKey) &&
+         evt.target?.classList?.contains('grid_header') ) {
+          // case it's a section header
+          // looks for <a name="...">
+          const anchor = evt.target.previousElementSibling?.name;
+          if (anchor) {
+            // create new URL with the anchor,
+            // replace existing anchor in the URL, if any
+            const text = location.href.replace(/#.+$/, '') + `#${anchor}`;
+            GM_setClipboard(text);
+            showMessageTemporarily(`${text} copied to clipboard.`);
+          }
+    }
+  }
+  document.addEventListener('dblclick', copySectionLinkOnDblClick);
+}
+initCopySectionLinkOnDblClick();
 
 
 function autoOpenLinks() {

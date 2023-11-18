@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.37.2
+// @version     1.38.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -366,18 +366,24 @@ function tweakMag() {
   }
 
 
+  const bandMagMap = getBandMagnitudeMap();
+
   const absMagText = (() => {
     const distanceInPc = parseFloat(getDistance() || 0);
-    const bandAndMag = getBandAndMagnitudeOfRow(0);
     if (distanceInPc > 0) {
-      const magApparent = parseFloat(bandAndMag.magnitude || 0);
-      const magAbsolute = magApparent - 5 * Math.log10(distanceInPc / 10);
-      return `Abs. mag: ${bandAndMag.band}  ${magAbsolute.toFixed(1)}`;
+      const magTESS  = bandMagMap['TESS'];
+      const magAbsoluteTESS = magTESS - 5 * Math.log10(distanceInPc / 10);
+      let text = `Abs. mag: TESS ${magAbsoluteTESS.toFixed(1)}`;
+
+      const magV  = bandMagMap['V'];
+      if (magV) {
+        const magAbsoluteV = magV - 5 * Math.log10(distanceInPc / 10);
+        text += `&nbsp; V ${magAbsoluteV.toFixed(1)}`;
+      }
+      return text;
     }
     return '';
   })();
-
-  const bandMagMap = getBandMagnitudeMap();
 
   const vMagText = (() => {
     // V Mag useful to compare with SIMBAD, VSX, ASAS-SN

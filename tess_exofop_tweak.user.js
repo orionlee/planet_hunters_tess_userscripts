@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.38.0
+// @version     1.39.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -321,6 +321,8 @@ function addExternalLInks() {
   <a href="${gaiaDr3NSSUrl}" target=_gaia-dr3-nss" title="Gaia DR3 Non Single Star">NSS</a> |
   <a href="https://tev.mit.edu/data/search/?q=${tic}" target="_tev"
     title="To MIT TEV: it contains similar information; but it also has QLP validation reports when applicable">MIT TEV</a> |
+  <a href="https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-ref=VIZ655abdcb3f53ce&-to=-4b&-from=-2&-this=-4&%2F%2Fsource=J%2FAJ%2F156%2F234&%2F%2Ftables=J%2FAJ%2F156%2F234%2Ftable4&-out.max=50&%2F%2FCDSportal=http%3A%2F%2Fcdsportal.u-strasbg.fr%2FStoreVizierData.html&-out.form=HTML+Table&%2F%2Foutaddvalue=default&-order=I&-oc.form=sexa&-out.src=J%2FAJ%2F156%2F234%2Ftable4&-nav=cat%3AJ%2FAJ%2F156%2F234%26tab%3A%7BJ%2FAJ%2F156%2F234%2Ftable4%7D%26key%3Asource%3DJ%2FAJ%2F156%2F234%26HTTPPRM%3A&-c=&-c.eq=J2000&-c.r=++2&-c.u=arcmin&-c.geom=r&-source=&-source=J%2FAJ%2F156%2F234%2Ftable4&-out=KELT&-out=2MASS&-out=TIC&TIC=${tic}&-out=FName&-out=FNum&-out=RAJ2000&-out=DEJ2000&-out=Per&-out=Dur&-out=TDepth&-out=RVAmp&-meta.ucd=2&-meta=1&-meta.foot=1&-usenav=1&-bmark=GET"
+    target="_kelt_fp" title="KELT Transit FPs">KELT</a> |
   <a href="https://exo.mast.stsci.edu/#search=TIC ${tic}"
     target="_exomast" title="TCEs on Exo.MAST">TCE</a>  |
   <a href="https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC ${tic}"

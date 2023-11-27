@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.39.0
+// @version     1.40.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -145,6 +145,15 @@ function normalizeAlias(aliasText) {
       console.warn(`normalizeAlias(): failed for ${res} ; No-op`);
     }
   }
+  if (res.startsWith('SD-')) {
+    // SD ies equivalent to BD, the one used in SIMBAD / VSX
+    // https://cds.unistra.fr/cgi-bin/Dic-Simbad?SD
+    // (Sometimes a TIC has both SD and BD names,
+    //  this normalization doesn't hurt matching, in the sense
+    //  that SIMBAD / VSX basically all use BD.)
+    res = res.replace(/^SD-/, 'BD-');
+  }
+
   // SDSS note:
   // normalization is does not seem to be possible
   // - ExoFOP uses a DR-specific ID, e.g.,

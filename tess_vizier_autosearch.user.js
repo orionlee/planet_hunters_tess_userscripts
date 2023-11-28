@@ -6,7 +6,7 @@
 // @match       https://cdsarc.cds.unistra.fr/viz-bin/VizieR-*?-source=*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.4.1
+// @version     1.4.3
 // @author      -
 // @description Auto-search a Vizier source using the parameter from hash.
 //              Use cases includes creating URLs for Gaia DR3 variable on Vizier.
@@ -23,7 +23,7 @@ function tweakDefaultColumns() {
   if (source.match('I/355/gaiadr3')) {
     // tweaks for Gaia DR3 main table
     colsToUnCheck = colsToUnCheck.concat(
-      ['e_RA_ICRS', 'e_DE_ICRS', 'e_Plx', 'e_pmRA', 'e_pmDE', 'FG', 'e_FG', 'FBP', 'e_FBP', 'FRP', 'e_FRP', 'QSO', 'Gal', 'And']
+      ['e_RA_ICRS', 'e_DE_ICRS', 'e_Plx', 'e_pmRA', 'e_pmDE', 'FG', 'e_FG', 'FBP', 'e_FBP', 'FRP', 'e_FRP', 'QSO', 'Gal', 'And', 'Vbroad', 'GRVSmag']
     );
     colsToCheck = colsToCheck.concat(
       ['sepsi', 'RUWE', 'Dup', 'VarFlag', 'NSS'] // NSS: Non single star
@@ -62,7 +62,7 @@ function tweakDefaultColumns() {
 
 
 function autoSubmitSearchFromHash() {
-  if (!location.hash.startsWith('#autoSubmit=true')) {
+  if (location.hash.indexOf('autoSubmit=true') < 0) {
     return false;
   }
 

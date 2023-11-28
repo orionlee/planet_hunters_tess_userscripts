@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.14.1
+// @version     1.15.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -70,8 +70,8 @@ function insertAtCursor(textarea, text, transformFn, selectFn) {
 //
 
 const titleForLinkifiedUrlImplList = []
-  // It is similar to default extraction logic, but has special cases.
-  titleForLinkifiedUrlImplList.push(url => {
+// It is similar to default extraction logic, but has special cases.
+titleForLinkifiedUrlImplList.push(url => {
     let [, title] = url.match(/.*[.]wikipedia[.]org\/wiki\/([^#]+)/) || [null, null];
     if (title) {
       title = decodeURIComponent(title); // handle non basic ASCII char, e.g., the dash in Wolf–Rayet_star
@@ -192,7 +192,7 @@ titleForLinkifiedUrlImplList.push(url => {
   const [, targetId] = url.match(/vizier[.].+[/]VizieR-S[?]([^&]+)/) || [null, ""];
   // e.g, extract Gaia EDR3
   const [, prefix] = decodeURIComponent(targetId).match(/(^.+)\s+\d+\s*$/) || [null, null];
-  return prefix ? `${prefix} data` : null;
+  return prefix ? `${prefix}` : null;
 });
 titleForLinkifiedUrlImplList.push(url => {
   if (
@@ -221,6 +221,21 @@ titleForLinkifiedUrlImplList.push(url => {
       url.match(/[/]viz-bin[/]VizieR-\d[?].*source=[+]?I%2F358/)
     ) {
     return "Gaia DR3 Variable";
+  }
+  return null;
+});
+titleForLinkifiedUrlImplList.push(url => {
+  if (
+      // Vizier Gaia DR3 NSS  entry link (for various tables under Gaia DR3), e.g.,
+      // - SB2 params(I/357/tbosb2)
+      // https://vizier.cds.unistra.fr/viz-bin/VizieR-5?-ref=VIZ654d41d6a6ba&-out.add=.&-source=I/357/tbosb2&recno=3074&-out.orig=o
+      url.match(/[/]viz-bin[/]VizieR-\d[?].*-source=I[/]357[/].+&/) ||
+
+      // Vizier Gaia DR3 NSS search result page (possibly more than 1 row),
+      // including single table and multi table cases
+      url.match(/[/]viz-bin[/]VizieR-\d[?].*source=[+]?I%2F357/)
+    ) {
+    return "Gaia DR3 NSS";
   }
   return null;
 });

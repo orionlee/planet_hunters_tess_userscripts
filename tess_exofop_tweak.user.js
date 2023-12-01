@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.41.0
+// @version     1.41.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -184,44 +184,43 @@ function getDistance() {
     .textContent;
 } // function getDistance()
 
-function getBandAndMagnitudeOfRow(rowIdx) {
-  // - rowIdx 0 is first row, or div:nth-of-type(1)
-  const rowEl = document.querySelector(`#myGrid6 div.ag-center-cols-container > div:nth-of-type(${1 + rowIdx})`);
-  if (!rowEl) {
-    return null;
-  }
-  return {
-    band: rowEl.querySelector('div:nth-child(1)').textContent,
-    magnitude: rowEl.querySelector('div:nth-child(2)').textContent,
-  };
-}
 
 function getBandMagnitudeMap() {
   const rowEls = Array.from(document.querySelectorAll(`#myGrid6 div.ag-center-cols-container > div`));
   const res = {}  // band: magnitude map
   rowEls.forEach(rowEl => {
+    // round the magnitude for ease of visual matching
     res[rowEl.querySelector('div:nth-child(1)').textContent] =
-      parseFloat(rowEl.querySelector('div:nth-child(2)').textContent);
+      parseFloat(rowEl.querySelector('div:nth-child(2)').textContent)?.toFixed(2);
   });
   return res;
 }
 
 function getOtherParams() {
 
-  function getMagnitudeOfRow(rowIdx) {
-    const ret = getBandAndMagnitudeOfRow(rowIdx);
-    if (!ret) {
-      return '';
-    }
-    return ret.band + '-' + ret.magnitude;
-  }
-
   function getMagnitudes() {
     // try to get magnitudes in B and V bands, more likely to match SIMBAD data
-    // - first row (row 0) is usually TESS band
-    return getMagnitudeOfRow(1)
-      + ', '
-      + getMagnitudeOfRow(2);
+    // if not available, provide a few backup
+    const magMap = getBandMagnitudeMap();
+    let res = "";
+    let bandUsed = 0;
+    if (magMap['B']) {
+      res += `B:${magMap['B']}, `;
+      bandUsed++;
+    }
+    if (magMap['V']) {
+      res += `V:${magMap['V']}, `
+      bandUsed++;
+    }
+    if ((bandUsed < 2) && (magMap['Gaia'])) {
+      res += `G:${magMap['Gaia']}, `
+      bandUsed++;
+    }
+    if ((bandUsed < 2) && (magMap['TESS'])) {
+      res += `T:${magMap['Gaia']}, `
+      bandUsed++;
+    }
+    return res;
   }
 
   function getProperMotion() {
@@ -426,7 +425,7 @@ function tweakMag() {
     // V Mag useful to compare with SIMBAD, VSX, ASAS-SN
     let magV  = bandMagMap['V'];
     if (magV) {
-      return `V mag: ${magV.toFixed(1)}`;
+      return `V mag: ${magV}`;
     }
     return '';
   })();
@@ -435,13 +434,13 @@ function tweakMag() {
     // Gaia Mag useful to compare with Gaia DR3 output
     let magGaiaLike  = bandMagMap['Gaia'];  // peak at 673nm
     if (magGaiaLike) {
-      return `Gaia mag: ${magGaiaLike.toFixed(1)}`;
+      return `Gaia mag: ${magGaiaLike}`;
     }
 
     magGaiaLike  = bandMagMap['r'];  // sloan r, peak at 623nm
     // don't use sloan g, which is closer to V (peak at 477nm)
     if (magGaiaLike) {
-      return `r mag: ${magGaiaLike.toFixed(1)}`;
+      return `r mag: ${magGaiaLike}`;
     }
     return '';
   })();

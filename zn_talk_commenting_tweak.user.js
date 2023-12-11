@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.15.0
+// @version     1.16.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -511,6 +511,23 @@ function tweakSearchResult() {
 // better implementation would wait till SearchResult ajax is rendered.
 // Use setTimeout as a crude approximation
 setTimeout(tweakSearchResult, 4000);
+
+
+function tweakTalkThread() {
+  const subscribeBtn = document.querySelector('.talk-discussion-follow .single-submit-button');
+  if (!subscribeBtn) {
+    return;
+  }
+
+  if (subscribeBtn.textContent === 'Unsubscribe') {
+    // highlight it so that one can easily know they have already subscribed
+    // - it's done by adding the inner <span> so that if user unsubscribe it
+    //   Zooniverse's logic would naturally destroy the highlight.
+    const descEl = document.querySelector('.talk-discussion-follow .description');
+    descEl.innerHTML = `<span style="background-color: rgba(255, 192, 0, 0.8); padding: 0.2ex 1ch;">${descEl.textContent}</span>`;
+  }
+}
+setTimeout(tweakTalkThread, 4000); // use setTimeout to wait for ajax rendering done
 
 
 // Double click on talk sidebar heading to expand talk message body's width.

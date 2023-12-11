@@ -6,7 +6,7 @@
 // @match       https://cdsarc.cds.unistra.fr/viz-bin/VizieR-*?-source=*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.4.3
+// @version     1.4.4
 // @author      -
 // @description Auto-search a Vizier source using the parameter from hash.
 //              Use cases includes creating URLs for Gaia DR3 variable on Vizier.
@@ -26,7 +26,9 @@ function tweakDefaultColumns() {
       ['e_RA_ICRS', 'e_DE_ICRS', 'e_Plx', 'e_pmRA', 'e_pmDE', 'FG', 'e_FG', 'FBP', 'e_FBP', 'FRP', 'e_FRP', 'QSO', 'Gal', 'And', 'Vbroad', 'GRVSmag']
     );
     colsToCheck = colsToCheck.concat(
-      ['sepsi', 'RUWE', 'Dup', 'VarFlag', 'NSS'] // NSS: Non single star
+      // NSS: Non single star
+      // IPDfmp: Percent of successful-IPD windows with more than one peak, high => likely binary
+      ['sepsi', 'RUWE', 'IPDfmp', 'Dup', 'VarFlag', 'NSS']
     );
   }
 

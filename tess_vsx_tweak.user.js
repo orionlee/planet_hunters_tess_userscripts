@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.6.3
+// @version     1.6.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -246,7 +246,10 @@ function tweakSearchResultBasedOnHash() {
 }
 
 function tweakSearchResult() {
-  if (location.href.indexOf('/vsx/index.php?view=results.submit1') < 0) {
+  // It used to be /vsx/index.php?view=results.submit1
+  // it's changed to /vsx/index.php?view=results.submit2
+  // So a more general pattern is used
+  if (location.href.indexOf('/vsx/index.php?view=results.submit') < 0) {
     return;
   }
 
@@ -462,7 +465,7 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
 
     const td = document.querySelector('table.datasheet tbody > tr:nth-of-type(1) td')
     // use the empty cell left of the rough distance message "within 2' of <co-ordinate"
-    td.textContent= `(${distance} arcmin)`;
+    td.textContent= `(${distance} arcsec)`;   // assumed it's arcsec (the default applied in searchForm above)
     td.title = 'Distance from search coordinate';
   }
 

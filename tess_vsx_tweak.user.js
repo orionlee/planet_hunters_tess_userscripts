@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.6.2
+// @version     1.6.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -65,8 +65,8 @@ function fillAndSubmitSearchForm() {
       document.querySelector('input[name="format"][value="s"]').checked = true;
     }
 
-    document.querySelector('input[name="fieldsize"]').value = 2;                 // 2
-    document.querySelector('select[name="fieldunit"]').value = 2;                // arc minutes
+    document.querySelector('input[name="fieldsize"]').value = 120;                 // 2
+    document.querySelector('select[name="fieldunit"]').value = 3;                // arc seconds
     document.querySelector('input[name="geometry"][value="r"]').checked = true;  // radius
 
     document.querySelector('select[name="order"]').value = 9; // order by angular sep.

@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.11.2
+// @version     1.11.3
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -650,11 +650,11 @@ function isElementOrAncestor(el, criteria) {
     const lcvEl = getViewerSVGEl();
     if (!lcvEl) {
       console.warn('tweakWheelOnViewer(): Viewer <svg> element not found. Cannot apply the wheel customization. No-op');
-      return;
+      return false;
     }
     if (lcvEl.tweakWheelOnViewerCalled) {
       console.debug('tweakWheelOnViewer() - already called. No Op.');
-      return; // no need to init again
+      return true; // no need to init again
     }
     // else start the init
     lcvEl.tweakWheelOnViewerCalled = true;
@@ -712,7 +712,9 @@ function isElementOrAncestor(el, criteria) {
       }
     } // function toggleAnnotateMoveOnMiddleClickInViewer(..)
     lcvEl.addEventListener('mousedown', toggleAnnotateMoveOnMiddleClickInViewer);
-  }
+
+    return true;
+  } // function tweakWheelOnViewer()
 
   function doCustomizeViewerGenericLevel() {
     ajaxDbg('doCustomizeViewerGenericLevel()');
@@ -749,7 +751,12 @@ function isElementOrAncestor(el, criteria) {
     clickViewerBtn('Move subject');
 
     // intercept browser's default wheel behavior when wheeling on the viewer SVG
-    tweakWheelOnViewer();
+    const wheelTweakDone = tweakWheelOnViewer();
+    if (!wheelTweakDone) {
+      console.debug('Retry tweakWheelOnViewer() later.');
+      // the viewer SVG is not yet available, try again later.
+      setTimeout(tweakWheelOnViewer, 5000);
+    }
 
     addDipDepthCalculator();
   };

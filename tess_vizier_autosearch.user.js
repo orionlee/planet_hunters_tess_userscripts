@@ -6,7 +6,7 @@
 // @match       https://cdsarc.cds.unistra.fr/viz-bin/VizieR-*?-source=*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.5.0
+// @version     1.5.1
 // @author      -
 // @description Apply frequently used tweaks to Vizier Search form.
 //              Perform auto-search a Vizier source when signified by hash.
@@ -31,7 +31,8 @@ const catalogColumnTweaksMap = {
     // NSS: Non single star
     // IPDfmp: Percent of successful-IPD windows with more than one peak, high => likely binary
     'check': ['sepsi', 'RUWE', 'IPDfmp', 'Dup', 'VarFlag', 'NSS'],
-    'uncheck': ['e_RA_ICRS', 'e_DE_ICRS', 'e_Plx', 'e_pmRA', 'e_pmDE', 'FG', 'e_FG', 'FBP', 'e_FBP', 'FRP', 'e_FRP', 'QSO', 'Gal', 'And', 'Vbroad', 'GRVSmag'],
+    // Uncheck RA/DEC as well, because the columns RAJ2000 / DEJ2000 are generally more useful.
+    'uncheck': ['RA_ICRS', 'DE_ICRS', 'e_RA_ICRS', 'e_DE_ICRS', 'e_Plx', 'e_pmRA', 'e_pmDE', 'FG', 'e_FG', 'FBP', 'e_FBP', 'FRP', 'e_FRP', 'QSO', 'Gal', 'And', 'Vbroad', 'GRVSmag'],
   },
 
   'I/355/paramp': { // Gaia DR3 astrophysical

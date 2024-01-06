@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.41.1
+// @version     1.41.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -264,6 +264,9 @@ const coord = getCoord();
 
 function addExternalLInks() {
   const simbadLinkEl = document.querySelector('a[target="simbad"]');
+
+  // Change SIMBAD link to https . It probably should have been in its own function.
+  simbadLinkEl.href = simbadLinkEl.href.replace("http://", "https://");
 
   if (simbadLinkEl) {
     // fix simbad urls, with

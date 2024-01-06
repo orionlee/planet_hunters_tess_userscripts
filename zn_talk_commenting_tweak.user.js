@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.16.0
+// @version     1.17.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -561,3 +561,16 @@ function toggleTalkBodyWidthOnDblClick(evt) {
   evt.preventDefault();
 }
 window.addEventListener('dblclick', toggleTalkBodyWidthOnDblClick);
+
+
+//
+// Restyle quotes (markdown > ...), so that the text looks more solid.
+//
+GM_addStyle(`
+.talk .talk-comment .markdown > blockquote {
+  opacity: 0.75;  /* override the default 0.5 */
+  border-left: 3px solid grey;
+  margin-left: 6px;
+  padding-left: 18px;
+}
+`);

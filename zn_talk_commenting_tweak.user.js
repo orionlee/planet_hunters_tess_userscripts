@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.17.0
+// @version     1.18.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -81,6 +81,19 @@ titleForLinkifiedUrlImplList.push(url => {
     }
 });
 titleForLinkifiedUrlImplList.push(url => {
+  // Case link of a paper referenced  by SIMBAD
+  if (url.includes('simbad.u-strasbg.fr/simbad/sim-ref?bibcode=') ||
+      url.includes('simbad.cds.unistra.fr/simbad/sim-ref?bibcode=')) {
+    // https://simbad.cds.unistra.fr/simbad/sim-ref?bibcode=2022ApJS..263...34C
+    const [, paperYear] = url.match(/bibcode=(\d+)/) || [null, null];
+    if (paperYear) {
+      return `${paperYear} paper referenced by SIMBAD`;
+    } else {
+      return 'paper referenced by SIMBAD';
+    }
+  }
+
+  // Case of typical  SIMBAD links
   if (url.includes('simbad.u-strasbg.fr/simbad/sim-') ||
       url.includes('simbad.cds.unistra.fr/simbad/sim-')) {
     // try to get object ID if it's in URL

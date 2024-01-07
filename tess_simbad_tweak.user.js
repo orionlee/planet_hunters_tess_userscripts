@@ -14,7 +14,7 @@
 // @match       http*://simbad.cds.unistra.fr/simbad/sim-ref?bibcode=*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.8.0
+// @version     1.9.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -129,6 +129,21 @@ function showMatchingInfo(aliases, otherParams) {
 //
 // END generic cross match helpers / UI
 
+
+// If current page is in https, ensure internal SIMBAD links are also in https.
+// (e.g., links to paper references are often in plain http, causing warnings in Chrome)
+function fixHttpLinks() {
+  if ('https:' !== location.protocol ) {
+    return false;
+  }
+  const links = document.querySelectorAll('a[href^="http://simbad"]');
+  links.forEach((a) => {
+    a.href = a.href.replace('http://simbad', 'https://simbad');
+
+  });
+  return links.length;
+}
+fixHttpLinks();
 
 // To normalize the IDs shown in SIMBAD, the textContent of the supplied element, typically an <a>
 function normalizeId(idEl) {

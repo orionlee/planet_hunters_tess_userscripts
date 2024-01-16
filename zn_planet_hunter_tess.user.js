@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.11.4
+// @version     1.11.5
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -273,7 +273,7 @@ function isElementOrAncestor(el, criteria) {
   function annotateViewerRoot() {
     // find the container that controls the size of the light-curve
     // annotate it for the use with SVG
-    const rootEl = document.querySelector('main > div > div');  // with CSS class binCyn
+    const rootEl = document.querySelector('main > div');
     rootEl?.classList?.add('x-light-curve-root');
     if (!rootEl) {
       console.warn('annotateViewerRoot(): cannot find root container. CSS class x-light-curve-root not added.');
@@ -377,9 +377,8 @@ function isElementOrAncestor(el, criteria) {
       return ;
     }
 
-    annotateViewerRoot(); // hack 2023-10-13. Somehow .x-light-curve-root is not added.
     // infoBtn selector: the UI is changed to require an extra layer of <div>,
-    return document.querySelector('.x-light-curve-root > section > div:first-of-type > div:last-of-type > button:first-of-type');
+    return document.querySelector('main section > div:first-of-type > div:last-of-type > button:first-of-type');
   }
 
 

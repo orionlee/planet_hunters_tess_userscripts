@@ -4,7 +4,7 @@
 // @match       https://exo.mast.stsci.edu/exomast_planet.html?planet=*
 // @grant       none
 // @noframes
-// @version     1.1.3
+// @version     1.1.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -88,6 +88,7 @@ function bjtdToRelative(tBjtd) {
     [70, 3208.372104075746, 3233.824170369739],
     [71, 3234.040911246744, 3259.956805719784],
     [72, 3260.179701687097, 3285.5695191398],
+    [73, 3285.80283470647, 3312.654312141076],
   ]; // Note: update the one in tess_exofop_tweak.user.js too
 
 

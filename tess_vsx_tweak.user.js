@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.6.4
+// @version     1.7.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -80,6 +80,50 @@ function fillAndSubmitSearchForm() {
 
 }
 fillAndSubmitSearchForm();
+
+
+// The tweaks above make the search form
+// not as friendly for interactive use when searching by name.
+// This is to compensate it.
+function tweakSearchFormForInteractiveUse() {
+  function safeSetFormValue(inputSelector, value) {
+    const inputEl = document.querySelector(inputSelector);
+    if (!inputEl) {
+      console.warn(`tweakSearchFormForInteractiveUse(): cannot find input of selector ${inputSelector}. Its value is not set`);
+      return false;
+    }
+    inputEl.value = value;
+    return true;
+  }
+
+  const nameEl = document.querySelector('input[name="ident"]');
+  if (!nameEl) {
+    console.warn('tweakSearchFormForInteractiveUse(): Name <input> not found. No-op');
+  } else {
+    nameEl.onchange = (_evt) => {
+      if (nameEl.value === '' ) {
+        return;
+      }
+      safeSetFormValue('input[name="targetcenter"]', '');
+      safeSetFormValue('select[name="order"]', '2'); // alphanumeric sort
+    };
+  }
+
+  const posEl = document.querySelector('input[name="targetcenter"]');
+  if (!posEl) {
+    // position input is not present in simple form
+    console.debug('tweakSearchFormForInteractiveUse(): Position <input> not found. No-op');
+  } else {
+    posEl.onchange = (_evt) => {
+      if (posEl.value === '' ) {
+        return;
+      }
+      safeSetFormValue('input[name="ident"]', '');
+      safeSetFormValue('select[name="order"]', '9'); // angular sep
+    };
+  }
+}
+tweakSearchFormForInteractiveUse();
 
 
 function tweakUIForMobile() {

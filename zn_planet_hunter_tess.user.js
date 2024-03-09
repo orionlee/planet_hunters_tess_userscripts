@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.11.5
+// @version     1.11.6
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -1033,7 +1033,7 @@ function isElementOrAncestor(el, criteria) {
 <a target="_pht_talk" href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC%20${ticId}">Search Talk for TIC</a>
 <br><br>
 Subject info., including TOI:<br>
-<a target="_exofop" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}#open=simbad|_vsx" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
+<a target="_exofop" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}#open=simbad|_vsx|_gaia-dr3-xmatch-var" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
 
 <br><br>
 Search TCEs:<br>

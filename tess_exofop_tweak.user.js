@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.43.1
+// @version     1.43.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -348,7 +348,7 @@ function addExternalLInks() {
 
   // Gaia DR3 cross-matched with 100+ Variable Star Catalogs
   // https://ui.adsabs.harvard.edu/abs/2023A%26A...674A..22G/abstract
-  let gaiaDr3XmatchVarUrl = `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-ref=VIZ65ea51f497bf&-to=-4b&-from=-3&-this=-4&%2F%2Fsource=J%2FA%2BA%2F674%2FA22%2Fcatalog&%2F%2Ftables=J%2FA%2BA%2F674%2FA22%2Fcatalog&-out.max=50&%2F%2FCDSportal=http%3A%2F%2Fcdsportal.u-strasbg.fr%2FStoreVizierData.html&-out.form=HTML+Table&-out.add=_r&%2F%2Foutaddvalue=default&-sort=_r&-order=I&-oc.form=sexa&-out.src=J%2FA%2BA%2F674%2FA22%2Fcatalog&-nav=cat%3AJ%2FA%2BA%2F674%2FA22%26tab%3A%7BJ%2FA%2BA%2F674%2FA22%2Fcatalog%7D%26key%3Asource%3DJ%2FA%2BA%2F674%2FA22%2Fcatalog%26pos%3A${coordStrEncoded}%28+15+arcsec+J2000%29%26HTTPPRM%3A&-c=${coordStrEncoded}&-c.eq=J2000&-c.r=+15&-c.u=arcsec&-c.geom=r&-source=&-source=J%2FA%2BA%2F674%2FA22%2Fcatalog&-out=GaiaDR3&-out=ONames&-out=RAJ2000&-out=DEJ2000&-out=Omags&-out=psuperclass&-out=pvarTypes&-out=VarTypes&-out=VarTypesOri&-out=AltVarTypesOri&-out=pPer&-out=OPers&-out=ORefEpoch&-out=Cats&-meta.ucd=2&-meta=1&-meta.foot=1&-usenav=1&-bmark=GET`;
+  let gaiaDr3XmatchVarUrl = `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-ref=VIZ65ea51f497bf&-to=-4b&-from=-3&-this=-4&%2F%2Fsource=J%2FA%2BA%2F674%2FA22%2Fcatalog&%2F%2Ftables=J%2FA%2BA%2F674%2FA22%2Fcatalog&-out.max=50&%2F%2FCDSportal=http%3A%2F%2Fcdsportal.u-strasbg.fr%2FStoreVizierData.html&-out.form=HTML+Table&-out.add=_r&%2F%2Foutaddvalue=default&-sort=_r&-order=I&-oc.form=sexa&-out.src=J%2FA%2BA%2F674%2FA22%2Fcatalog&-nav=cat%3AJ%2FA%2BA%2F674%2FA22%26tab%3A%7BJ%2FA%2BA%2F674%2FA22%2Fcatalog%7D%26key%3Asource%3DJ%2FA%2BA%2F674%2FA22%2Fcatalog%26pos%3A${coordStrEncoded}%28+120+arcsec+J2000%29%26HTTPPRM%3A&-c=${coordStrEncoded}&-c.eq=J2000&-c.r=+120&-c.u=arcsec&-c.geom=r&-source=&-source=J%2FA%2BA%2F674%2FA22%2Fcatalog&-out=GaiaDR3&-out=ONames&-out=RAJ2000&-out=DEJ2000&-out=Omags&-out=psuperclass&-out=pvarTypes&-out=VarTypes&-out=VarTypesOri&-out=AltVarTypesOri&-out=pPer&-out=OPers&-out=ORefEpoch&-out=Cats&-meta.ucd=2&-meta=1&-meta.foot=1&-usenav=1&-bmark=GET`;
   gaiaDr3XmatchVarUrl = appendGaiaIdForMatch(gaiaDr3XmatchVarUrl);
 
   const tic = getTic();

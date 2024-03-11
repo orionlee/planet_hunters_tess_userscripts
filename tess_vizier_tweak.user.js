@@ -3,10 +3,10 @@
 // @namespace   astro.tess
 // @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-S?*
 // @match       http://vizier.u-strasbg.fr/viz-bin/VizieR-S?*
-// @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-*?*source=*
+// @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.2.0
+// @version     1.4.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -121,9 +121,12 @@ function summarizeNumEntriesInTitle() {
     return;
   }
 
-  const numTables = document.querySelectorAll('table.tabList').length;
-  if (numTables < 1) {
-    // e.g., case the URL is the detailed view of a single row
+  // each element is the metadata of a table, e.g.,  I/355/gaiadr3 Gaia DR3 Part 1....
+  const allTableMeta = document.querySelectorAll('table.tabList');
+  const numOfTables = allTableMeta.length
+
+  if (numOfTables < 1) {
+    // no query result table, e.g., case the URL is the detailed view of a single row
     return;
   }
 
@@ -134,10 +137,13 @@ function summarizeNumEntriesInTitle() {
   const tableEls = Array.from(document.querySelectorAll('table.tabList + div + table.sort'));
 
   // the first <tr> is actually table header, so it's excldued by the CSS selector
-  const numRowsOfTab = tableEls.map( tab => tab.querySelectorAll('tr:nth-child(n+2)').length);
-  numRowsOfTab.push(0)  // accomodate case no non-empyt table
-  const maxNumOfRows = Math.max.apply(null, numRowsOfTab);
+  const numRowsOfTables = tableEls.map( tab => tab.querySelectorAll('tr:nth-child(n+2)').length);
+  numRowsOfTables.push(0)  // accomodate case no non-empyt table
+  const maxNumOfRows = Math.max.apply(null, numRowsOfTables);
 
-  document.title = `(${maxNumOfRows}) - {document.title}`;
+  const firsTableName = allTableMeta[0].querySelector('b')?.textContent; //. e.g., I/355/gaiadr3
+  const multiTabStr = numOfTables > 1 ? " ++" : "";
+
+  document.title = `(${maxNumOfRows}) ${firsTableName}${multiTabStr} | ${document.title}`;
 }
 summarizeNumEntriesInTitle();

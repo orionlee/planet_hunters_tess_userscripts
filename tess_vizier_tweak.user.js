@@ -6,7 +6,7 @@
 // @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-*?*source=*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.1.1
+// @version     1.2.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -36,6 +36,13 @@ function addExternalLinks() {
 addExternalLinks();
 
 
+function isSearchForm() {
+  // the URL for search form and search result is somewhat similar
+  // So we use a heuristics, looking search form's checkboxes for columns to display
+  return document.querySelector(`input[name="-out"][type="checkbox"]`);
+}
+
+
 // For search result (possibly with multiple rows) pages with pattern
 //   https://vizier.cds.unistra.fr/viz-bin/VizieR-1?   (VizieR-2, VizieR-3, VizieR-4, ...)
 // This function tweak those that search across multiple tables, e.g.,
@@ -45,6 +52,9 @@ addExternalLinks();
 function hideEmptyTableInMulitTableSearchResults() {
   // only support patterns like /viz-bin/VizieR-4
   if (!location.pathname.match(/^\/viz-bin\/VizieR-\d+/)) {
+    return;
+  }
+  if (isSearchForm()) {
     return;
   }
 
@@ -97,6 +107,37 @@ table.tabList tr > td > b > a { /* Vizier table names. Make them stand out more 
 ${numTablesHidden} empty tables(s) hidden.
 </div>`);
   }
-
 }
 hideEmptyTableInMulitTableSearchResults();
+
+
+// Show num of records found on the title
+function summarizeNumEntriesInTitle() {
+  // only support patterns like /viz-bin/VizieR-4
+  if (!location.pathname.match(/^\/viz-bin\/VizieR-\d+/)) {
+    return;
+  }
+  if (isSearchForm()) {
+    return;
+  }
+
+  const numTables = document.querySelectorAll('table.tabList').length;
+  if (numTables < 1) {
+    // e.g., case the URL is the detailed view of a single row
+    return;
+  }
+
+  // We're sure it's query result table view (possibly multiple tables)
+  // Proceed with main logic
+
+  // all non-empty tables
+  const tableEls = Array.from(document.querySelectorAll('table.tabList + div + table.sort'));
+
+  // the first <tr> is actually table header, so it's excldued by the CSS selector
+  const numRowsOfTab = tableEls.map( tab => tab.querySelectorAll('tr:nth-child(n+2)').length);
+  numRowsOfTab.push(0)  // accomodate case no non-empyt table
+  const maxNumOfRows = Math.max.apply(null, numRowsOfTab);
+
+  document.title = `(${maxNumOfRows}) - {document.title}`;
+}
+summarizeNumEntriesInTitle();

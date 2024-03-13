@@ -6,7 +6,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @noframes
-// @version     1.43.2
+// @version     1.43.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -357,24 +357,26 @@ function addExternalLInks() {
   const wtv2Url = 'https://heasarc.gsfc.nasa.gov/wsgi-scripts/TESS/TESS-point_Web_Tool/TESS-point_Web_Tool/wtv_v2.0.py/' +
     `#autoFillForm=/wsgi-scripts/TESS/TESS-point_Web_Tool/TESS-point_Web_Tool/wtv_v2.0.py/TICID_result&_i_tic=${tic}&autoSubmit=`;
 
+  const exomastUrl = `https://exo.mast.stsci.edu/#search=TIC ${tic}`;
+
   document.getElementById('extraExternalLinksCtr')?.remove();  // to support redo
   document.querySelector('a[href="/tess"]').insertAdjacentHTML('afterend', `\
 <span id="extraExternalLinksCtr" style="background-color: #ccc; padding: 0.3em 2ch;">
   ${simbadLinkEl?.outerHTML?.replace('>\nSIMBAD<', ' accesskey="S"> SIMBAD<')} |
   <a href="${vsxUrl}" target="_vsx" accesskey="V" title="Variable Star Index">VSX</a> |
   <a href="${asasSnUrl}" target="_asas-sn" accesskey="A" title="All-Sky Automated Survey for Supernovae">ASAS-SN</a> |
-  <a href="${gaiaDr3VarUrl}" target=_gaia-dr3-var" accesskey="G" title="Gaia DR3 Variables">GDR3 Var</a> |
+  <a href="${gaiaDr3VarUrl}" target="_gaia-dr3-var" accesskey="G" title="Gaia DR3 Variables">GDR3 Var</a> |
   <a href="http://tessebs.villanova.edu/search_results?tic=${tic}" target="_tess-eb" accesskey="T">TESS-EB</a> |
   <a href="http://cdsportal.u-strasbg.fr/gadgets/ifr?url=http://cdsportal.unistra.fr/widgets/SED_plotter.xml&SED_plot_object=TIC${tic}&SED_plot_radius=5"
     target="_sed" title="Spectral Energy Distributions Plot">SED</a>  |
-  <a href="${gaiaDr3Url}" target=_gaia-dr3" title="Gaia DR3 Main">GDR3</a> |
-  <a href="${gaiaDr3NSSUrl}" target=_gaia-dr3-nss" title="Gaia DR3 Non Single Star">NSS</a> |
+  <a href="${gaiaDr3Url}" target="_gaia-dr3" title="Gaia DR3 Main">GDR3</a> |
+  <a href="${gaiaDr3NSSUrl}" target="_gaia-dr3-nss" title="Gaia DR3 Non Single Star">NSS</a> |
   <a href="${gaiaDr3XmatchVarUrl}" target="_gaia-dr3-xmatch-var" title="Gaia DR3 XMatch Variable Catalogs">XMatch-Var</a> |
   <a href="https://tev.mit.edu/data/search/?q=${tic}" target="_tev"
     title="To MIT TEV: it contains similar information; but it also has QLP validation reports when applicable">MIT TEV</a> |
   <a href="https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-ref=VIZ655abdcb3f53ce&-to=-4b&-from=-2&-this=-4&%2F%2Fsource=J%2FAJ%2F156%2F234&%2F%2Ftables=J%2FAJ%2F156%2F234%2Ftable4&-out.max=50&%2F%2FCDSportal=http%3A%2F%2Fcdsportal.u-strasbg.fr%2FStoreVizierData.html&-out.form=HTML+Table&%2F%2Foutaddvalue=default&-order=I&-oc.form=sexa&-out.src=J%2FAJ%2F156%2F234%2Ftable4&-nav=cat%3AJ%2FAJ%2F156%2F234%26tab%3A%7BJ%2FAJ%2F156%2F234%2Ftable4%7D%26key%3Asource%3DJ%2FAJ%2F156%2F234%26HTTPPRM%3A&-c=&-c.eq=J2000&-c.r=++2&-c.u=arcmin&-c.geom=r&-source=&-source=J%2FAJ%2F156%2F234%2Ftable4&-out=KELT&-out=2MASS&-out=TIC&TIC=${tic}&-out=FName&-out=FNum&-out=RAJ2000&-out=DEJ2000&-out=Per&-out=Dur&-out=TDepth&-out=RVAmp&-meta.ucd=2&-meta=1&-meta.foot=1&-usenav=1&-bmark=GET"
     target="_kelt_fp" title="KELT Transit FPs">KELT</a> |
-  <a href="https://exo.mast.stsci.edu/#search=TIC ${tic}"
+  <a href="${exomastUrl}"
     target="_exomast" title="TCEs on Exo.MAST">TCE</a>  |
   <a href="https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC ${tic}"
     target="_pht_talk" title="Planet Hunters TESS Talk">PHT</a>  |

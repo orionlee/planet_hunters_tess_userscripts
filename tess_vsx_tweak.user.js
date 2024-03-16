@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.7.0
+// @version     1.7.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -511,6 +511,10 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
     // use the empty cell left of the rough distance message "within 2' of <co-ordinate"
     td.textContent= `(${distance} arcsec)`;   // assumed it's arcsec (the default applied in searchForm above)
     td.title = 'Distance from search coordinate';
+
+    // add distance from search coordinate to title
+    const distanceRounded = parseInt(distance, 10);
+    document.title = `(${distanceRounded}") ` + document.title;
   }
 
   //

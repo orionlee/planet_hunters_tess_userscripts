@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.11.6
+// @version     1.12.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -182,6 +182,37 @@ function isElementOrAncestor(el, criteria) {
   return false;
 }
 
+function doHandleKeyboardShortcuts(evt, keyMap) {
+  if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(evt.target.tagName)) {
+    // user typing in an input box or focuses on a button, do nothing
+    return;
+  }
+
+  const handler =(() => {
+    const hasAnyModifier = evt.altKey || evt.shiftKey || evt.ctrlKey || evt.metaKey;
+    if (!hasAnyModifier) {
+      return keyMap[evt.code];
+    }
+
+    let res = null;
+    if (evt.altKey && !evt.shiftKey && !evt.ctrlKey && !evt.metaKey) {
+      res = keyMap['!altKey'][evt.code];
+    }
+
+    if (res == null) {
+      res = keyMap['!any-modifier'][evt.code];
+    }
+    return res;
+  })();
+
+  if (handler) {
+    const success = handler();
+    if (success) {
+      evt.preventDefault();
+    }
+  }
+
+}
 
 //
 // Main customization logic
@@ -610,36 +641,9 @@ function isElementOrAncestor(el, criteria) {
     };
 
     function handleViewerKeyboardShortcuts(evt) {
-      if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(evt.target.tagName)) {
-        // user typing in an input box or focuses on a button, do nothing
-        return;
-      }
-
-      const handler =(() => {
-        const hasAnyModifier = evt.altKey || evt.shiftKey || evt.ctrlKey || evt.metaKey;
-        if (!hasAnyModifier) {
-          return keyMap[evt.code];
-        }
-
-        let res = null;
-        if (evt.altKey && !evt.shiftKey && !evt.ctrlKey && !evt.metaKey) {
-          res = keyMap['!altKey'][evt.code];
-        }
-
-        if (res == null) {
-          res = keyMap['!any-modifier'][evt.code];
-        }
-        return res;
-      })();
-
-      if (handler) {
-        const success = handler();
-        if (success) {
-          evt.preventDefault();
-        }
-      }
-
+      return doHandleKeyboardShortcuts(evt, keyMap);
     }
+
     window.addEventListener('keydown', handleViewerKeyboardShortcuts);
 
   } // function addKeyMapToViewer()
@@ -904,16 +908,23 @@ function isElementOrAncestor(el, criteria) {
   // Tools to extract TIC on subject talk page
   //
 
+  function clickSubjectInfoOnTalk() {
+    const metadataBtn = document.querySelector('button[title="Metadata"]');
+    if (!metadataBtn) {
+      return false;
+    }
+    metadataBtn.click();
+    return true;
+  }
+
   function getTicIdFromMetadataPopIn() {
     function getUncached() {
       // open the pop-in
-      const metadataBtn = document.querySelector('button[title="Metadata"]')
-      if (!metadataBtn) {
+      const clickSuccess = clickSubjectInfoOnTalk();
+      if (!clickSuccess) {
         return null;
       }
       try {
-        metadataBtn.click();
-
         const metadataCtr = document.querySelector('.modal-dialog .content-container > table');
         if (!metadataCtr) {
           return null;
@@ -1033,7 +1044,7 @@ function isElementOrAncestor(el, criteria) {
 <a target="_pht_talk" href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC%20${ticId}">Search Talk for TIC</a>
 <br><br>
 Subject info., including TOI:<br>
-<a target="_exofop" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}#open=simbad|_vsx|_gaia-dr3-xmatch-var" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
+<a target="_exofop" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}#open=simbad|_vsx|_gaia-dr3-xmatch-var|_tce" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
 
 <br><br>
 Search TCEs:<br>
@@ -1089,7 +1100,7 @@ When TIC will be observed:<br>
       };
 
       document.getElementById('ticShowMetadataCtl').onclick = () => {
-        document.querySelector('button[title="Metadata"]').click();
+        clickSubjectInfoOnTalk();
         hideTicPopin();
       };
 
@@ -1181,6 +1192,7 @@ When TIC will be observed:<br>
     }
   }
 
+  // Entry point for primary talk page customization (based on TIC)
   function customizeIfTicPresent() {
     const threadCtr = getThreadContainer();
     if (!(threadCtr && threadCtr.querySelector('.talk-list-content'))) {
@@ -1210,6 +1222,37 @@ When TIC will be observed:<br>
       onPanoptesMainLoaded(customizeIfTicPresent);
     }
   })
+
+  // ------------
+
+  let addKeyMapToTalkCalled = false;
+  function addKeyMapToTalk() {
+    // applicable to talk pages only
+    if (!location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/')) {
+      return;
+    }
+
+    if (addKeyMapToTalkCalled) {
+      return; // No need to set the keymap (on window object), say, during ajax load
+    } else {
+      addKeyMapToTalkCalled = true;
+    }
+
+    const keyMap = {
+      "KeyI":    clickSubjectInfoOnTalk,
+      "Numpad1": clickSubjectInfoOnTalk,
+      // also accepts Numpad1 is convenient for users who frequent use numpad +/-/0
+    };
+
+    function handleTalkKeyboardShortcuts(evt) {
+      return doHandleKeyboardShortcuts(evt, keyMap);
+    }
+
+    window.addEventListener('keydown', handleTalkKeyboardShortcuts);
+
+  } // function addKeyMapToTalk()
+  addKeyMapToTalk();
+
 
   // ------------
 

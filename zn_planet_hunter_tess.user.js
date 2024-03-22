@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.12.0
+// @version     1.12.1
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -195,11 +195,11 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     }
 
     let res = null;
-    if (evt.altKey && !evt.shiftKey && !evt.ctrlKey && !evt.metaKey) {
+    if (keyMap['!altKey'] && evt.altKey && !evt.shiftKey && !evt.ctrlKey && !evt.metaKey) {
       res = keyMap['!altKey'][evt.code];
     }
 
-    if (res == null) {
+    if (res == null && keyMap['!any-modifier']) {
       res = keyMap['!any-modifier'][evt.code];
     }
     return res;

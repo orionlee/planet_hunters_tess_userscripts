@@ -3,7 +3,7 @@
 // @namespace   astro.tess
 // @match       https://asas-sn.osu.edu/variables*
 // @grant       GM_addStyle
-// @version     1.3.1
+// @version     1.4.0
 // @author      orionlee
 // @description
 // ==/UserScript==
@@ -103,6 +103,21 @@ a#variable-db-atlas-link {
 }
 tweakObjectDetail();
 
+
+function normalizeAlias(aliasText) {
+  let res = aliasText?.trim();
+  if (!res) {
+    return '';
+  }
+  // normalize ATLAS id to the form used by VSX / SIMBAD
+  if (res.startsWith('ATLASJ')) {
+    // for TYC, remove leading zeros, e.g., 123-01234
+    // both SIMBAD and VSX use the version without leading zeros
+    res = res.replace(/^ATLASJ/, 'ATO J');
+  }
+  return res;
+}
+
 // Extract IDs on object detail page for the purpose of cross matching.
 function extractIds() {
   if (!isObjectDetailPage()) {
@@ -111,7 +126,8 @@ function extractIds() {
 
   const [asasSnId] = document.querySelector('h3').textContent.trim().match(/^ASASSN-V J[0-9-.+]+/) || [null];
   const allwiseId = document.querySelector('.variable-star-data > div:nth-of-type(4) .row > div:nth-of-type(3) .star-data__value' )?.textContent;
-  const otherId = document.querySelector('.variable-star-data > div:nth-of-type(4) .row > div:nth-of-type(4) .star-data__value' )?.textContent?.replace(/^-$/, '');
+  const otherId = normalizeAlias(document.querySelector('.variable-star-data > div:nth-of-type(4) .row > div:nth-of-type(4) .star-data__value' )?.textContent?.replace(/^-$/, ''));
+
   const url = location.href;
 
   document.body.insertAdjacentHTML('beforeend', `

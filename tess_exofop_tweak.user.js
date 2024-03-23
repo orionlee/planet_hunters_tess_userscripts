@@ -5,8 +5,10 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
+// @grant       GM_getValue
+// @grant       GM_setValue
 // @noframes
-// @version     1.43.5
+// @version     1.44.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -358,7 +360,19 @@ function addExternalLInks() {
   const wtv2Url = 'https://heasarc.gsfc.nasa.gov/wsgi-scripts/TESS/TESS-point_Web_Tool/TESS-point_Web_Tool/wtv_v2.0.py/' +
     `#autoFillForm=/wsgi-scripts/TESS/TESS-point_Web_Tool/TESS-point_Web_Tool/wtv_v2.0.py/TICID_result&_i_tic=${tic}&autoSubmit=`;
 
-  const tceUrl = `https://exo.mast.stsci.edu/#search=TIC ${tic}`;
+  const tceUrl = (() => {
+    // The URL can be optionally overridden in the script global store.
+    // It can be edited at:
+    // - ViolentMonkey: "Values" tab of the script.
+    // - TamperMonkey:  "Storage" tab of the script.
+    let urlPrefix = GM_getValue("tceUrfPrefix");
+    if (!urlPrefix) {
+      urlPrefix = "https://exo.mast.stsci.edu/#search=TIC ";
+      // Store a empty string so that the value can be edited in Tampermonkey UI
+      GM_setValue("tceUrfPrefix", "");
+    }
+    return `${urlPrefix}${tic}`;
+  })();
 
   document.getElementById('extraExternalLinksCtr')?.remove();  // to support redo
   document.querySelector('a[href="/tess"]').insertAdjacentHTML('afterend', `\

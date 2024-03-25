@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.12.1
+// @version     1.12.2
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -1240,8 +1240,9 @@ When TIC will be observed:<br>
 
     const keyMap = {
       "KeyI":    clickSubjectInfoOnTalk,
-      "Numpad1": clickSubjectInfoOnTalk,
-      // also accepts Numpad1 is convenient for users who frequent use numpad +/-/0
+      // removed Numpad1 shortcut, as it conflicts with the more frequently used "End"
+      // meaning for Numpad1
+      // "Numpad1": clickSubjectInfoOnTalk,
     };
 
     function handleTalkKeyboardShortcuts(evt) {

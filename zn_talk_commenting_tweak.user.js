@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.18.0
+// @version     1.19.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -165,24 +165,41 @@ titleForLinkifiedUrlImplList.push(url => {
   }
 });
 titleForLinkifiedUrlImplList.push(url => {
-  // TESS TCE vetting summary pdfs . tceSubId: 1, 2, 3 (of a given sector / sectors)
-  // Note: the regex can't be easily generalized to dvm , dvr pdfs, because those pdfs doe not have tceSubId
-  let [, startSector, endSector, tceSubId] =
-    url.match(/(?:exo.)?mast.stsci.edu\/api\/v0.1\/Download\/file\?uri=mast:TESS\/.+-s(\d+)-s(\d+).+-0*(\d+)-\d+_dvs.pdf/) || [null, null, null, null];
-  if (!tceSubId) {
-      return null;
-    }
-    startSector = parseInt(startSector);
-    endSector = parseInt(endSector);
-    if (startSector == endSector) {
-      return `sector ${startSector} TCE${tceSubId} vetting summary`;
-    } else {
-      return `sectors ${startSector} - ${endSector} TCE${tceSubId} vetting summary`;
-    }
-  });
-titleForLinkifiedUrlImplList.push(url => {
+    // TESS TCE vetting summary pdfs . tceSubId: 1, 2, 3 (of a given sector / sectors)
+    // Note: the regex can't be easily generalized to dvm , dvr pdfs, because those pdfs doe not have tceSubId
+    let [, startSector, endSector, tceSubId] =
+      url.match(/mast.stsci.edu\/api\/v0.1\/Download\/file[/]?[?]uri=mast:TESS\/.+-s(\d+)-s(\d+).+-0*(\d+)-\d+_dvs.pdf/) || [null, null, null, null];
+    if (!tceSubId) {
+        return null;
+      }
+      startSector = parseInt(startSector);
+      endSector = parseInt(endSector);
+      if (startSector == endSector) {
+        return `sector ${startSector} TCE${tceSubId} vetting summary`;
+      } else {
+        return `sectors ${startSector} - ${endSector} TCE${tceSubId} vetting summary`;
+      }
+    });
+  titleForLinkifiedUrlImplList.push(url => {
   if (url.includes('astro.swarthmore.edu/transits/aladin.html')) {
     return 'Swarthmore Finder Chart';
+  }
+});
+titleForLinkifiedUrlImplList.push(url => {
+  // TESS TCE vetting DVM/DVR pdfs .
+  let [, startSector, endSector, dvmOrdvr] =
+    url.match(/mast.stsci.edu\/api\/v0.1\/Download\/file[/]?[?]uri=mast:TESS\/.+-s(\d+)-s(\d+).+_(dvm|dvr).pdf/) || [null, null, null, null];
+  if (!dvmOrdvr) {
+      return null;
+  }
+  const reportTypeStr = dvmOrdvr == 'dvm' ? 'mini report' : 'full report';
+
+  startSector = parseInt(startSector);
+  endSector = parseInt(endSector);
+  if (startSector == endSector) {
+    return `sector ${startSector} vetting ${reportTypeStr}`;
+  } else {
+    return `sectors ${startSector} - ${endSector} vetting ${reportTypeStr}`;
   }
 });
 titleForLinkifiedUrlImplList.push(url => {

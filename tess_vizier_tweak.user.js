@@ -6,7 +6,7 @@
 // @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.5.0
+// @version     1.6.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -147,6 +147,62 @@ function summarizeNumEntriesInTitle() {
   document.title = `(${maxNumOfRows}) ${firsTableName}${multiTabStr} | ${document.title}`;
 }
 summarizeNumEntriesInTitle();
+
+
+// Annotate frequency values in 1/d with correspond period.
+//
+// The logic is intended for Gaia DR3 Variable I/358 tables, but is
+// applicable to any column with title "Freq 1/d."
+function annotateFrequencyValuesWithPeriod() {
+  // only support patterns like /viz-bin/VizieR-4
+  if (!location.pathname.match(/^\/viz-bin\/VizieR-\d+/)) {
+    return;
+  }
+  if (isSearchForm()) {
+    return;
+  }
+
+  function doAnnotatOnTable(tabEl) {
+    const freqColIdx = (() => {
+      const thEls = tabEl.querySelectorAll('tr:first-of-type th');
+      for (i = 0; i < thEls.length; i++) {
+        if (thEls[i].textContent.replace(/[\r\n\s]/g, "") === "Freqd-1") {
+          return i + 1;  // 1-based index for CSS selector use
+        }
+      }
+      return 0;
+    })();
+
+    if (freqColIdx <= 0) {
+      return;
+    }
+    tabEl.querySelectorAll(`tr td:nth-of-type(${freqColIdx})`).forEach(td => {
+      const freqValStr = td?.textContent;
+      const freq = parseFloat(freqValStr);
+      if (isNaN(freq)) {
+        return;
+      }
+      const per = 1 / freq;
+      const freqR = freq.toFixed(4);
+      const perR = per.toFixed(4);
+      td.outerHTML = `<td align="RIGHT" nowrap="" title="${freqValStr}">${freqR} (${perR}d)</td>`;
+
+    });
+    return freqColIdx;
+  }
+
+
+  // We're sure it's query result table view (possibly multiple tables)
+  // Proceed with main logic
+
+  // all non-empty tables
+  const tableEls = Array.from(document.querySelectorAll('table.tabList + div + table.sort'));
+  tableEls.forEach(doAnnotatOnTable);
+
+
+}
+annotateFrequencyValuesWithPeriod();
+
 
 // Show angular distance of 1st mach for Gaia DR3 Xmatch Known Var in title,
 // so one can easily identify cases that the match is far away

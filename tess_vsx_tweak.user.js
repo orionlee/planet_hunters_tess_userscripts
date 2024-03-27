@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.7.1
+// @version     1.7.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -514,7 +514,7 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
 
     // add distance from search coordinate to title
     const distanceRounded = parseInt(distance, 10);
-    document.title = `(${distanceRounded}") ` + document.title;
+    document.title = `${distanceRounded}" ` + document.title;
   }
 
   //

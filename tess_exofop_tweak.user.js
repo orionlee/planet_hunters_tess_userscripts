@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.45.0
+// @version     1.45.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -159,6 +159,11 @@ function normalizeAlias(aliasText) {
     //  this normalization doesn't hurt matching, in the sense
     //  that SIMBAD / VSX basically all use BD.)
     res = res.replace(/^SD-/, 'BD-');
+  }
+  if (res.startsWith('WDS')) {
+    // remove space not used by SIMBAD
+    // e.g., WDS J16167+6714 B => WDS J16167+6714B
+    res = res.replace(/(WDS J\d+[+-]\d+)\s+(\w+)/g, '$1$2');
   }
 
   // SDSS note:

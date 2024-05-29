@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.45.3
+// @version     1.45.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -371,11 +371,24 @@ function addExternalLInks() {
     // It can be edited at:
     // - ViolentMonkey: "Values" tab of the script.
     // - TamperMonkey:  "Storage" tab of the script.
-    let urlPrefix = GM_getValue("tceUrfPrefix");
+    let urlPrefix = GM_getValue("tceUrlPrefix");
     if (!urlPrefix) {
       urlPrefix = "https://exo.mast.stsci.edu/#search=TIC ";
       // Store a empty string so that the value can be edited in Tampermonkey UI
-      GM_setValue("tceUrfPrefix", "");
+      GM_setValue("tceUrlPrefix", "");
+    }
+    return `${urlPrefix}${tic}`;
+  })();
+
+
+  const tessEbUrl = (() => {
+    let urlPrefix = GM_getValue("tessEbUrlPrefix");
+    if (!urlPrefix) {
+      // alternative: Vizier's static TESS EB
+      // https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/ApJS/258/16/tess-ebs&TIC=
+      urlPrefix = "http://tessebs.villanova.edu/search_results?tic=";
+      // Store a empty string so that the value can be edited in Tampermonkey UI
+      GM_setValue("tessEbUrlPrefix", "");
     }
     return `${urlPrefix}${tic}`;
   })();
@@ -387,7 +400,7 @@ function addExternalLInks() {
   <a href="${vsxUrl}" target="_vsx" accesskey="V" title="Variable Star Index">VSX</a> |
   <a href="${asasSnUrl}" target="_asas-sn" accesskey="A" title="All-Sky Automated Survey for Supernovae">ASAS-SN</a> |
   <a href="${gaiaDr3VarUrl}" target="_gaia-dr3-var" accesskey="G" title="Gaia DR3 Variables">GDR3 Var</a> |
-  <a href="http://tessebs.villanova.edu/search_results?tic=${tic}" target="_tess-eb" accesskey="T">TESS-EB</a> |
+  <a href="${tessEbUrl}" target="_tess-eb" accesskey="T">TESS-EB</a> |
   <a href="http://cdsportal.u-strasbg.fr/gadgets/ifr?url=http://cdsportal.unistra.fr/widgets/SED_plotter.xml&SED_plot_object=TIC${tic}&SED_plot_radius=5"
     target="_sed" title="Spectral Energy Distributions Plot">SED</a>  |
   <a href="${gaiaDr3Url}" target="_gaia-dr3" title="Gaia DR3 Main">GDR3</a> |

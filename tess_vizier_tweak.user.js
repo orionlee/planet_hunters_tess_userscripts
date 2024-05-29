@@ -6,7 +6,7 @@
 // @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.6.0
+// @version     1.6.1
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -164,9 +164,10 @@ function annotateFrequencyValuesWithPeriod() {
 
   function doAnnotatOnTable(tabEl) {
     const freqColIdx = (() => {
+      const FREQ_HEADERS = ["Freqd-1", "Freq1/d"];  // Freq1/d used by I/358/vmsosc
       const thEls = tabEl.querySelectorAll('tr:first-of-type th');
       for (i = 0; i < thEls.length; i++) {
-        if (thEls[i].textContent.replace(/[\r\n\s]/g, "") === "Freqd-1") {
+        if (FREQ_HEADERS.includes(thEls[i].textContent.replace(/[\r\n\s]/g, ""))) {
           return i + 1;  // 1-based index for CSS selector use
         }
       }

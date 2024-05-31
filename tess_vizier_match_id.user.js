@@ -2,9 +2,10 @@
 // @name        Vizier Match
 // @namespace   astro.tess
 // @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-*
+// @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.0.0
+// @version     1.0.1
 // @author      -
 // @description Match of arbitrary string in search result.
 //              Motivational use case is to

@@ -1,20 +1,19 @@
 // ==UserScript==
 // @name        TESS - SIMBAD tweak
 // @namespace   astro.tess
-// @match       http*://simbad.u-strasbg.fr/simbad/sim-coo?Coord=*
+// @match       http*://simbad.u-strasbg.fr/simbad/*
+//                /sim-coo?Coord=*
 //                ^^^ links generated from ExoFOP, coordinate-based
-// @match       http*://simbad.u-strasbg.fr/simbad/sim-id?*
+// @              /sim-id?*
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
-// @match       http*://simbad.u-strasbg.fr/simbad/sim-basic?Ident=*
+//                /sim-basic?Ident=*
 //                ^^^ links from SIMBAD basic search
-// @match       http*://simbad.cds.unistra.fr/simbad/sim-coo?Coord=*
-// @match       http*://simbad.cds.unistra.fr/simbad/sim-id?*
-// @match       http*://simbad.cds.unistra.fr/simbad/sim-basic?Ident=*
+// @match       http*://simbad.cds.unistra.fr/simbad/*
 // @match       http*://simbad.cds.unistra.fr/guide/otypes.htx*
-// @match       http*://simbad.cds.unistra.fr/simbad/sim-ref?bibcode=*
+// @match       http*://simbad.cfa.harvard.edu/simbad/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.9.0
+// @version     1.10.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg

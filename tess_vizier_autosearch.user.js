@@ -2,11 +2,11 @@
 // @name        Vizier Auto Search from URL
 // @namespace   astro.tess
 // @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-*?-source=*
-// @match       https://vizier.u-strasbg.fr/viz-bin/VizieR-*?-source=*
 // @match       https://cdsarc.cds.unistra.fr/viz-bin/VizieR-*?-source=*
+// @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*?-source=*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.5.1
+// @version     1.5.2
 // @author      -
 // @description Apply frequently used tweaks to Vizier Search form.
 //              Perform auto-search a Vizier source when signified by hash.

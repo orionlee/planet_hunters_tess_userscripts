@@ -2,11 +2,12 @@
 // @name        Vizier UI tweak
 // @namespace   astro.tess
 // @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-S?*
-// @match       http://vizier.u-strasbg.fr/viz-bin/VizieR-S?*
 // @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-*
+// @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-S?*
+// @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.6.1
+// @version     1.6.2
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico

@@ -3,7 +3,7 @@
 // @namespace   astro.tess
 // @match       https://asas-sn.osu.edu/variables*
 // @grant       GM_addStyle
-// @version     1.4.0
+// @version     1.5.0
 // @author      orionlee
 // @description
 // ==/UserScript==
@@ -36,11 +36,12 @@ function tweakSearchResult() {
   document.title = `(${getSearchResultRows().length}) - ${document.title}`;
 
   function tweakSearchResultRows() {
-    getSearchResultRows().forEach(tr => {
+    getSearchResultRows().forEach((tr, i) => {
       const linkEl = tr.querySelector('a')
       const distance = tr.querySelector('td:nth-of-type(5)').textContent
       linkEl.setAttribute('href', linkEl.getAttribute('href') + `#distance=${distance}`);
       linkEl.removeAttribute('target');
+      linkEl.accessKey = i + 1;  // Alt-1, Alt-2, etc.
     });
   }
   tweakSearchResultRows();

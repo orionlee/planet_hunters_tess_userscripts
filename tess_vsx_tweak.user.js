@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.7.2
+// @version     1.8.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -322,6 +322,11 @@ function tweakSearchResult() {
           // to make it really work, I probably need to recreate varTypeHelp function
           // (that exists in target detail page), so that encoding is done within the script
     }
+
+    // add shortcuts to search result as Alt-1, Alt-2, etc.
+    resRows.forEach((tr, i) => {
+      tr.querySelector('.desig a').accessKey = i + 1;
+    });
 
     // the third column is to the link of the object,
     // if the search is sorted by angular distance from coordinate

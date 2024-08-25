@@ -13,7 +13,7 @@
 // @match       http*://simbad.cfa.harvard.edu/simbad/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.10.0
+// @version     1.11.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -58,9 +58,17 @@ function getMatchingInfoFromHash(aliasFilter = null) {
     aliasFilter = (alias) => true;
   }
 
-  const aliases = decodeURIComponent(aliasesMatch[1]);
-  // Now try to highlight the IDS in the result
-  const aliasList = aliases.split(',').filter(aliasFilter);
+  const aliasesStr = decodeURIComponent(aliasesMatch[1]);
+  const aliasList = aliasesStr.split(',').filter(aliasFilter);
+
+  // match Gaia DR3 identifiers in SIMBAD using the heuristics
+  // that Gaia DR2 source number is the same as that of Gaia DR3.
+  for (alias of aliasList) {
+    if (alias.startsWith('Gaia DR2 ')) {
+      aliasList.push(alias.replace('Gaia DR2', 'Gaia DR3'));
+      break;
+    }
+  }
 
   const otherParamsMatch = location.hash.match(/other_params=([^&]+)/);
   let otherParams = otherParamsMatch ? decodeURIComponent(otherParamsMatch[1]) : '';

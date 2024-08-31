@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.46.4
+// @version     1.47.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -138,7 +138,11 @@ function my_GM_getValue(key, defaultValue="") {
 
 
 function getTic() {
-  const[, tic] = location.search.match(/id=(\d+)/) || [null, null];
+  // the query string id=? is usually TIC, but it could also be
+  // Gaia DR2 / DR3 source
+  // const[, tic] = location.search.match(/id=(\d+)/) || [null, null];
+  const ticStr = document.querySelector('.overview_tid').textContent || '';
+  const[, tic] = ticStr.match(/TIC (\d+)/) || [null, null];
   return tic;
 }
 

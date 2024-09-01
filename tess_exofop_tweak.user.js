@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.47.0
+// @version     1.48.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -848,6 +848,35 @@ function autoOpenLinks() {
 }
 
 
+function setCanonicalURL() {
+  // Change URL in forms such as "?id=Gaia DR3 ..."
+  // to  the canonical one "?id=<tic_id>"
+
+  if (location.search.match(/id=(\d)+/)) {
+    // already in canonical form
+    return;
+  }
+
+  const tic = getTic();
+  if (!tic) {
+    console.warn("setCanonicalURL(): No-op. Cannot get TIC");
+    return;
+  }
+
+  history.pushState("", document.title, `${location.pathname}?id=${tic}`);
+}
+
+
+function autoOpenLinksAndSetCanonicalURL() {
+  // the 2 functions are unrelated in terms of features
+  // they are grouped together because they both
+  // could change the current URL,
+  // and should be invoked in the following order.
+  autoOpenLinks();
+  setCanonicalURL();
+}
+
+
 //
 // For some of the tweaks, they don't really work unless ExoFOP page is in foreground
 // when the codes are called.
@@ -859,19 +888,19 @@ function redoTweaks() {
   showEpochInBTJDAndRelative();
 }
 
-// invoke redoTweaks() / autoOpenLinks()
+// invoke redoTweaks() / autoOpenLinksAndSetCanonicalURL()
 // depending on whether the tab is foreground/background
 if (document.visibilityState === 'visible') {
   // case the tab is in foreground, we can apply the tweaks right
   // no need to call redoTweaks() for foreground
-  autoOpenLinks(); // depends on external links working
+  autoOpenLinksAndSetCanonicalURL(); // depends on external links working
 } else {
   // case the tab is in background. use case:  one switches to the ExoFOP tab
   // need to tweaks (that did not work in the background)
   window.addEventListener('focus', () => {
     setTimeout(() => {
       redoTweaks();
-      autoOpenLinks();
+      autoOpenLinksAndSetCanonicalURL();
     }, 250);
   });
 }

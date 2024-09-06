@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.48.0
+// @version     1.49.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -414,13 +414,18 @@ function addExternalLInks() {
     return `${urlPrefix}${tic}`;
   })();
 
-
-const tessEbUrl = (() => {
+  const tessEbUrl = (() => {
     // alternative: Vizier's static TESS EB
     // https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/ApJS/258/16/tess-ebs&TIC=
     const urlPrefix = my_GM_getValue("tessEbUrlPrefix", "http://tessebs.villanova.edu/search_results?tic=");
     return `${urlPrefix}${tic}`;
   })();
+
+  // &zoom=200 : zoom at the scale of a large constellation
+  const wwTelUrl = 'http://www.worldwidetelescope.org' +
+    ((coord != null) ?
+    `/wwtweb/goto.aspx?ra=${coord.ra_deg}&dec=${coord.dec_deg}&zoom=200`
+    : '');
 
   document.getElementById('extraExternalLinksCtr')?.remove();  // to support redo
   document.querySelector('a[href="/tess"]').insertAdjacentHTML('afterend', `\
@@ -445,6 +450,8 @@ const tessEbUrl = (() => {
     target="_pht_talk" title="Planet Hunters TESS Talk">PHT</a>  |
   <a href="${wtv2Url}"
     target="_wtv2" title="TESS Web Visibility Tool v2, that supports sectors 70+">WTV2</a> |
+  <a href="${wwTelUrl}"
+    target="_wwTel" title="Worldwide Telescope, more for exploration of the target's general area / constellation">WWT</a> |
   <svg style="height: 1em; width: 1em;"  class="svg-inline--fa fa-external-link-alt fa-w-18" aria-hidden="true" data-prefix="fas" data-icon="external-link-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M576 24v127.984c0 21.461-25.96 31.98-40.971 16.971l-35.707-35.709-243.523 243.523c-9.373 9.373-24.568 9.373-33.941 0l-22.627-22.627c-9.373-9.373-9.373-24.569 0-33.941L442.756 76.676l-35.703-35.705C391.982 25.9 402.656 0 424.024 0H552c13.255 0 24 10.745 24 24zM407.029 270.794l-16 16A23.999 23.999 0 0 0 384 303.765V448H64V128h264a24.003 24.003 0 0 0 16.97-7.029l16-16C376.089 89.851 365.381 64 344 64H48C21.49 64 0 85.49 0 112v352c0 26.51 21.49 48 48 48h352c26.51 0 48-21.49 48-48V287.764c0-21.382-25.852-32.09-40.971-16.97z"></path></svg>
 </span>`);
 // ^^^ Note: the SED link passes TIC id without space `&SED_plot_object=TIC${tic}` deliberately

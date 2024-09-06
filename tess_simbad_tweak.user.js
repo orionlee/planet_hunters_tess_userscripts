@@ -12,8 +12,9 @@
 // @match       http*://simbad.cds.unistra.fr/guide/otypes.htx*
 // @match       http*://simbad.cfa.harvard.edu/simbad/*
 // @grant       GM_addStyle
+// @grant       GM_setClipboard
 // @noframes
-// @version     1.11.0
+// @version     1.12.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -137,6 +138,22 @@ function showMatchingInfo(aliases, otherParams) {
 // END generic cross match helpers / UI
 
 
+// BEGIN generic helpers
+//
+
+function message(msg, showDurationMillis=3000) {
+  document.body.insertAdjacentHTML('beforeend', `
+<div id="msgCtr" style="position: fixed;right: 4px;bottom: 10vh;background-color: rgba(255, 255, 0, 0.6);z-index: 9999;">
+${msg}
+</div>
+`);
+  setTimeout(() => { document.getElementById('msgCtr')?.remove(); }, showDurationMillis);
+}
+
+//
+// END generic helpers
+
+
 // If current page is in https, ensure internal SIMBAD links are also in https.
 // (e.g., links to paper references are often in plain http, causing warnings in Chrome)
 function fixHttpLinks() {
@@ -245,6 +262,7 @@ Distance to the center <i>arcsec</i>:       </td>
   }
   // END for case the coordinate has multiple results
 
+
   // BEGIN case the coordinate matches a single result
   if (document.querySelector('a[name="lab_ident"]')) {
     const idTableEl = document.querySelector('a[name="lab_ident"]').parentElement.nextElementSibling.nextElementSibling.nextElementSibling;
@@ -268,6 +286,17 @@ Distance to the center <i>arcsec</i>:       </td>
       };
       document.getElementById('toggleUnmatchedIDsCtl').onclick = hideShowUnmatchedIDs;
       hideShowUnmatchedIDs(); // initialized, by first hiding them
+
+      // double click to copy matched ids
+      idTableEl.addEventListener("dblclick", (evt => {
+        if (!evt.target.classList.contains("matched-id") &&
+            !evt.target.parentElement.parentElement.classList.contains('un-matched-id')) {
+          return;
+        }
+        const text = evt.target.textContent.trim();
+        GM_setClipboard(text);
+        message(`${text}<br>copied.`);
+      }));
     }
   }
   // END case the coordinate matches a single result

@@ -2,17 +2,51 @@
 // @name        TESS - ExoFOP tweak
 // @namespace   astro.tess
 // @match       https://exofop.ipac.caltech.edu/tess/target.php?id=*
+// @match       https://exofop.ipac.caltech.edu/tess/gototicid.php?target=*
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @grant       GM_openInTab
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.49.0
+// @version     1.50.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
+
+//
+// The special case logic for /tess/gototicid.php
+//
+
+function tweakGotoCidMultiResult() {
+  if (!(location.pathname == "/tess/gototicid.php")) {
+    return;
+  }
+
+  // case gotocid with matching multiple TIC IDs
+
+  function propagateHash() {
+    if (!location.hash) {
+      return; // No hash, no-op
+    }
+    document.querySelectorAll('table.tfop tr > td:nth-of-type(1) a').forEach((a) => {
+      a.href += location.hash;
+    });
+  }
+
+  propagateHash();
+}
+tweakGotoCidMultiResult();
+
+// --------------------------------------------------
+
+//
+// The primary logic, for /tess/target.php?id=*
+// - it will still run for case URL is /tess/gototicid.php variant,
+//   and spits out error.
+// - The errors don't affect users so it's left alone for now.
+//
 
 // A copy from tess_exomast_tce_tweak.user.js
 function bjtdToRelative(tBjtd) {

@@ -14,7 +14,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.12.0
+// @version     1.12.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -175,6 +175,25 @@ function normalizeId(idEl) {
   return idEl.textContent.trim().replace(/\s\s+/g, ' ');
 }
 
+function getIdentifiersDOM() {
+  // return the <table> element of the Identifiers section (in single object page)
+  try {
+    let tab = document.querySelector('a[name="lab_ident"]').parentElement.nextElementSibling.nextElementSibling.nextElementSibling;
+    if (tab.tagName ==  "TABLE") {
+      return tab;
+    }
+    if (tab.tagName == "BUTTON") {  // case a button is added by tweakUIWithCrossMatch() below
+      tab = tab.nextElementSibling;
+      if (tab.tagName ==  "TABLE") {
+        return tab;
+      }
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
 // Cross match info in hash, that come from links from customized ExoFOP
 function tweakUIWithCrossMatch() {
   (() => { // annotate distance from center from hash
@@ -264,8 +283,8 @@ Distance to the center <i>arcsec</i>:       </td>
 
 
   // BEGIN case the coordinate matches a single result
-  if (document.querySelector('a[name="lab_ident"]')) {
-    const idTableEl = document.querySelector('a[name="lab_ident"]').parentElement.nextElementSibling.nextElementSibling.nextElementSibling;
+  const idTableEl = getIdentifiersDOM();
+  if (idTableEl) {
     Array.from(idTableEl.querySelectorAll('tt'), tt => {
       if (aliasList.includes(normalizeId(tt))) {
         tt.classList.add('matched-id');
@@ -286,17 +305,6 @@ Distance to the center <i>arcsec</i>:       </td>
       };
       document.getElementById('toggleUnmatchedIDsCtl').onclick = hideShowUnmatchedIDs;
       hideShowUnmatchedIDs(); // initialized, by first hiding them
-
-      // double click to copy matched ids
-      idTableEl.addEventListener("dblclick", (evt => {
-        if (!evt.target.classList.contains("matched-id") &&
-            !evt.target.parentElement.parentElement.classList.contains('un-matched-id')) {
-          return;
-        }
-        const text = evt.target.textContent.trim();
-        GM_setClipboard(text);
-        message(`${text}<br>copied.`);
-      }));
     }
   }
   // END case the coordinate matches a single result
@@ -313,6 +321,25 @@ Distance to the center <i>arcsec</i>:       </td>
 
 }
 tweakUIWithCrossMatch();
+
+
+function makeIdentifiersCopyable() {
+  // identifying the DOM element for Identifiers section (in single result case)
+  const idTableEl = getIdentifiersDOM();
+  if (!idTableEl) {
+    return;
+  }
+  // double click to copy the ids
+  idTableEl.addEventListener("dblclick", (evt => {
+    if (!evt.target.tagName == "TT") {  // the IDs are in <tt> elements
+      return;
+    }
+    const text = evt.target.textContent.trim();
+    GM_setClipboard(text);
+    message(`${text}<br>copied.`);
+  }));
+}
+makeIdentifiersCopyable();
 
 
 // For single result case,

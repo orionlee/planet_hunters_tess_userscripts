@@ -7,7 +7,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.6.2
+// @version     1.6.3
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -135,7 +135,12 @@ function summarizeNumEntriesInTitle() {
   // Proceed with main logic
 
   // all non-empty tables
-  const tableEls = Array.from(document.querySelectorAll('table.tabList + div + table.sort'));
+  // 2024-09-13: the selector 'table.tabList + div + table.sort' is too restrictive
+  //
+  // e.g., https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J%2FA%2BA%2F677%2FA137%2Fcatalog&Source=4509671650278976384
+  // to match it soemthing like 'table.tabList :parent + div + table.sort, but :parent does not exist
+  // the simpler table.sort seems to match sufficeintly well.
+  const tableEls = Array.from(document.querySelectorAll('table.sort'));
 
   // the first <tr> is actually table header, so it's excldued by the CSS selector
   const numRowsOfTables = tableEls.map( tab => tab.querySelectorAll('tr:nth-child(n+2)').length);

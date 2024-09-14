@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.50.0
+// @version     1.51.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -38,6 +38,46 @@ function tweakGotoCidMultiResult() {
   propagateHash();
 }
 tweakGotoCidMultiResult();
+
+
+//
+// The special case logic for search by Gaia DR3 source, and no TIC is found
+//
+
+function tweakNoTicFoundResult() {
+  let [, id ] = location.href.match(/target[.]php[?]id=([^&]+)/) || [null, null];
+  if (!id) {
+    return;
+  }
+  // case search by ID
+  id = decodeURIComponent(id);
+
+  // For search by Gaia DR3 source,
+  // if no TIC object found,
+  // add a link to Search Gaia DR2
+  // (On ExoFOP, somehow some Gaia DR3 source searches are successful, and some fail.)
+  // e.g., https://exofop.ipac.caltech.edu/tess/target.php?id=Gaia%20DR3%205523326533908997760
+
+  if (!id.startsWith("Gaia DR3 ")) {
+    return;
+  }
+
+  // the selector would get to error message text if that's the case
+  // and just some spaces for normal case (that the id is found)
+  const maybeErrMsg = document.querySelector('a[name="top"] + table')?.nextSibling?.textContent;
+  if (!maybeErrMsg?.startsWith("No TIC object found")) {
+    return;
+  }
+
+  const newId = id.replace('DR3', 'DR2');
+  document.body.insertAdjacentHTML('beforeend', `
+<div style="margin-top: 10px;">
+    Search for <a href="?id=${encodeURIComponent(newId)}">${newId}</a> instead.
+</div>`);
+  document.title = "(0) " + document.title;  // signify TIC not found in the title.
+}
+tweakNoTicFoundResult();
+
 
 // --------------------------------------------------
 

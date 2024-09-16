@@ -7,7 +7,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.6.3
+// @version     1.6.4
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -170,7 +170,13 @@ function annotateFrequencyValuesWithPeriod() {
 
   function doAnnotatOnTable(tabEl) {
     const freqColIdx = (() => {
-      const FREQ_HEADERS = ["Freqd-1", "Freq1/d"];  // Freq1/d used by I/358/vmsosc
+      const FREQ_HEADERS = [
+        "Freqd-1",  // typical found in, e.g., I/358/veb
+        "frequencyd-1", // I/358/veb, but from the table view link
+                        // in the detail single object view
+                        // (the header uses the long name in the detail view)
+        "Freq1/d",  // Freq1/d used by I/358/vmsosc
+      ];
       const thEls = tabEl.querySelectorAll('tr:first-of-type th');
       for (i = 0; i < thEls.length; i++) {
         if (FREQ_HEADERS.includes(thEls[i].textContent.replace(/[\r\n\s]/g, ""))) {

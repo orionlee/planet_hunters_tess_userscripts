@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.51.0
+// @version     1.51.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -45,12 +45,15 @@ tweakGotoCidMultiResult();
 //
 
 function tweakNoTicFoundResult() {
-  let [, id ] = location.href.match(/target[.]php[?]id=([^&]+)/) || [null, null];
+  let [, id ] = location.href.match(/target[.]php[?]id=([^&#]+)/) || [null, null];
   if (!id) {
     return;
   }
   // case search by ID
-  id = decodeURIComponent(id);
+  //  For values in the form of "Gaia+DR3+5427722829648905088"
+  //  the + sign is not decoded as space.
+  //  regex is used to compensate it
+  id = decodeURIComponent(id).replace(/[+]/g, ' ');
 
   // For search by Gaia DR3 source,
   // if no TIC object found,
@@ -70,9 +73,10 @@ function tweakNoTicFoundResult() {
   }
 
   const newId = id.replace('DR3', 'DR2');
+  let newUrl = `?id=${encodeURIComponent(newId)}${location.hash}`;
   document.body.insertAdjacentHTML('beforeend', `
 <div style="margin-top: 10px;">
-    Search for <a href="?id=${encodeURIComponent(newId)}">${newId}</a> instead.
+    Search for <a href="${newUrl}">${newId}</a> instead.
 </div>`);
   document.title = "(0) " + document.title;  // signify TIC not found in the title.
 }

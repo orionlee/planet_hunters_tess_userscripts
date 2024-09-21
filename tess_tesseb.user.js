@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        TESS EB Tweak
-// @namespace   Violentmonkey Scripts
+// @namespace   astro.tess
 // @match       https://tessebs.villanova.edu/*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.0
+// @version     1.0.1
 // @author      -
-// @description 9/12/2024, 4:43:11 PM
+// @description
 // @icon
 // ==/UserScript==
 

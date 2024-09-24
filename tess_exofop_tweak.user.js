@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.51.2
+// @version     1.52.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -477,6 +477,11 @@ function addExternalLInks() {
   let gaiaDr3XmatchVarUrl = `https://${vizierHost}/viz-bin/VizieR-4?-ref=VIZ65ea51f497bf&-to=-4b&-from=-3&-this=-4&%2F%2Fsource=J%2FA%2BA%2F674%2FA22%2Fcatalog&%2F%2Ftables=J%2FA%2BA%2F674%2FA22%2Fcatalog&-out.max=50&%2F%2FCDSportal=http%3A%2F%2Fcdsportal.u-strasbg.fr%2FStoreVizierData.html&-out.form=HTML+Table&-out.add=_r&%2F%2Foutaddvalue=default&-sort=_r&-order=I&-oc.form=sexa&-out.src=J%2FA%2BA%2F674%2FA22%2Fcatalog&-nav=cat%3AJ%2FA%2BA%2F674%2FA22%26tab%3A%7BJ%2FA%2BA%2F674%2FA22%2Fcatalog%7D%26key%3Asource%3DJ%2FA%2BA%2F674%2FA22%2Fcatalog%26pos%3A${coordStrEncoded}%28+120+arcsec+J2000%29%26HTTPPRM%3A&-c=${coordStrEncoded}&-c.eq=J2000&-c.r=+120&-c.u=arcsec&-c.geom=r&-source=&-source=J%2FA%2BA%2F674%2FA22%2Fcatalog&-out=GaiaDR3&-out=ONames&-out=RAJ2000&-out=DEJ2000&-out=Omags&-out=psuperclass&psuperclass=%21%3D%2CCST%2CAGN%2CGALAXY&-out=pvarTypes&-out=VarTypes&-out=VarTypesOri&-out=AltVarTypesOri&-out=pPer&-out=OPers&-out=ORefEpoch&-out=Cats&-out=Sel&-meta.ucd=2&-meta=1&-meta.foot=1&-usenav=1&-bmark=GET`;
   gaiaDr3XmatchVarUrl = appendGaiaIdForMatch(gaiaDr3XmatchVarUrl);
 
+  // Gaia DR3 Stellar Variability by dispersion
+  // the query string "&-bmark=GET" is added to make Gaia id match in Vizier match userjs work
+  let gaiaDr3StellarVarUrl = `https://${vizierHost}/viz-bin/VizieR-4?-out.add=_r&%2F%2Foutaddvalue=default&-sort=_r&-order=I&-c=${coordStrEncoded}&-c.eq=J2000&-c.r=+30&-c.u=arcsec&-c.geom=r&-source=&-out.src=J%2FA%2BA%2F677%2FA137%2Fcatalog&-source=J%2FA%2BA%2F677%2FA137%2Fcatalog&-bmark=GET`;
+  gaiaDr3StellarVarUrl = appendGaiaIdForMatch(gaiaDr3StellarVarUrl);
+
   const tic = getTic();
 
   // The auto fill form / submit for WTV2 requires a userscript to work
@@ -519,6 +524,7 @@ function addExternalLInks() {
   <a href="${gaiaDr3Url}" target="_gaia-dr3" title="Gaia DR3 Main">GDR3</a> |
   <a href="${gaiaDr3NSSUrl}" target="_gaia-dr3-nss" title="Gaia DR3 Non Single Star">NSS</a> |
   <a href="${gaiaDr3XmatchVarUrl}" target="_gaia-dr3-xmatch-var" title="Gaia DR3 XMatch Variable Catalogs">XMatch-Var</a> |
+  <a href="${gaiaDr3StellarVarUrl}" target="_gaia-dr3-stellar-var" title="Stellar Variability in Gaia DR3 (Maiz Apellaniz+, 2023)">Stellar-Var</a> |
   <a href="https://tev.mit.edu/data/search/?q=${tic}" target="_tev"
     title="To MIT TEV: it contains similar information; but it also has QLP validation reports when applicable">MIT TEV</a> |
   <a href="https://${vizierHost}/viz-bin/VizieR-4?-ref=VIZ655abdcb3f53ce&-to=-4b&-from=-2&-this=-4&%2F%2Fsource=J%2FAJ%2F156%2F234&%2F%2Ftables=J%2FAJ%2F156%2F234%2Ftable4&-out.max=50&%2F%2FCDSportal=http%3A%2F%2Fcdsportal.u-strasbg.fr%2FStoreVizierData.html&-out.form=HTML+Table&%2F%2Foutaddvalue=default&-order=I&-oc.form=sexa&-out.src=J%2FAJ%2F156%2F234%2Ftable4&-nav=cat%3AJ%2FAJ%2F156%2F234%26tab%3A%7BJ%2FAJ%2F156%2F234%2Ftable4%7D%26key%3Asource%3DJ%2FAJ%2F156%2F234%26HTTPPRM%3A&-c=&-c.eq=J2000&-c.r=++2&-c.u=arcmin&-c.geom=r&-source=&-source=J%2FAJ%2F156%2F234%2Ftable4&-out=KELT&-out=2MASS&-out=TIC&TIC=${tic}&-out=FName&-out=FNum&-out=RAJ2000&-out=DEJ2000&-out=Per&-out=Dur&-out=TDepth&-out=RVAmp&-meta.ucd=2&-meta=1&-meta.foot=1&-usenav=1&-bmark=GET"

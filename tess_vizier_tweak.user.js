@@ -7,7 +7,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.6.4
+// @version     1.7.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -220,26 +220,36 @@ annotateFrequencyValuesWithPeriod();
 // Show angular distance of 1st mach for Gaia DR3 Xmatch Known Var in title,
 // so one can easily identify cases that the match is far away
 // (and likely to be bogus)
-function addAngularDistanceToTileForGaiaDR3XMatchVar() {
+function addAngularDistanceOf1stMatchToTitle() {
   if (isSearchForm()) {
     return;
   }
-  if (location.search.indexOf("&-source=J%2FA%2BA%2F674%2FA22%2Fcatalog") < 0) {
-    return; // not J/A+A/674/A22/catalog
-  }
-  if (location.search.indexOf("&-c=") < 0) {
-    return;  // not coordiante query
-  }
-  // case coordinate query for J/A+A/674/A22/catalog ,  Gaia DR3. Cross-match with known variable objects (Gavras+, 2023)
+
   // add angular distance of the first match to the title
 
-  // first non-empty table, assumed to be J/A+A/674/A22/catalog
-  const tableEl = document.querySelector('table.tabList + div + table.sort');
+  // first non-empty table
+  // Note: for `p + div + table.sort`, it matches some cases
+  // where the metadata, table.tabList, is inside a <p> element
+  const tableEl = document.querySelector(
+    'table.tabList + div + table.sort, p + div + table.sort'
+
+  );
   if (!tableEl) {
     return;  // no match
   }
+
+  const colHeaderText = tableEl.querySelector('tr:nth-of-type(1) th:nth-of-type(2)')?.textContent?.trim();
+  // no angular distance in the result, e.g., not a coordinate based query
+  if ('_r\narcsec' != colHeaderText) {
+    console.warn(
+      "addAngularDistanceOf1stMatchToTitle(): the column is not angular distance. " +
+      `Actual: ${colHeaderText}`
+    );
+    return;
+  }
+
   const angDistStr =
     tableEl.querySelector('tr:nth-of-type(2) td:nth-of-type(2)')?.textContent?.trim();
   document.title = `${parseInt(angDistStr)}" ` + document.title;
 }
-addAngularDistanceToTileForGaiaDR3XMatchVar();
+addAngularDistanceOf1stMatchToTitle();

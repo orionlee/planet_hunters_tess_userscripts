@@ -14,7 +14,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.12.1
+// @version     1.13.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -702,3 +702,21 @@ function tweakBibReference() {
 
 }
 tweakBibReference();
+
+
+function addAngularDistanceToTitle() {
+  // for single object case, add distance to to the center to title
+  // Matching the distance in the line such as:
+  // Distance to the center arcsec:	65.82
+  const distEl = document.querySelector('font[color="#969696"] > i');
+  if (!distEl) {
+    return;
+  }
+
+  // truncated to int for brevity
+  const dist = parseInt(distEl.textContent.trim());
+
+  document.title = `(${dist}") ${document.title}`;
+}
+addAngularDistanceToTitle();
+

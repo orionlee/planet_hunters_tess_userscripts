@@ -3,7 +3,7 @@
 // @namespace   astro.tess
 // @match       https://asas-sn.osu.edu/variables*
 // @grant       GM_addStyle
-// @version     1.5.0
+// @version     1.6.0
 // @author      orionlee
 // @description
 // ==/UserScript==
@@ -98,6 +98,7 @@ a#variable-db-atlas-link {
   if (distance) {
     document.querySelector('h3').insertAdjacentHTML('afterend', `
 <span id="distance_ctr">distance: ${distance}"</span>`);
+      document.title = `${parseInt(distance)}" ${document.title}`;
     resetHash();
   }
 

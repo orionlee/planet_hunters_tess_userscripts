@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.52.0
+// @version     1.53.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -505,6 +505,16 @@ function addExternalLInks() {
     return `${urlPrefix}${tic}`;
   })();
 
+  // Misc EB catalogs from TESS data, e.g,  TESS OBA EBs, etc.
+  // Exceptions:
+  // - J/AJ/156/234 :  KELT transit false positive catalog for TESS (Collins+, 2018)
+  const tessEbCatsUrl = (
+    `https://${vizierHost}/viz-bin/VizieR-4` +
+    '?-source=J/A+A/652/A120/eb-cat&-source=J/ApJ/912/123/table2&-source=J/ApJS/263/34&-source=J/ApJS/259/50/table1' +
+    '&-source=J/AJ/156/234' +
+    `&TIC=${tic}`
+  );
+
   // &zoom=200 : zoom at the scale of a large constellation
   const wwTelUrl = 'http://www.worldwidetelescope.org' +
     ((coord != null) ?
@@ -519,6 +529,7 @@ function addExternalLInks() {
   <a href="${asasSnUrl}" target="_asas-sn" accesskey="A" title="All-Sky Automated Survey for Supernovae">ASAS-SN</a> |
   <a href="${gaiaDr3VarUrl}" target="_gaia-dr3-var" accesskey="G" title="Gaia DR3 Variables">GDR3 Var</a> |
   <a href="${tessEbUrl}" target="_tess-eb" accesskey="T">TESS-EB</a> |
+  <a href="${tessEbCatsUrl}" target="_tess-eb-cats" title="Misc. EB Catalogs from TESS data">T EB Cats</a> |
   <a href="http://cdsportal.u-strasbg.fr/gadgets/ifr?url=http://cdsportal.unistra.fr/widgets/SED_plotter.xml&SED_plot_object=TIC${tic}&SED_plot_radius=5"
     target="_sed" title="Spectral Energy Distributions Plot">SED</a>  |
   <a href="${gaiaDr3Url}" target="_gaia-dr3" title="Gaia DR3 Main">GDR3</a> |

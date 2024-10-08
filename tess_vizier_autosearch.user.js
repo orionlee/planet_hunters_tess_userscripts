@@ -6,7 +6,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*?-source=*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.5.2
+// @version     1.6.0
 // @author      -
 // @description Apply frequently used tweaks to Vizier Search form.
 //              Perform auto-search a Vizier source when signified by hash.
@@ -117,6 +117,8 @@ function applyDefaultSearchFormTweaksForAll() {
   // auto compute and sort by distance
   document.querySelector('#navcstout > input[name="-out.add"][value="_r"]').checked = true;
   document.querySelector('#navcstout > input[name="-sort"][value="_r"]').checked = true;
+  // also compute position angle  θ
+  document.querySelector('#navcstout > input[name="-out.add"][value="_p"]').checked = true;
 }
 applyDefaultSearchFormTweaksForAll();
 

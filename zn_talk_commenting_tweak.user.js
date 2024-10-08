@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.19.0
+// @version     1.20.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -266,6 +266,21 @@ titleForLinkifiedUrlImplList.push(url => {
       url.match(/[/]viz-bin[/]VizieR-\d[?].*source=[+]?I%2F357/)
     ) {
     return "Gaia DR3 NSS";
+  }
+  return null;
+});
+titleForLinkifiedUrlImplList.push(url => {
+  if (
+      // Gaia DR3 Stellar Variability entry link, e.g.,
+      // - J/A+A/677/A137
+      // https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-out.add=_r&%2F%2Foutaddvalue=default&-sort=_r&-order=I&-c=147.69122315002+-50.578355384690006&-c.eq=J2000&-c.r=+30&-c.u=arcsec&-c.geom=r&-source=&-out.src=J%2FA%2BA%2F677%2FA137%2Fcatalog&-source=J%2FA%2BA%2F677%2FA137%2Fcatalog&-bmark=GET
+      url.match(/[/]viz-bin[/]VizieR-\d[?].*-source=J[/]A+A[/]677[/]A137.+&/) ||
+
+      // Vizier Gaia DR3 NSS search result page (possibly more than 1 row),
+      // including single table and multi table cases
+      url.match(/[/]viz-bin[/]VizieR-\d[?].*source=[+]?J%2FA%2BA%2F677%2FA137/)
+    ) {
+    return "Gaia DR3 Stellar Variability";
   }
   return null;
 });

@@ -3,7 +3,7 @@
 // @namespace   astro.tess
 // @match       https://asas-sn.osu.edu/variables*
 // @grant       GM_addStyle
-// @version     1.6.0
+// @version     1.7.0
 // @author      orionlee
 // @description
 // ==/UserScript==
@@ -33,7 +33,13 @@ function tweakSearchResult() {
   }
 
   // indicate num entries found. 0 would be helpful to ignore the result without opening the tab
-  document.title = `(${getSearchResultRows().length}) - ${document.title}`;
+  const resRows = getSearchResultRows();
+  document.title = `(${resRows.length}) - ${document.title}`;
+  if (resRows.length > 0) {
+    // indicate the angular distance (5th column) of the first match as well.
+    const angDist1stMatch = parseInt(resRows[0].querySelector('td:nth-of-type(5)').textContent.trim());
+    document.title = `(${angDist1stMatch}") ` + document.title;
+  }
 
   function tweakSearchResultRows() {
     getSearchResultRows().forEach((tr, i) => {

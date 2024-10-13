@@ -7,7 +7,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.7.0
+// @version     1.8.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -253,3 +253,38 @@ function addAngularDistanceOf1stMatchToTitle() {
   document.title = `${parseInt(angDistStr)}" ` + document.title;
 }
 addAngularDistanceOf1stMatchToTitle();
+
+
+function highlightGaiaDR3XMatchVar() {
+  // only applicable to search result of J/A+A/674/A22/catalog :
+  // Gaia DR3. Cross-match with known variable objects (Gavras+, 2023)
+  if (
+      !location.search.search('source=J%2FA%2BA%2F674%2FA22%2Fcatalog') ||
+      isSearchForm()
+     ) {
+    return;
+  }
+
+  const lastColHeader = document.querySelector('table.sort th:last-of-type')?.textContent?.trim();
+  if ('Sel' !== lastColHeader) {
+    console.warn(`\
+highlightGaiaDR3XMatchVar(): Expect the last column to be Sel. Actual: ${lastColHeader}. No-op.`);
+    return;
+  }
+
+  //
+  // For rows where Sel == false, hightlight them in light pink
+  //
+  GM_addStyle(`
+tr.dr3xmatch_sel_false {
+    background-color: rgba(255, 0, 0, 0.2);
+}`)
+
+  document.querySelectorAll('table.sort tr').forEach((tr) => {
+    if ('true' !== tr.querySelector('td:last-of-type')?.textContent) {
+      tr.classList.add('dr3xmatch_sel_false');
+    }
+  });
+}
+highlightGaiaDR3XMatchVar();
+

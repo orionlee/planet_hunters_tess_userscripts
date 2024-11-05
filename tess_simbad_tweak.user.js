@@ -4,7 +4,7 @@
 // @match       http*://simbad.u-strasbg.fr/simbad/*
 //                /sim-coo?Coord=*
 //                ^^^ links generated from ExoFOP, coordinate-based
-// @              /sim-id?*
+//                /sim-id?*
 //                ^^^ links from SIMBAD in case coordinate-based search has multiple results
 //                /sim-basic?Ident=*
 //                ^^^ links from SIMBAD basic search
@@ -14,7 +14,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.13.0
+// @version     1.14.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -250,6 +250,12 @@ Distance to the center <i>arcsec</i>:       </td>
 
     // indicate num entries found. 0 would be helpful to ignore the result without opening the tab
     document.title = `(${resultLinks.length}) - ${document.title}`;
+
+    if (resultLinks.length > 0) {
+      // indicate the angular distance of the first match as well.
+      const angDist1stMatch = parseInt(resultLinks[0]?.parentElement?.nextElementSibling?.textContent?.trim());
+      document.title = `${angDist1stMatch}" ` + document.title;
+    }
 
     resultLinks.forEach(linkEl => {
       // propagate the aliases to the links of individual result

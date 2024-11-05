@@ -3,7 +3,7 @@
 // @namespace   astro.tess
 // @match       https://asas-sn.osu.edu/variables*
 // @grant       GM_addStyle
-// @version     1.7.0
+// @version     1.7.1
 // @author      orionlee
 // @description
 // ==/UserScript==
@@ -38,7 +38,7 @@ function tweakSearchResult() {
   if (resRows.length > 0) {
     // indicate the angular distance (5th column) of the first match as well.
     const angDist1stMatch = parseInt(resRows[0].querySelector('td:nth-of-type(5)').textContent.trim());
-    document.title = `(${angDist1stMatch}") ` + document.title;
+    document.title = `${angDist1stMatch}" ` + document.title;
   }
 
   function tweakSearchResultRows() {

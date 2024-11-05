@@ -4,7 +4,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.10.0
+// @version     1.10.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -313,7 +313,7 @@ function tweakSearchResult() {
   if (resRows.length > 0) {
     // indicate the angular distance of the first match as well.
     const angDist1stMatch = parseInt(resRows[0].querySelector('td').textContent.trim());
-    document.title = `(${angDist1stMatch}") ` + document.title;
+    document.title = `${angDist1stMatch}" ` + document.title;
   }
 
   // Add link to variable type helper

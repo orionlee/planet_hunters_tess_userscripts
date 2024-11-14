@@ -14,7 +14,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.14.0
+// @version     1.14.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -201,8 +201,8 @@ function tweakUIWithCrossMatch() {
     // the distance from center is lost in standard SIMBAD UI,
     // we compensate it here.
     // (The distance is hash is added by the `resultLinks` tweaks in the later part of the function)
-    const [, dist] = location.hash.match(/&dist_asec=([^&]+)/) || [null, null]
-    if (!dist) {
+    const [, angDist] = location.hash.match(/&dist_asec=([^&]+)/) || [null, null]
+    if (!angDist) {
       return;
     }
     const idRow = document.querySelector('#basic_data table tr:first-of-type');
@@ -219,7 +219,7 @@ Distance to the center <i>arcsec</i>:       </td>
     <td>
      <font size="+0" color="#969696">
       <i>
-   ${dist}
+   ${angDist}
       </i>
      </font>
     </td>
@@ -710,19 +710,21 @@ function tweakBibReference() {
 tweakBibReference();
 
 
-function addAngularDistanceToTitle() {
+function addAngularDistanceToTitleForSingleObject() {
   // for single object case, add distance to to the center to title
   // Matching the distance in the line such as:
   // Distance to the center arcsec:	65.82
+  // (the line is supplied by SIMBAD itself in some cases (single object coordinate match ),
+  //  and in other cases added by tweakUIWithCrossMatch() logic above.)
   const distEl = document.querySelector('font[color="#969696"] > i');
   if (!distEl) {
     return;
   }
 
   // truncated to int for brevity
-  const dist = parseInt(distEl.textContent.trim());
+  const angDist = parseInt(distEl.textContent.trim());
 
-  document.title = `(${dist}") ${document.title}`;
+  document.title = `${angDist}" ${document.title}`;
 }
-addAngularDistanceToTitle();
+addAngularDistanceToTitleForSingleObject();
 

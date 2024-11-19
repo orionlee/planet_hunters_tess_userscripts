@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.55.0
+// @version     1.56.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -511,8 +511,8 @@ function addExternalLInks() {
   const tessEbCatsUrl = (
     `https://${vizierHost}/viz-bin/VizieR-4` +
     '?-source=J/A+A/652/A120/eb-cat&-source=J/ApJ/912/123/table2&-source=J/ApJS/263/34&-source=J/ApJS/259/50/table1' +
-    '&-source=J/AJ/156/234&-source=J/ApJS/258/16/tess-ebs' +
-    `&TIC=${tic}`
+    '&-source=J/AJ/156/234&-source=J/ApJS/258/16/tess-ebs&-source=J/MNRAS/488/4905/table2' +
+    `&TIC=${tic}&TESS=${tic}`
   );
 
   // &zoom=200 : zoom at the scale of a large constellation

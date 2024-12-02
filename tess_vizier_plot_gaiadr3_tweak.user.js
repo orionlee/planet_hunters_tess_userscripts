@@ -5,9 +5,9 @@
 //              ^^^ the iframe of Gaia DR3 Photometry plot. Parent URL in the form of:
 //                  https://cdsarc.cds.unistra.fr/vizier/vizgraph.gml?-s=I/355&-i=.graph_sql_epphot&*
 // @grant       GM_addStyle
-// @version     1.0
+// @version     1.0.1
 // @author      -
-// @description
+// @description This script tweaks the inner iframe of the plot. See tess_vizier_plot_gaiadr3_outer_frame_tweak.user.js for the outer frame tweak.
 // @icon        https://cdsarc.cds.unistra.fr/favicon.ico
 // ==/UserScript==
 

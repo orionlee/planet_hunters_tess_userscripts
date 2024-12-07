@@ -4,7 +4,7 @@
 // @match       https://eta-earth.org/tess_fits_play.html
 // @noframes
 // @grant       GM_addStyle
-// @version     1.2
+// @version     1.3
 // @author      -
 // @description
 // @icon        https://eta-earth.org/favicon.ico
@@ -35,6 +35,10 @@ function showStellarParams() {
   ${rad} R<sub>sun</sub> ; ${teff} K ; ${tmag} Tmag
 </div>
 `);
+  // make the plot above the fold. It's probably been plotted at this point.
+  document.querySelector('#plotOutput').style.height = '';  // undo the fixed 400px
+  document.querySelector('#plotOutput').style.marginBottom = '10vh';
+  document.querySelector('div.plot-container svg').scrollIntoView();
 }
 setTimeout(showStellarParams, 2000);
 

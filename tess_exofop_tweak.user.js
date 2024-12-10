@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.56.1
+// @version     1.57.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -500,6 +500,12 @@ function addExternalLInks() {
     return `${urlPrefix}${tic}`;
   })();
 
+  const lcViewerUrl = (() => {
+    // The URL can be optionally overridden
+    const urlPrefix = my_GM_getValue("lcViewerUrlPrefix", "https://tess-lightcurves.streamlit.app/?tic=");
+    return `${urlPrefix}${tic}`;
+  })();
+
   const tessEbUrl = (() => {
     // alternative: Vizier's static TESS EB
     // https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/ApJS/258/16/tess-ebs&TIC=
@@ -545,7 +551,9 @@ function addExternalLInks() {
   <a href="${tceUrl}"
     target="_tce" title="TCEs on Exo.MAST">TCE</a>  |
   <a href="https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC ${tic}"
-    target="_pht_talk" title="Planet Hunters TESS Talk">PHT</a>  |
+    target="_pht_talk" title="Planet Hunters TESS Talk">PHT</a> |
+  <a href="${lcViewerUrl}"
+    target="_lcviewer" title="Lightcurve Viewer">LCs<a/> |
   <a href="${wtv2Url}"
     target="_wtv2" title="TESS Web Visibility Tool v2, that supports sectors 70+">WTV2</a> |
   <a href="${wwTelUrl}"

@@ -7,7 +7,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.8.0
+// @version     1.9.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -265,26 +265,50 @@ function highlightGaiaDR3XMatchVar() {
     return;
   }
 
-  const lastColHeader = document.querySelector('table.sort th:last-of-type')?.textContent?.trim();
-  if ('Sel' !== lastColHeader) {
-    console.warn(`\
-highlightGaiaDR3XMatchVar(): Expect the last column to be Sel. Actual: ${lastColHeader}. No-op.`);
-    return;
-  }
-
-  //
-  // For rows where Sel == false, hightlight them in light pink
-  //
-  GM_addStyle(`
-tr.dr3xmatch_sel_false {
-    background-color: rgba(255, 0, 0, 0.2);
-}`)
-
-  document.querySelectorAll('table.sort tr').forEach((tr) => {
-    if ('true' !== tr.querySelector('td:last-of-type')?.textContent) {
-      tr.classList.add('dr3xmatch_sel_false');
+  function markSelFlaseRowsInPink() {
+    const lastColHeader = document.querySelector('table.sort th:last-of-type')?.textContent?.trim();
+    if ('Sel' !== lastColHeader) {
+      console.warn(`\
+  highlightGaiaDR3XMatchVar(): Expect the last column to be Sel. Actual: ${lastColHeader}. No-op.`);
+      return;
     }
-  });
+
+    //
+    // For rows where Sel == false, hightlight them in light pink
+    //
+    GM_addStyle(`
+  tr.dr3xmatch_sel_false {
+      background-color: rgba(255, 0, 0, 0.2);
+  }`)
+
+    document.querySelectorAll('table.sort tr').forEach((tr) => {
+      if ('true' !== tr.querySelector('td:last-of-type')?.textContent) {
+        tr.classList.add('dr3xmatch_sel_false');
+      }
+    });
+  } // function
+  markSelFlaseRowsInPink();
+
+
+  function addLinksToCats() {
+    let catColIdx = 0;  // the idx is 1-based, (CSS selector)
+    document.querySelectorAll('table.sort th').forEach((th, i) => {
+      if (th.textContent.trim() == 'Cats') {
+        catColIdx = i + 1;
+      }
+    });
+    if (catColIdx <= 0) {
+      return;
+    }
+    document.querySelectorAll(`table.sort tr td:nth-of-type(${catColIdx}`).forEach(td => {
+      const refArys = td.textContent.trim().split(';');
+      // convert each ref to a link <a>
+      td.innerHTML = refArys.map(t => `<a target="_blank" href="VizieR-4?-source=J/A%2bA/674/A22/notes&Ref=${t}">${t}</a>`).join(" ; ")
+    });
+
+  } // function
+  addLinksToCats();
+
 }
 highlightGaiaDR3XMatchVar();
 

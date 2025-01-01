@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.57.1
+// @version     1.58.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -516,12 +516,13 @@ function addExternalLInks() {
   })();
 
   // Misc EB catalogs from TESS data, e.g,  TESS OBA EBs, etc.
-  // Exceptions:
-  // - J/AJ/156/234 :  KELT transit false positive catalog for TESS (Collins+, 2018)
+  // - most can be be queried by TIC column
+  // - exception: J/AJ/156/234 [KELT transit false positive catalog for TESS (Collins+, 2018)],
+  //              it uses the column TESS
   const tessEbCatsUrl = (
     `https://${vizierHost}/viz-bin/VizieR-4` +
     '?-source=J/A+A/652/A120/eb-cat&-source=J/ApJ/912/123/table2&-source=J/ApJS/263/34&-source=J/ApJS/259/50/table1' +
-    '&-source=J/AJ/156/234&-source=J/ApJS/258/16/tess-ebs&-source=J/MNRAS/488/4905/table2' +
+    '&-source=J/AJ/156/234&-source=J/ApJS/258/16/tess-ebs&-source=J/MNRAS/488/4905/table2&-source=J/A+A/691/A242/obaf-eb1' +
     `&TIC=${tic}&TESS=${tic}`
   );
 

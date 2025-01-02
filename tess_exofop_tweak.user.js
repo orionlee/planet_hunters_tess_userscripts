@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.58.0
+// @version     1.58.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -516,13 +516,21 @@ function addExternalLInks() {
   })();
 
   // Misc EB catalogs from TESS data, e.g,  TESS OBA EBs, etc.
-  // - most can be be queried by TIC column
-  // - exception: J/AJ/156/234 [KELT transit false positive catalog for TESS (Collins+, 2018)],
-  //              it uses the column TESS
+  // - most can be be queried by TIC column.
+  // - exception: J/MNRAS/488/4905/table2 [SuperWASP transit false positive catalog (Schanche+, 2019)],
+  //              it uses the column TESS instead.
   const tessEbCatsUrl = (
     `https://${vizierHost}/viz-bin/VizieR-4` +
-    '?-source=J/A+A/652/A120/eb-cat&-source=J/ApJ/912/123/table2&-source=J/ApJS/263/34&-source=J/ApJS/259/50/table1' +
-    '&-source=J/AJ/156/234&-source=J/ApJS/258/16/tess-ebs&-source=J/MNRAS/488/4905/table2&-source=J/A+A/691/A242/obaf-eb1' +
+    '?-source=J/A+A/652/A120/eb-cat' +     // TESS OBA-type eclipsing binaries (IJspeert+, 2021)
+    '&-source=J/ApJ/912/123/table2' +      // TESS EBs in the southern hemisphere (Justesen+, 2021)
+    '&-source=J/ApJS/263/34/table1' +      // Pulsating components in EBs from TESS (Chen+, 2022)
+    '&-source=J/ApJS/259/50/table1' +      // EA-type eclipsing binaries observed by TESS (Shi+, 2022)
+                                           //  ^^^ just a copy of VSX params. Their analysis of ~50 pulsating EBs is not in Vizier
+    '&-source=J/AJ/156/234/table4' +       // KELT transit false positive catalog for TESS (Collins+, 2018)
+    '&-source=J/ApJS/258/16/tess-ebs' +    // TESS Eclipsing Binary stars. I. Sectors 1-26 (Prsa+, 2022), aka Villanova TESSebs
+    '&-source=J/MNRAS/488/4905/table2' +   // SuperWASP transit false positive catalog (Schanche+, 2019)
+    '&-source=J/A+A/691/A242/obaf-eb1' +   // TESS OBAF-type eclipsing binaries (IJspeert+, 2024)
+                                           //  ^^^ the authors only use a subset for their work
     `&TIC=${tic}&TESS=${tic}`
   );
 

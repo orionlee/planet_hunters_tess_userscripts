@@ -7,7 +7,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.9.0
+// @version     1.10.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -64,6 +64,10 @@ function hideEmptyTableInMulitTableSearchResults() {
   display: none;
 }
 
+.show-empty .empty {
+  display: inherit;
+}
+
 /* table description element,
   increase vetical spacing to distinguish one table from another */
 
@@ -103,10 +107,15 @@ table.tabList tr > td > b > a { /* Vizier table names. Make them stand out more 
   document.querySelectorAll('span.warning').forEach(hideOneEmptyTable);
   console.debug('hideEmptyTableInMulitTableSearchResults(): Num. of tables hidden =', numTablesHidden);
   if (numTablesHidden > 0) {
-    document.querySelector("#CDScore > table:last-of-type")?.insertAdjacentHTML('afterend', `
+    document.querySelector("#CDScore")?.insertAdjacentHTML('beforeend', `
 <div id="hiddenTablesMsg" style="font-family: monospace; font-size: 0.9rem; padding-top: 0.5rem;">
 ${numTablesHidden} empty tables(s) hidden.
+&ensp;<button id="ctlShowHideEmptyTables">Toggle</button>
 </div>`);
+    document.getElementById('ctlShowHideEmptyTables').onclick = (evt) => {
+      document.documentElement.classList.toggle('show-empty');
+      evt.preventDefault();
+    };
   }
 }
 hideEmptyTableInMulitTableSearchResults();

@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/projects/nora-dot-eisner/classifying-the-classified*
 // @grant       GM_openInTab
 // @grant       GM_setClipboard
-// @version     1.2.3
+// @version     1.2.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/project_avatar/7a23bfaf-b1b6-4561-9156-1767264163fe.jpeg
@@ -25,7 +25,6 @@ function clickInfoBtn() {
 
 const keyMap = {
   "KeyI":    clickInfoBtn,
-  "Numpad1": clickInfoBtn,
   "!altKey": {},
   "!any-modifier": {},
 }

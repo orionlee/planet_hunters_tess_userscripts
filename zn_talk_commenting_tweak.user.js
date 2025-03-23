@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.21.0
+// @version     1.21.1
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -119,7 +119,10 @@ titleForLinkifiedUrlImplList.push(url => {
   }
 });
 titleForLinkifiedUrlImplList.push(url => {
-  if (url.includes('www.aavso.org/vsx/index.php?view=detail.top&oid=')) {
+  if (
+    url.includes('vsx.aavso.org/index.php?view=detail.top&oid=') ||
+    url.includes('www.aavso.org/vsx/index.php?view=detail.top&oid=')
+  )  {
     return 'VSX';
   }
 });

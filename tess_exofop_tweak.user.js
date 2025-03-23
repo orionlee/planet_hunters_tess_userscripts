@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.58.1
+// @version     1.58.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -413,7 +413,7 @@ function addExternalLInks() {
 
     // add links to SIMBAD, VSX, etc.  to the top
 
-  const vsxUrl = 'https://www.aavso.org/vsx/index.php?view=search.top' +
+  const vsxUrl = 'https://vsx.aavso.org/index.php?view=search.top' +
     ((coord != null) ? `#coord=${encodeURIComponent(coord.ra + ' ' + coord.dec)}`  : '');
 
   const asasSnUrl = 'https://asas-sn.osu.edu/variables' +

@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name        TESS - AAVSO VSX tweak
 // @namespace   astro.tess
+// @match       https://vsx.aavso.org/*
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.10.1
+// @version     1.10.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -15,7 +16,10 @@
 //
 
 function fillAndSubmitSearchForm() {
-  if (!location.href.startsWith('https://www.aavso.org/vsx/index.php?view=search.top')) {
+  if (
+    !location.href.startsWith('https://vsx.aavso.org/index.php?view=search.top') &&
+    !location.href.startsWith('https://www.aavso.org/vsx/index.php?view=search.top')
+  ) {
     return;
   }
 

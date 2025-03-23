@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.10.2
+// @version     1.10.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -306,7 +306,8 @@ function tweakSearchResult() {
   // It used to be /vsx/index.php?view=results.submit1
   // it's changed to /vsx/index.php?view=results.submit2
   // So a more general pattern is used
-  if (location.href.indexOf('/vsx/index.php?view=results.submit') < 0) {
+  // 2025 Mar: removed /vsx to handle the new vsx.aavso.org/ and legacy www.aavso.org/
+  if (location.href.indexOf('/index.php?view=results.submit') < 0) {
     return;
   }
 
@@ -333,7 +334,6 @@ function tweakSearchResult() {
     const typeTd = tr.querySelector('td:nth-of-type(7)');
     const starType = typeTd ? typeTd.textContent : null;
     if (starType) {
-          // typeTd.innerHTML = `<a href="/vsx/index.php?abbrev=${starType}&view=help.vartype&nolayout=1">${starType}</a>`;
           typeTd.innerHTML = `<a href='javascript:window.open("index.php?abbrev=${encodeJsLink(starType)}&view=help.vartype&nolayout=1", "VarTypeHelp", "width=390,height=400")'>
   ${starType} <img style="vertical-align: -5px" src="_images/help.gif" width="15" height="15" border="0" align="absbottom" title="Get description for this type">
 </a>`;
@@ -386,7 +386,7 @@ tweakSearchResult();
 
 
 function tweakDetailPage() {
-  if (location.href.indexOf('/vsx/index.php?view=detail.top&oid=') < 0) {
+  if (location.href.indexOf('/index.php?view=detail.top&oid=') < 0) {
     return;
   }
 

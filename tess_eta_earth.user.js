@@ -4,7 +4,7 @@
 // @match       https://eta-earth.org/tess_fits_play.html
 // @noframes
 // @grant       GM_addStyle
-// @version     1.3
+// @version     1.4
 // @author      -
 // @description
 // @icon        https://eta-earth.org/favicon.ico
@@ -26,13 +26,14 @@ function showStellarParams() {
     return;
   }
 
-  const rad = roundNum(_t.match(/RADIUS\s+=\s+([^/]*)/)[1])
-  const teff = roundNum(_t.match(/TEFF\s+=\s+([^/]*)/)[1], 0)
-  const tmag = roundNum(_t.match(/TESSMAG\s+=\s+([^/]*)/)[1])
+  const rad = roundNum(_t.match(/RADIUS\s+=\s+([^/]*)/)[1]);
+  const teff = roundNum(_t.match(/TEFF\s+=\s+([^/]*)/)[1], 0);
+  const tmag = roundNum(_t.match(/TESSMAG\s+=\s+([^/]*)/)[1]);
+  const tic = _t.match(/TICID\s+=\s+(\d+)/)[1];
 
   document.getElementById('plotOutput').insertAdjacentHTML('beforebegin',`
 <div id="stellarParamsCtr">
-  ${rad} R<sub>sun</sub> ; ${teff} K ; ${tmag} Tmag
+  ${rad} R<sub>sun</sub> ; ${teff} K ; ${tmag} Tmag -- TIC ${tic}
 </div>
 `);
   // make the plot above the fold. It's probably been plotted at this point.

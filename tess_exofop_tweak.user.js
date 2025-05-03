@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.58.4
+// @version     1.58.5
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -185,6 +185,7 @@ function bjtdToRelative(tBjtd) {
     [87, 3663.037114062155, 3689.9377885567224],
     [88, 3690.148437253382, 3717.923895063307],
     [89, 3718.134541804454, 3746.944481316125],
+    [90, 3747.159028640203, 3775.077421082559],
   ]; // Based on the one in tess_exomast_tce_tweak.user.js
 
 

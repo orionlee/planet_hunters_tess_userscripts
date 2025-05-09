@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.10.4
+// @version     1.10.5
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -274,9 +274,12 @@ function getSearchResultRows() {
 
   // the list of <tr> have some header rows and footer row (at least 2 header and 1 footer)
   // but if the list is long, header rows would repeat.
-  // Also, error message "There were no records that matched the search criteria." is shown in a row.
   // The test `td.indexdata` would ensure we only get the actual data rows
   resRows = resRows.filter(tr => tr.querySelector('td.indexdata') != null);
+
+  // Filter out the error message "There were no records that matched the search criteria."
+  // (a row with a single <td>)
+  resRows = resRows.filter(tr => tr.querySelectorAll('td').length > 1);
 
   return resRows;
 }

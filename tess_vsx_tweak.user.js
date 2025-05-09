@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.10.3
+// @version     1.10.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -272,14 +272,11 @@ function showMatchingInfo(aliases, otherParams) {
 function getSearchResultRows() {
   let resRows = Array.from(document.querySelectorAll('.content table:nth-of-type(2) tr:nth-of-type(4) tbody > tr'));
 
-  // remove 2 header rows and 1 footer row
-  resRows =  resRows.slice(2, resRows.length - 1);
-
-  if (resRows.length == 1 && resRows[0].querySelectorAll('td').length < 2) {
-    // case only 1 row, and the row is just for the text
-    // "There were no records that matched the search criteria.""
-    resRows = [];
-  }
+  // the list of <tr> have some header rows and footer row (at least 2 header and 1 footer)
+  // but if the list is long, header rows would repeat.
+  // Also, error message "There were no records that matched the search criteria." is shown in a row.
+  // The test `td.indexdata` would ensure we only get the actual data rows
+  resRows = resRows.filter(tr => tr.querySelector('td.indexdata') != null);
 
   return resRows;
 }
@@ -293,9 +290,14 @@ function tweakSearchResultBasedOnHash() {
       return;
     }
     console.debug("Processing hash: ", hashFromSearchForm);
-    getSearchResultRows().forEach(tr => {
+    getSearchResultRows().forEach((tr, i) => {
       const oidLinkEl = tr.querySelector('a');
-      oidLinkEl.href = oidLinkEl + hashFromSearchForm;
+      if (oidLinkEl) {
+        oidLinkEl.href = oidLinkEl + hashFromSearchForm;
+      } else {
+        // should never happen, but just in case.
+        console.warn(`oid link hash tweak: cannot find link for row ${i+1}. No-op.`);
+      }
     });
   } finally {
     sessionStorage["_hash"] = "";
@@ -343,7 +345,13 @@ function tweakSearchResult() {
 
     // add shortcuts to search result as Alt-1, Alt-2, etc.
     resRows.forEach((tr, i) => {
-      tr.querySelector('.desig a').accessKey = i + 1;
+      const el = tr.querySelector('.desig a');
+      if (el) {
+        el.accessKey = i + 1;
+      } else {
+        // should never happen, but just in case
+        console.warn(`accesskey assignment: cannot find object detail link for row ${i+1}. No-op`);
+      }
     });
 
     // the third column is to the link of the object,

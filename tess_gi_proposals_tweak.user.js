@@ -4,7 +4,7 @@
 // @match       https://heasarc.gsfc.nasa.gov/docs/tess/data/approved-programs/*/*.txt
 // @noframes
 // @grant       GM_addStyle
-// @version     1.0.1
+// @version     1.1
 // @author      -
 // @description
 // @icon        https://heasarc.gsfc.nasa.gov/favicon.ico
@@ -23,7 +23,9 @@ function extractLinkInMd() {
          onclick="this.select(); void(0);" />
   <br><br>
   <textarea id="linkInMdOutExtended" title="Link to The proposal in markdown, with summary"
-            onclick="this.select(); void(0);" />
+            onclick="this.select(); void(0);"></textarea>
+  <br>
+  <a href="https://heasarc.gsfc.nasa.gov/docs/tess/approved-programs.html?term=${proposalId}">All Approved Programs</a>
 </div>
 `);
     document.getElementById('linkInMdOut').value = mdText;

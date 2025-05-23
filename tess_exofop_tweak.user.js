@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.58.5
+// @version     1.59.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -532,6 +532,10 @@ function addExternalLInks() {
     '&-source=J/MNRAS/488/4905/table2' +   // SuperWASP transit false positive catalog (Schanche+, 2019)
     '&-source=J/A+A/691/A242/obaf-eb1' +   // TESS OBAF-type eclipsing binaries (IJspeert+, 2024)
                                            //  ^^^ the authors only use a subset for their work
+    '&-source=J/MNRAS/522/29/table2' +     // 15000 ellipsoidal binary candidates in TESS (Green+, 2023),
+                                           // - all unfiltered targets, thus  many FPs, but indicate identified periods
+    '&-source=J/MNRAS/522/29/table3' +     // 15000 ellipsoidal binary candidates in TESS (Green+, 2023)
+                                           // - actual selected  ellipsoidal binary candidates
     `&TIC=${tic}&TESS=${tic}`
   );
 

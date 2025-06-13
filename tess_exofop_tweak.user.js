@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.59.0
+// @version     1.59.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -955,10 +955,13 @@ initCopySectionLinkOnDblClick();
 
 
 function autoOpenLinks() {
-  const[, targetsStr] = location.hash.match(/open=([^&]+)/) || [null, null];
+  let [, targetsStr] = location.hash.match(/open=([^&]+)/) || [null, null];
   if (!targetsStr) {
     return;
   }
+
+  // in some environment, "|" will get URI-encoded
+  targetsStr = decodeURIComponent(targetsStr)
 
   targetsStr.split('|').forEach(target => {
     const linkEl = document.querySelector(`a[target="${target}"]`);

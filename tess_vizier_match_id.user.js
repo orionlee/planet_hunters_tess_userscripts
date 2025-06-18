@@ -5,7 +5,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.0.1
+// @version     1.1.0
 // @author      -
 // @description Match of arbitrary string in search result.
 //              Motivational use case is to
@@ -72,7 +72,10 @@ const extracted = extractMatchStrFromHash();
 
 // case the hash is added to a search result GET url
 // need to process it right away
-if (extracted && location.search.indexOf('&-bmark=GET') >= 0) {
+if (extracted &&
+    ( (location.search.indexOf('&-bmark=GET') >= 0) ||  // case bookmark GET URL from Vizier
+      location.pathname.endsWith("VizieR-4")  // case search result in general
+    )) {
   highlightMatches();
   // remove the has from  browser location
   history.pushState("", document.title, location.pathname + location.search);

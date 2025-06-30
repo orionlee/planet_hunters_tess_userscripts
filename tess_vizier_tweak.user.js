@@ -7,7 +7,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.10.0
+// @version     1.10.1
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -267,8 +267,10 @@ addAngularDistanceOf1stMatchToTitle();
 function highlightGaiaDR3XMatchVar() {
   // only applicable to search result of J/A+A/674/A22/catalog :
   // Gaia DR3. Cross-match with known variable objects (Gavras+, 2023)
+  //  (the catalog string might be partly URI-encoded.)
   if (
-      !location.search.search('source=J%2FA%2BA%2F674%2FA22%2Fcatalog') ||
+      ( location.search.search('source=J%2FA%2BA%2F674%2FA22%2Fcatalog') < 0 &&
+        location.search.search('source=J/A%2bA/674/A22/catalog') < 0 ) ||
       isSearchForm()
      ) {
     return;

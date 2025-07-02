@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.10.5
+// @version     1.11.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -551,12 +551,32 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
     document.title = `${distanceRounded}" ` + document.title;
   }
 
+  function addLinkToLCGv2() {
+    const aavsoUidEl = document.querySelector("table.datasheet table > tbody > tr:nth-child(2) > td:nth-child(2) td");
+    if (!aavsoUidEl) {
+      console.warn('addLinkToLCGv2(): cannot find AAVSO UID table cell. No-op');
+      return;
+    }
+    if (!aavsoUidEl.querySelector('a')) {
+      return;  // case no observation available. No point to add LCG v2 link
+    }
+
+    // now in JD, see https://en.wikipedia.org/wiki/Julian_day
+    const toJD = parseFloat(((Date.now() / 86400000) + 2440587.5).toFixed(2))
+    const fromJD = toJD - 366 * 2   // 2 years, the default for LCGv2
+    const lcg2Url = 'https://www.aavso.org/LCGv2/index.htm?DateFormat=Calendar&RequestedBands=&view=api.delim' +
+      `&ident=${encodeURIComponent(getVSXName())}&fromjd=${fromJD}&tojd=${toJD}8&delimiter=@@@`;
+
+    aavsoUidEl.insertAdjacentHTML('beforeend', `&emsp;( <a href="${lcg2Url}" target="_blank">LCGv2</a> )`);
+  }
+
   //
   // main logic
   //
 
   try {
     showDistanceFromCoordIfAvailable();
+    addLinkToLCGv2();
 
     const [aliasList, otherParams] = getMatchingInfoFromHash(aliasFilter);
     if (!aliasList) {

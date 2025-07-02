@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.11.0
+// @version     1.12.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -401,6 +401,20 @@ function tweakDetailPage() {
     return;
   }
 
+
+  function getVSXCoord() {
+    // get coordinate of the target in the detail sheet
+    const searchNearbyEl = document.querySelector('td > a[href^="index.php?view=results.nearby&oid="]');
+    const coordEl = searchNearbyEl?.parentElement?.previousElementSibling;
+    if (!coordEl) {
+      console.warn('getTargetCoord(): cannot find Coordinate Value DOM. Return null');
+      return [null, null];
+    }
+    const [_, ra, dec] = coordEl.textContent.match(/[(]([0-9.]+)\s+([-+0-9.]+)[)]/) || [null, null, null];
+    return [ra, dec];
+  }
+
+
   function getVSXName(returnCtr=false) {
     const ctr = document.querySelector('table.datasheet table tr:nth-of-type(1) td:nth-of-type(2) table td')
     const id = ctr.textContent.trim();
@@ -551,6 +565,7 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
     document.title = `${distanceRounded}" ` + document.title;
   }
 
+
   function addLinkToLCGv2() {
     const aavsoUidEl = document.querySelector("table.datasheet table > tbody > tr:nth-child(2) > td:nth-child(2) td");
     if (!aavsoUidEl) {
@@ -570,6 +585,35 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
     aavsoUidEl.insertAdjacentHTML('beforeend', `&emsp;( <a href="${lcg2Url}" target="_blank">LCGv2</a> )`);
   }
 
+
+  function addLinkToExoFOP() {
+    const extLinksRowEl = document.querySelector('td > select[name="linkout"]')?.parentElement?.parentElement;
+    if (!extLinksRowEl) {
+      console.warn('addLinkToExoFOP(): cannot find external link DOM element. No-op');
+      return;
+    }
+
+    const  exofopNameUrl = `https://exofop.ipac.caltech.edu/tess/gototicid.php?target=${getVSXName()}`;
+
+    // Note: In coordinate search,
+    // for stars with large proper motion, the search might return nothing because
+    // in ExoFOP, coordinate is in  epoch 2015.5 (Gaia DR2) while VSX coordinate is in J2000
+    const [ra, dec] = getVSXCoord();
+    const coordStr = `${ra} ${dec}`;  // For ExoFOP, ra dec must be separated by space, without comma
+    const exofopCoordURL = `https://exofop.ipac.caltech.edu/tess/gototicid.php?target=${coordStr}`;
+
+    extLinksRowEl.insertAdjacentHTML('afterend', `
+<tr>
+      <td class="detailtitle"></td>
+      <td class="detaildata" colspan="2">
+        ExoFOP <a href="${exofopCoordURL}" target="_blank">by coordinate</a>
+        , <a href="${exofopNameUrl}" target="_blank">by name</a>
+      </td>
+</tr>
+`)
+  }
+
+
   //
   // main logic
   //
@@ -577,6 +621,7 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
   try {
     showDistanceFromCoordIfAvailable();
     addLinkToLCGv2();
+    addLinkToExoFOP();
 
     const [aliasList, otherParams] = getMatchingInfoFromHash(aliasFilter);
     if (!aliasList) {

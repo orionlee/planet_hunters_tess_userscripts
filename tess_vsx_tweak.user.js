@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.12.0
+// @version     1.12.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -572,11 +572,15 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
       console.warn('addLinkToLCGv2(): cannot find AAVSO UID table cell. No-op');
       return;
     }
-    if (!aavsoUidEl.querySelector('a')) {
-      return;  // case no observation available. No point to add LCG v2 link
+    if (!aavsoUidEl.querySelector('a[title="Download data"]')) {
+      // case no observation available. No point to add LCG v2 link.
+      // The logic covers 2 sub-cases
+      // 1. Case no AUID, there is a <a> element for requesting AUID but it does not have the title
+      // 2. case there is AUID but there is no AAVSO observations, no <a> element is present
+      return;
     }
 
-    // now in JD, see https://en.wikipedia.org/wiki/Julian_day
+    // convert current time to JD, see https://en.wikipedia.org/wiki/Julian_day
     const toJD = parseFloat(((Date.now() / 86400000) + 2440587.5).toFixed(2))
     const fromJD = toJD - 366 * 2   // 2 years, the default for LCGv2
     const lcg2Url = 'https://www.aavso.org/LCGv2/index.htm?DateFormat=Calendar&RequestedBands=&view=api.delim' +

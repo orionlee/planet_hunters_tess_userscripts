@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.12.1
+// @version     1.13.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -80,7 +80,28 @@ function fillAndSubmitSearchForm() {
 
     // auto submit to search
     document.querySelector('input[value="Search"]').click();
-  }
+    return;
+  }  // if (coord) {
+
+  //
+  // Case it is not a coordinate search from hash
+  // See if it's a search by name from hash
+  //
+  const [, nameEncoded] = location.hash.match(/#name=([^&#]+)/) ||[null, null];
+  if (nameEncoded) {
+    const name = decodeURIComponent(nameEncoded);
+
+    document.querySelector('input[name="ident"]').value = name;
+
+    // clear out existing position in the form, if any (due to users' having used it)
+    if (document.querySelector('input[name="targetcenter"]')) {
+      document.querySelector('input[name="targetcenter"]').value = '';
+    }
+
+    // auto submit to search
+    document.querySelector('input[value="Search"]').click();
+    return;
+  }  // if (nameEncoded) {
 
 }
 fillAndSubmitSearchForm();

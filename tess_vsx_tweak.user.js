@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.13.0
+// @version     1.13.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -14,6 +14,14 @@
 //
 // Search Form
 //
+
+function doDecodeURIComponent(val) {
+  // In some cases, value supplied are also encoded
+  // with the form of mapping space to plus sign
+  // (e.g., if it's processed by Chrome' site search)
+  return decodeURIComponent(val.replaceAll('+', ' '));
+}
+
 
 function fillAndSubmitSearchForm() {
   if (
@@ -30,7 +38,7 @@ function fillAndSubmitSearchForm() {
   function getCoordRequested() {
     const [, coordEncoded] = location.hash.match(/#coord=([^&#]+)/) ||[null, null];
     if (coordEncoded) {
-      return decodeURIComponent(coordEncoded);
+      return doDecodeURIComponent(coordEncoded);
     }
 
     // try to get the coord from sessionStorage  if not specified in hash
@@ -89,7 +97,7 @@ function fillAndSubmitSearchForm() {
   //
   const [, nameEncoded] = location.hash.match(/#name=([^&#]+)/) ||[null, null];
   if (nameEncoded) {
-    const name = decodeURIComponent(nameEncoded);
+    const name = doDecodeURIComponent(nameEncoded);
 
     document.querySelector('input[name="ident"]').value = name;
 
@@ -97,6 +105,8 @@ function fillAndSubmitSearchForm() {
     if (document.querySelector('input[name="targetcenter"]')) {
       document.querySelector('input[name="targetcenter"]').value = '';
     }
+
+      document.querySelector('select[name="order"]').value = 2; // order by Alphanumeric
 
     // auto submit to search
     document.querySelector('input[value="Search"]').click();

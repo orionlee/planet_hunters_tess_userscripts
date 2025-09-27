@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.12.2
+// @version     1.12.3
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -813,8 +813,9 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
   // Plumbing codes to trigger actual viewer customization upon user click done (that load viewer with new data)
   //
   function customizeViewerOnDoneClicked(evt) {
-    if (evt.target.textContent.toLowerCase() === 'done' &&
-        !evt.shiftKey) { // ignore cases when shift is pressed.
+    const btnText = evt.target.textContent.toLowerCase();
+    if (btnText === 'done' || btnText == 'done & talk') {
+      // --- the logic is not useful anymore --- || !evt.shiftKey) { // ignore cases when shift is pressed.
 
       // observe the changes so that once the new data is loaded to viewer
       // customization will be applied again.

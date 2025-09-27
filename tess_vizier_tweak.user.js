@@ -7,7 +7,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.10.1
+// @version     1.11.2
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -323,3 +323,98 @@ function highlightGaiaDR3XMatchVar() {
 }
 highlightGaiaDR3XMatchVar();
 
+
+// Provides an alternative in the form a short URL (that can be bookmarked)
+// Comparing it with the Vizier-standard bookmark feature, the URL is much shorter
+// but it provides fewer features, most notably only the output columns are
+// restricted to the defaults.
+function addSimpleSearchGETUrl() {
+  if (!isSearchForm()) {
+    return;
+  }
+
+  function createSearchURL() {
+    let searchURL = location.href.replace(/[/]Vizie[\w-]+/, '/VizieR-4');
+
+    // add -source if it's not in the URL (case the search form is from HTTP POST)
+    if (searchURL.indexOf('?-source=') < 0) {
+      const sourceVal = document.querySelector('input[name="-source"]').value;
+      searchURL += `?-source=${encodeURIComponent(sourceVal)}`;
+    }
+
+    // add column constraints
+    //
+    // the selector `input[name="-out.orig"] + table` gets to the table of column constraints
+    // CSS selector note:
+    // - selector 'input[name="-out.orig"] + table input[type="text"]' works for B/vsx/vsx
+    //   it has the element of input[name="-out.orig"], choice of standard or original column names
+    // - but the selector does not work for some others, e.g.,  J/AJ/151/68 (Kepler EBs)
+    //   it does not have input[name="-out.orig"]
+    // - the selector '.section .title ~ table input[type="text"]' is more robust,
+    //   with '.section .title' refers to Query by Constraints section
+    //   preceding (not necessarily immediately) the main table of columns.
+    document.querySelectorAll('.section .title ~ table input[type="text"]').forEach((e) => {
+      if (!e.value) {
+        return;
+      }
+
+      // ignore dummy column used to display links only (vizier type meta.ref.ur), e.g,
+      // Simbad column in J/AJ/151/68 (to link to simbad)
+      const pe = e.previousElementSibling;
+      if (pe && pe.tagName == "INPUT" && pe?.name === "-ignore" && pe?.type === "hidden") {
+        return;
+      }
+
+      searchURL += `&${e.name}=${encodeURIComponent(e.value)}`;
+    });
+
+    const coordVal = document.querySelectorAll('input[name="-c"]').value;
+    if (coordVal) {
+      // TODO: add coordinate constraint (and associated computed distance, position angle)
+    }
+
+    // add sort, if specified
+    let sortAdded = false;
+    document.querySelectorAll('input[name="-sort"]').forEach((e) => {
+      if (!e.checked) {
+        return;
+      }
+      if (!e.value) {
+        return;  // case No sort radio button is specified
+      }
+      searchURL += `&-sort=${encodeURIComponent(e.value)}`;
+      sortAdded = true;
+    });
+    if (sortAdded) {
+      document.querySelectorAll('input[name="-order"]').forEach((e) => {
+        if (!e.checked) {
+          return;
+        }
+        searchURL += `&-order=${encodeURIComponent(e.value)}`;
+      });
+    }
+
+    // add max num. of rows if not default
+    const maxVal = document.querySelector('select[name="-out.max"]').value;
+    if (maxVal && maxVal != '50') {
+      searchURL += `&-out.max=${encodeURIComponent(maxVal)}`;
+    }
+
+    return searchURL;
+  }
+
+  //
+  // Add the Search URL to UI
+  //
+  const anchorEl = document.querySelector('.constraintmenu input[type="submit"]')
+  anchorEl?.insertAdjacentHTML('beforebegin', `
+<button title="Search with a short bookmark-able URL" id="simpleSearchCtl">Simple Search</button>&emsp;
+`);
+  document.getElementById('simpleSearchCtl').onclick = (evt) => {
+    evt.preventDefault();
+    /// prompt("DBG URL", createSearchURL());
+    location.href = createSearchURL();
+  };
+
+}
+addSimpleSearchGETUrl();

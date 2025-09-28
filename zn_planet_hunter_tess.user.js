@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.12.3
+// @version     1.12.4
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -832,7 +832,7 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
       // 3. Solve (2) by using a simple retry
       let viewerCustomized = customizeViewerOnSVGLoaded();
       if (!viewerCustomized) {
-        setTimeout(() => customizeViewerOnSVGLoaded(true), 2000);
+        setTimeout(() => customizeViewerOnSVGLoaded(true), 1000);
       }
     }
   } // function customizeViewerOnDoneClicked(..)

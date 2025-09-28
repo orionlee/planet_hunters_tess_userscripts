@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.59.2
+// @version     1.59.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -775,11 +775,11 @@ tweakMag();
     return highlighted;
   }
 
-  // for TESS Disposition [2024-10-23: changed the columns from 11/12 to 10/11 to match ExoFOP change]
-  const elsTESSDisp =  Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(10)'));
+  // for TESS Disposition [2025-09-28: changed the columns from 10/11 to 11/12 to match ExoFOP change]
+  const elsTESSDisp =  Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(11)'));
   const isTESSHighlighted = highlightIfFalseAlarm(elsTESSDisp);
   // for TFOPWG Disposition
-  const elsTFOPWGDisp = Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(11)'));
+  const elsTFOPWGDisp = Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(12)'));
   const isTFOPWGHighlighted = highlightIfFalseAlarm(elsTFOPWGDisp);
 
 
@@ -791,8 +791,8 @@ tweakMag();
   const strCombinedDisp = (strTESSDisp || strTFOPWGDisp) ? `${strTESSDisp} / ${strTFOPWGDisp}` : '';
   const styleExtras = (isTESSHighlighted || isTFOPWGHighlighted) ? "background-color: rgba(255, 0, 0, 0.8);" : "";
 
-  // Notes: [2024-10-23: changed the column from 17 to 16 to match ExoFOP change]
-  const elsNotes = Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(16)'));
+  // Notes: [2025-09-28: changed the column from 16 to 17 to match ExoFOP change]
+  const elsNotes = Array.from(document.querySelectorAll('#myGrid1 .ag-center-cols-container > div > div:nth-of-type(17)'));
   const strNotes = elsNotes.map(e => e.textContent.trim()).join(" | ");
 
   // Put them in header

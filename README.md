@@ -52,8 +52,6 @@ They could be useful if you follow up on ExoMAST, ExoFOP, and SIMBAD
 [VSX tweak](https://github.com/orionlee/planet_hunters_tess_userscripts/raw/master/tess_vsx_tweak.user.js) + [ASAS-SN tweak](https://github.com/orionlee/planet_hunters_tess_userscripts/raw/master/tess_asas_sn_tweak.user.js)
 - They work together so that when one follows up on SIMBAD / VSX / ASAS-SN from ExoFOP page, you can easily reference the IDs of the target to ensure SIMBAD referenced the same star.
 - Consider to add following sets of Vizier tweaks: [auto search](https://github.com/orionlee/planet_hunters_tess_userscripts/raw/master/tess_vizier_autosearch.user.js), [main tweak](https://github.com/orionlee/planet_hunters_tess_userscripts/raw/master/tess_vizier_tweak.user.js), and [match id](https://github.com/orionlee/planet_hunters_tess_userscripts/raw/master/tess_vizier_match_id.user.js)
-- For [WTVv2](https://github.com/orionlee/planet_hunters_tess_userscripts/raw/master/generic_auto_fill_form_submit.user.js), aka Web Viewing Tool v2: auto search the given TIC (from the link of the cusotmized ExoFOP).
-
 
 
 ### Zooniverse Generic

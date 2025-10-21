@@ -2,9 +2,10 @@
 // @name        Planet Hunters TESS Classifying the Classified Tweaks
 // @namespace   astro.tess
 // @match       https://www.zooniverse.org/projects/nora-dot-eisner/classifying-the-classified*
+// @match       https://www.zooniverse.org/projects/sofia-dot-marie/classifying-the-classified-2025*
 // @grant       GM_openInTab
 // @grant       GM_setClipboard
-// @version     1.2.4
+// @version     1.3.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/project_avatar/7a23bfaf-b1b6-4561-9156-1767264163fe.jpeg
@@ -91,8 +92,17 @@ ${msg}
 }
 
 
+function getMetaDataTIC() {
+  let tic = getMetaData('TICID');  // old classifying-the-classified
+  if (!tic) {
+    tic = getMetaData('tic');  // new classifying-the-classified-2025
+  }
+  return tic;
+}
+
+
 function copySectorTicToClipboard(notifyUser=true) {
-  const tic = getMetaData('TICID');
+  const tic = getMetaDataTIC();
   const sector = getMetaData('thissector');
   const text = `${sector}, ${tic}`;
   GM_setClipboard(text);
@@ -104,7 +114,7 @@ function copySectorTicToClipboard(notifyUser=true) {
 
 
 function onDblClickToSpawnExoFOP(evt) {
-  if (!(evt.target.tagName === 'TD' && evt.target.previousElementSibling?.textContent === 'TICID')) {
+  if (!(evt.target.tagName === 'TD' && ['TICID', 'tic'].includes(evt.target.previousElementSibling?.textContent))) {
     return;
   }
 
@@ -114,7 +124,7 @@ function onDblClickToSpawnExoFOP(evt) {
     return;
   }
   // case with Ctrl / shift / AltKey
-  const tic = getMetaData('TICID');
+  const tic = getMetaDataTIC();
   const exofopURL = `https://exofop.ipac.caltech.edu/tess/target.php?id=${tic}` +
     '#open=simbad|_vsx|_gaia-dr3-xmatch-var|_tce|_pht_talk|_gaia-dr3';
   GM_openInTab(exofopURL, true); // in background

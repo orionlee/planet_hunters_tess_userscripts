@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.12.4
+// @version     1.13.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -1086,7 +1086,7 @@ When TIC will be observed:<br>
         const noteEl = document.querySelector('form.talk-comment-form textarea');
         const addNewLine = !(['', '\n', '\r'].includes(noteEl.value.charAt(noteEl.value.length - 1)));
         noteEl.value += `${addNewLine ? '\n' : ''}TIC ${ticId}\n`;
-        noteEl.focus();
+        // noteEl.focus();  // no longer put the note in focus, more handy for my workflow.
       };
 
       document.getElementById('ticCopyCtl').onclick = () => {

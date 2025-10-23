@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.13.1
+// @version     1.13.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -230,15 +230,6 @@ function getMatchingInfoFromHash(aliasFilter = null) {
   const aliasesStr = decodeURIComponent(aliasesMatch[1]);
   // Now try to highlight the IDS in the result
   const aliasList = aliasesStr.split(',').filter(aliasFilter);
-
-  // match Gaia DR3 identifiers here using the heuristics
-  // that Gaia DR2 source number is the same as that of Gaia DR3.
-  for (alias of aliasList) {
-    if (alias.startsWith('Gaia DR2 ')) {
-      aliasList.push(alias.replace('Gaia DR2', 'Gaia DR3'));
-      break;
-    }
-  }
 
   const otherParamsMatch = location.hash.match(/other_params=([^&]+)/);
   let otherParams = otherParamsMatch ? decodeURIComponent(otherParamsMatch[1]) : '';
@@ -477,10 +468,14 @@ function tweakDetailPage() {
   }
 
   function moveNotUsefulAliasToEnd(aliases) {
-    // In practice, UCAC / SDSS is rarely cross-matched successfully in SIMBAD and ultimately removed
-    // move it to the end
+    // In practice, UCAC / SDSS is rarely cross-matched successfully in SIMBAD and ultimately removed;
+    // Gaia DR3 is only used if the target is in Gaia DR3 Variable.
+    // Move them to the end
     const aliasesWithSortKey = aliases.map((a, i) => {
-      const sortKey = a.match(/^UCAC|SDSS/) ? 999 : i;
+      let sortKey = a.match(/^UCAC|SDSS/) ? 998 : i;
+      if (a.match(/^Gaia DR3/)) {
+        sortKey = 999;
+      }
       a._sortKey = sortKey;
       return [a, sortKey];
     });

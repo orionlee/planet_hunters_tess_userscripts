@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.21.1
+// @version     1.22.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -514,7 +514,35 @@ function condenseSearchResultBySubject() {
   }
 
   return [threadCountMap, uniqThreadMap]; // only useful for debugging
+}  // function condenseSearchResultBySubject() {
+
+
+function highlightSearchTermInResults() {
+  let [, term] = location.search.match(/[?&]query=([^&]+)/) || [null, null];
+  if (!term) {
+    return;
+  }
+  term = term.replaceAll('+', ' ');  // space got encoded as +
+  term = decodeURIComponent(term);
+
+  const entries = Array.from(document.querySelectorAll('.talk-search-results > .talk-search-result'));
+  if (entries.length < 1) {
+    return null;
+  }
+
+  GM_addStyle(`
+.talk-search-result .markdown .hl {
+  background-color: rgba(255, 192, 0, 0.7);
 }
+`);
+
+  entries.forEach(sr => {
+    const body = sr.querySelector('.markdown');
+    body.innerHTML = body.innerHTML.replaceAll(term, `<span class="hl">${term}</span>`);
+  });
+
+} // function highlightSearchTermInResults() {
+
 
 function showSearchCountOnTitle() {
   if (!location.pathname.endsWith("/talk/search")) {
@@ -546,6 +574,7 @@ function tweakSearchResult() {
   }
   console.debug("tweakSearchResult() called")
   condenseSearchResultBySubject();
+  highlightSearchTermInResults();
 
   // tweak title, do it multiple times because some ZN's own ajax code
   // could overwrite it.
@@ -558,6 +587,7 @@ function tweakSearchResult() {
 
 // better implementation would wait till SearchResult ajax is rendered.
 // Use setTimeout as a crude approximation
+// TODO: the tweaks are not applied upon result pagination, as it is done via ajax
 setTimeout(tweakSearchResult, 4000);
 
 

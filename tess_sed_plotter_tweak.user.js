@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name        SED Plotter UI tweak
 // @namespace   astro.tess
-// @match       http://cdsportal.u-strasbg.fr/gadgets/ifr?url=http://cdsportal.unistra.fr/widgets/SED_plotter.xml&*
+// @match       http*://cdsportal.u-strasbg.fr/gadgets/ifr?url=http://cdsportal.unistra.fr/widgets/SED_plotter.xml&*
 // @grant       GM_addStyle
-// @version     0.9.0
+// @version     0.9.1
 // @author      -
 // @description
 // @icon        https://cdsportal.u-strasbg.fr/widgets/img/hub-disconnected.png

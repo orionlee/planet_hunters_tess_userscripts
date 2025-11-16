@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.13.0
+// @version     1.13.1
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -512,12 +512,12 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
       const infoBtn = getSubjectInfoBtnOnClassify();
       infoBtn.insertAdjacentHTML('beforebegin', `<div id="classifyHintOut" title="Dip's depth estimator. Press Alt-C to activate it if it is not present."
           style="margin-right: 16px; margin-top: 4px; padding: 2px 4px; box-shadow: 2px 2px #ccc; border-bottom-right-radius: 6%;">
-      R<sub>s</sub> <span style="font-size: 80%;">[R<sub>☉</sub>]</span>: <input name="r_*" type="number" style="width: 10ch;" step="0.1" placeholder="Enter stellar radius">&emsp;
-      R<sub>p</sub> <span style="font-size: 80%;">[R<sub>j</sub>]</span>: <input name="r_p" type="number" style="width: 10ch;" step="0.1" value="1">
+      R<sub>s</sub> <span style="font-size: 80%;">[R<sub>☉</sub>]</span>: <input name="r_*" type="number" style="width: 6ch;" step="0.1" placeholder="Enter stellar radius">&emsp;
+      R<sub>p</sub> <span style="font-size: 80%;">[R<sub>j</sub>]</span>: <input name="r_p" type="number" style="width: 6ch;" step="0.1" value="1">
       <button id="dipDepthGoBtn">Go</button>
       <br>
       <span style="font-size: 80%">Dip's depth ~=
-          <input id="dipDepthOut" type="number" style="width: 10ch; font-style: italic;" step="0.1">%
+          <input id="dipDepthOut" type="number" style="width: 7ch; font-style: italic;" step="0.1">%
       </span>
       <span id="stellarParamsOut"
             title="Magnitude / Temperature"></span>

@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.59.5
+// @version     1.59.6
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -550,12 +550,12 @@ function addExternalLInks() {
   ${simbadLinkEl?.outerHTML?.replace('>\nSIMBAD<', ' accesskey="S"> SIMBAD<')} |
   <a href="${vsxUrl}" target="_vsx" accesskey="V" title="Variable Star Index">VSX</a> |
   <a href="${asasSnUrl}" target="_asas-sn" accesskey="A" title="All-Sky Automated Survey for Supernovae">ASAS-SN</a> |
-  <a href="${gaiaDr3VarUrl}" target="_gaia-dr3-var" accesskey="G" title="Gaia DR3 Variables">GDR3 Var</a> |
+  <a href="${gaiaDr3VarUrl}" target="_gaia-dr3-var" accesskey="G" title="*G*aia DR3 Variables">GDR3 Var</a> |
   <a href="${tessEbUrl}" target="_tess-eb" accesskey="T">TESS-EB</a> |
   <a href="${tessEbCatsUrl}" target="_tess-eb-cats" title="Misc. EB Catalogs from TESS data">T EB Cats</a> |
   <a href="https://cdsportal.u-strasbg.fr/gadgets/ifr?url=https://cdsportal.unistra.fr/widgets/SED_plotter.xml&SED_plot_object=TIC${tic}&SED_plot_radius=5"
     target="_sed" title="Spectral Energy Distributions Plot (old version)">SED</a>  |
-  <a href="${gaiaDr3Url}" target="_gaia-dr3" title="Gaia DR3 Main">GDR3</a> |
+  <a href="${gaiaDr3Url}" target="_gaia-dr3" accesskey="3" title="Gaia DR*3* Main">GDR3</a> |
   <a href="${gaiaDr3NSSUrl}" target="_gaia-dr3-nss" title="Gaia DR3 Non Single Star">NSS</a> |
   <a href="${gaiaDr3XmatchVarUrl}" target="_gaia-dr3-xmatch-var" title="Gaia DR3 XMatch Variable Catalogs">XMatch-Var</a> |
   <a href="${gaiaDr3StellarVarUrl}" target="_gaia-dr3-stellar-var" title="Stellar Variability in Gaia DR3 (Maiz Apellaniz+, 2023)">Stellar-Var</a> |

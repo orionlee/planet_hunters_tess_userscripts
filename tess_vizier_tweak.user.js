@@ -3,11 +3,13 @@
 // @namespace   astro.tess
 // @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-S?*
 // @match       https://vizier.cds.unistra.fr/viz-bin/VizieR-*
+// @match       https://vizier.u-strasbg.fr/viz-bin/VizieR-S?*
+// @match       https://vizier.u-strasbg.fr/viz-bin/VizieR-S?*
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-S?*
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.11.2
+// @version     1.11.3
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico

@@ -9,7 +9,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.11.3
+// @version     1.12.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -335,7 +335,18 @@ function addSimpleSearchGETUrl() {
     return;
   }
 
+  function formElToURLComponent(inputName, formEl=null, prefix="") {
+    if (!formEl) {
+      formEl = document.forms[0];
+    }
+    // use form.elements, rather than document.querySelector(),
+    // as it has a more suitable API, e.g., handling radio input more easily
+    const inputValue = formEl.elements[inputName].value;
+    return `${prefix}${inputName}=${encodeURIComponent(inputValue)}`;
+  }
+
   function createSearchURL() {
+
     let searchURL = location.href.replace(/[/]Vizie[\w-]+/, '/VizieR-4');
 
     // add -source if it's not in the URL (case the search form is from HTTP POST)
@@ -370,9 +381,11 @@ function addSimpleSearchGETUrl() {
       searchURL += `&${e.name}=${encodeURIComponent(e.value)}`;
     });
 
-    const coordVal = document.querySelectorAll('input[name="-c"]').value;
+    // coordinate input will be missing for tables with no coordinates
+    const coordVal = document.querySelector('input[name="-c"]')?.value;
     if (coordVal) {
-      // TODO: add coordinate constraint (and associated computed distance, position angle)
+      const urlc = formElToURLComponent; // a short name
+      searchURL += `&${urlc('-c')}&${urlc('-c.eq')}&${urlc('-c.r')}&${urlc('-c.u')}&${urlc('-c.geom')}`;
     }
 
     // add sort, if specified

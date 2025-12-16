@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.13.3
+// @version     1.13.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -528,10 +528,21 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
     }
     const [aliasesMatched, aliasesNotMatchedSet] = [[], new Set(aliasList)];
 
+    const normalize = (name) => {
+      // for KIC / KID, sometimes VSX use non-standard names (compared with SIMBAD)
+      // - KID should be KIC
+      // - has leading zero
+      // 'KIC 07023917' should be 'KIC 7023917'
+      // 'KID 07023917' should be 'KIC 7023917' as well
+      return name.replace(/^\s*(KI[CD])\s+0+(\d+)/, 'KIC $2');
+    };
+
     const existingIdCtrPairs = (() => {
-      // Filter out edge case not a real ID, but the text
-      // "Please note that aliases shown in grey link to obsolete records."
-      const res = Array.from(idCtr.querySelectorAll('td'), td => [td.textContent.trim(), td])
+      // Extract names listed, with some special processing
+      // 1. normalize KIC / KID if needed
+      // 2. Filter out edge case not a real ID, but the text
+      //   "Please note that aliases shown in grey link to obsolete records."
+      const res = Array.from(idCtr.querySelectorAll('td'), td => [normalize(td.textContent.trim()), td])
         .filter(idCtrPair => !idCtrPair[0].startsWith('Please note'));
       res.push(getVSXName(true))
       return res;

@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.22.0
+// @version     1.23.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -206,8 +206,17 @@ titleForLinkifiedUrlImplList.push(url => {
   }
 });
 titleForLinkifiedUrlImplList.push(url => {
+  if (url.match(/zooniverse[.]org[/]projects[/]nora-dot-eisner[/]planet-hunters-tess[/]talk[/]\d+[/]\d+/)) {
+    // case Zooniverse PHT comment
+    if (!location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess')) {
+      return 'PHT comment';  // in non-PHT project
+    } else {
+      return 'comment';  // in PHT itself
+    }
+  }
   if (url.match(/zooniverse[.]org[/].+[/]talk[/]\d+[/]\d+/)) {
-    return 'comment';  // zooniverse talk comment
+    // case other Zooniverse comments
+    return 'comment';
   }
 });
 titleForLinkifiedUrlImplList.push(url => {

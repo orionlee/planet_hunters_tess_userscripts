@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.23.0
+// @version     1.24.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -137,7 +137,17 @@ titleForLinkifiedUrlImplList.push(url => {
   }
 });
 titleForLinkifiedUrlImplList.push(url => {
+  if (url.includes('keplerebs.villanova.edu')) {
+    return 'Kepler EB';
+  }
+});
+titleForLinkifiedUrlImplList.push(url => {
   if (url.includes('heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv')) {
+    // legacy WTV
+    return 'WTV';
+  }
+  if (url.includes('heasarc.gsfc.nasa.gov/wsgi-scripts/TESS/TESS-point_Web_Tool/TESS-point_Web_Tool/wtv_v2.0.py/TICID_result/ticid=')) {
+    // current WTV
     return 'WTV';
   }
 });
@@ -228,8 +238,9 @@ titleForLinkifiedUrlImplList.push(url => {
     return decodeURIComponent(searchTerm.replace(/[+]/m, ' '));
   }
 });
+
 titleForLinkifiedUrlImplList.push(url => {
-  // Vizier entry link, e.g.,
+  // Vizier entry link (single-object by name), e.g.,
   // https://vizier.u-strasbg.fr/viz-bin/VizieR-S?Gaia%20EDR3%203449035248963961216
   const [, targetId] = url.match(/vizier[.].+[/]VizieR-S[?]([^&]+)/) || [null, ""];
   // e.g, extract Gaia EDR3
@@ -247,7 +258,6 @@ titleForLinkifiedUrlImplList.push(url => {
     ) {
     return "Gaia DR3";
   }
-  return null;
 });
 titleForLinkifiedUrlImplList.push(url => {
   if (
@@ -264,7 +274,6 @@ titleForLinkifiedUrlImplList.push(url => {
     ) {
     return "Gaia DR3 Variable";
   }
-  return null;
 });
 titleForLinkifiedUrlImplList.push(url => {
   if (
@@ -279,7 +288,6 @@ titleForLinkifiedUrlImplList.push(url => {
     ) {
     return "Gaia DR3 NSS";
   }
-  return null;
 });
 titleForLinkifiedUrlImplList.push(url => {
   if (
@@ -294,8 +302,14 @@ titleForLinkifiedUrlImplList.push(url => {
     ) {
     return "Gaia DR3 Stellar Variability";
   }
-  return null;
 });
+titleForLinkifiedUrlImplList.push(url => {
+  // General Vizier. Should be placed after all others for specific Vizier catalogs .
+  if (url.match(/[/]viz-bin[/]VizieR-\d[?]/)) {
+    return "Vizier";
+  }
+});
+
 //
 // A generic replacement scheme (should always be the last one!)
 titleForLinkifiedUrlImplList.push(url => {

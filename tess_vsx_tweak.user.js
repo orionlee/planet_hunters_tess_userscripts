@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.13.4
+// @version     1.14.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -627,21 +627,25 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
   }
 
 
-  function addLinkToExoFOP() {
+  function addLinksToExoFOPEtc() {
     const extLinksRowEl = document.querySelector('td > select[name="linkout"]')?.parentElement?.parentElement;
     if (!extLinksRowEl) {
       console.warn('addLinkToExoFOP(): cannot find external link DOM element. No-op');
       return;
     }
 
+    // 1. ExoFOP URLs
     const  exofopNameUrl = `https://exofop.ipac.caltech.edu/tess/gototicid.php?target=${getVSXName()}`;
 
     // Note: In coordinate search,
     // for stars with large proper motion, the search might return nothing because
     // in ExoFOP, coordinate is in  epoch 2015.5 (Gaia DR2) while VSX coordinate is in J2000
     const [ra, dec] = getVSXCoord();
-    const coordStr = `${ra} ${dec}`;  // For ExoFOP, ra dec must be separated by space, without comma
-    const exofopCoordURL = `https://exofop.ipac.caltech.edu/tess/gototicid.php?target=${coordStr}`;
+    const coord = `${ra} ${dec}`;  // For ExoFOP, ra dec must be separated by space, without comma
+    const exofopCoordURL = `https://exofop.ipac.caltech.edu/tess/gototicid.php?target=${coord}`;
+
+    // 2. Gaia DR3 URL
+    const gaiaDR3URL = `https://vizier.cfa.harvard.edu/viz-bin/VizieR-4?-ref=VIZ694ecaa272761&-to=-4b&-from=-3&-this=-4&%2F%2Fsource=%2BI%2F355%2Fgaiadr3%2BI%2F355%2Fparamp&%2F%2Fc=${coord}&%2F%2Ftables=I%2F355%2Fgaiadr3&%2F%2Ftables=I%2F355%2Fparamp&-out.max=50&%2F%2FCDSportal=http%3A%2F%2Fcdsportal.u-strasbg.fr%2FStoreVizierData.html&-out.form=HTML+Table&-out.add=_r&-out.add=_p&%2F%2Foutaddvalue=default&-sort=_r&-order=I&-oc.form=sexa&-out.src=I%2F355%2Fgaiadr3%2CI%2F355%2Fparamp&-nav=cat%3AI%2F355%26tab%3A%7BI%2F355%2Fgaiadr3%7D%26tab%3A%7BI%2F355%2Fparamp%7D%26key%3Asource%3D%2BI%2F355%2Fgaiadr3%2BI%2F355%2Fparamp%26key%3Ac%3D${coord}%26pos%3A${coord}%28+15+arcsec%29%26HTTPPRM%3A&-c=${coord}&-c.eq=J2000&-c.r=+15&-c.u=arcsec&-c.geom=r&-source=&-x.rs=10&-source=I%2F355%2Fgaiadr3+I%2F355%2Fparamp&-out.orig=standard&-out=Source&-out=Plx&-out=PM&-out=pmRA&-out=pmDE&-out=sepsi&-out=IPDfmp&-out=RUWE&-out=Dup&-out=Gmag&-out=BPmag&-out=RPmag&-out=BP-RP&-out=RV&-out=e_RV&-out=VarFlag&-out=NSS&-out=XPcont&-out=XPsamp&-out=RVS&-out=EpochPh&-out=EpochRV&-out=MCMCGSP&-out=MCMCMSC&-out=Teff&-out=logg&-out=%5BFe%2FH%5D&-out=Dist&-out=A0&-out=HIP&-out=PS1&-out=SDSS13&-out=SKYM2&-out=TYC2&-out=URAT1&-out=AllWISE&-out=APASS9&-out=GSC23&-out=RAVE5&-out=2MASS&-out=RAVE6&-out=RAJ2000&-out=DEJ2000&-out=Pstar&-out=PWD&-out=Pbin&-out=ABP&-out=ARP&-out=GMAG&-out=Rad&-out=SpType-ELS&-out=Rad-Flame&-out=Lum-Flame&-out=Mass-Flame&-out=Age-Flame&-out=Flags-Flame&-out=Evol&-out=z-Flame&-meta.ucd=2&-meta=1&-meta.foot=1&-usenav=1&-bmark=GET`;
 
     extLinksRowEl.insertAdjacentHTML('afterend', `
 <tr>
@@ -649,6 +653,8 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
       <td class="detaildata" colspan="2">
         ExoFOP <a href="${exofopCoordURL}" target="_blank">by coordinate</a>
         , <a href="${exofopNameUrl}" target="_blank">by name</a>
+        &emsp;|&emsp;
+        Gaia DR3 <a href="${gaiaDR3URL}" target="_blank">by coordinate</a>
       </td>
 </tr>
 `)
@@ -662,7 +668,7 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
   try {
     showDistanceFromCoordIfAvailable();
     addLinkToLCGv2();
-    addLinkToExoFOP();
+    addLinksToExoFOPEtc();
 
     const [aliasList, otherParams] = getMatchingInfoFromHash(aliasFilter);
     if (!aliasList) {

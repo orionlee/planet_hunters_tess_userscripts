@@ -9,7 +9,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.12.0
+// @version     1.13.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -407,6 +407,19 @@ function addSimpleSearchGETUrl() {
         }
         searchURL += `&-order=${encodeURIComponent(e.value)}`;
       });
+    }
+
+    // add computed columns if specified
+    let hasComputedColumns = false
+    document.forms[0].elements['-out.add']?.forEach((e) => {
+      if (!e.checked) {
+        return;
+      }
+      searchURL += `&-out.add=${encodeURIComponent(e.value)}`;
+      hasComputedColumns = true;
+    });
+    if (hasComputedColumns) {
+      searchURL += '&%2F%2Foutaddvalue=default';  // needed for the computed columns to show up
     }
 
     // add max num. of rows if not default

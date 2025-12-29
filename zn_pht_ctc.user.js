@@ -7,7 +7,8 @@
 // @grant       GM_setClipboard
 // @grant       GM_getValue
 // @grant       GM_setValue
-// @version     1.4.4
+// @grant       GM_registerMenuCommand
+// @version     1.4.5
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/project_avatar/7a23bfaf-b1b6-4561-9156-1767264163fe.jpeg
@@ -130,11 +131,24 @@ function clickInfoBtnAndLog() {
   logSubjectClassified();
 }
 
-/*
-Sample 1-line code to dump all logged subjects to a semi colon-delimited string for future processing
-Use semi-colon instead of comma to avoid the conflicts with column marked transits (comma separated). Semi-colon is one of the default options in Google Sheet.
-res = 'subject;tic;sector;source;markedTransits\n'; for ([k,v] of Object.entries(JSON.parse(localStorage['ctc2025SubjectLogs']))) { res += `${k};${v.join(';')}\n`; }; console.log(res)
-*/
+
+function exportSubjectClassifiedLog() {
+  let res = 'subject;tic;sector;source;markedTransits\n';
+  for ([k,v] of Object.entries(JSON.parse(localStorage['ctc2025SubjectLogs']))) {
+    res += `${k};${v.join(';')}\n`;
+  };
+  document.body.insertAdjacentHTML('beforeend',`\
+<div id="logOutputCtr" style="padding: 12px; z-index: 999; position: fixed; left: 25vw; top: 10vh; background-color: rgba(255, 255, 0, 0.8);">
+    <div style="float: right; cursor: pointer;" onclick="this.parentElement.remove();">[X]</div>
+    <p>Log of subjects classified, semi-colon separated.</p>
+    <textarea readonly onclick="this.select();" style="width: 40vw; height: 50vh;">${res}</textarea>
+</div>
+`);
+  // return res;
+}
+// UI to export the log if it's enabled
+if (toLogSubjectClassified) { GM_registerMenuCommand("Export Subjects Log", exportSubjectClassifiedLog); }
+
 
 //
 // END   logic to log a subject being classified in CTC 2025

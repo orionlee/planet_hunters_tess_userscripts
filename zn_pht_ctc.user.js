@@ -7,7 +7,7 @@
 // @grant       GM_setClipboard
 // @grant       GM_getValue
 // @grant       GM_setValue
-// @version     1.4.3
+// @version     1.4.4
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/project_avatar/7a23bfaf-b1b6-4561-9156-1767264163fe.jpeg
@@ -48,16 +48,7 @@ function getSubjectIdFromTalkNDone() {
     return subjectUrl;
   }
 
-  // cache subjectId in `.task-nav` to minimize the need to accessing it Click&Done button,
-  // as the access could scroll the page back up (if users has scrolled below the fold)
-  let subjectId = document.querySelector('.task-nav').dataset['subjectId'];
-  if (subjectId) {
-    return subjectId;
-  }
-
-  [, subjectId] = getSubjectUrl()?.match(/subjects\/(\d+)/) || [null, null]
-
-  document.querySelector('.task-nav').dataset['subjectId'] = subjectId;
+  [, subjectId] = getSubjectUrl()?.match(/subjects\/(\d+)/) || [null, null];
 
   return subjectId;
 }  // function getSubjectIdFromTalkNDone()

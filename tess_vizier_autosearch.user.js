@@ -6,7 +6,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR-*?-source=*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.6.0
+// @version     1.6.1
 // @author      -
 // @description Apply frequently used tweaks to Vizier Search form.
 //              Perform auto-search a Vizier source when signified by hash.
@@ -22,7 +22,8 @@ function isSearchForm() {
 
 
 function getSourceQueryParam() {
-  let [, source] = location.search.match(/-source=([^&]+)/) || [null, ''];
+  // a more relaxed match to match multiple -source= params
+  let [, source] = location.search.match(/(-source=.+)/) || [null, ''];
   return decodeURIComponent(source);
 }
 

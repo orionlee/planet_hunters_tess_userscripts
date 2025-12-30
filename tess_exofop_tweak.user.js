@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.59.7
+// @version     1.60.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -474,11 +474,13 @@ function addExternalLInks() {
     ((coord != null) ? `&-c=${encodeURIComponent(coord.ra + ' ' + coord.dec)}&-c.r=60&-c.u=arcsec#autoSubmit=true`  : '');
   gaiaDr3VarUrl = appendGaiaIdForMatch(gaiaDr3VarUrl);
 
-  // Gaia DR3, query 2 tables
-  // - gaiadr3: the main
-  // - paramp: astrophysical params such as radius, mass, luminosity, etc.
+  // Gaia DR3, query:
+  // - I/355/gaiadr3: the main
+  // - I/355/paramp: astrophysical params such as radius, mass, luminosity, etc.
+  // - extra tables via settings `gaiaDr3UrlExtraParams`: Use cases: extra '&-source=' to include GDR3 Variable (I/358), NSS (I/357) in one search
   // Note: the default columns are tweaked by tess_vizier_autosearch.usr.js
-  let gaiaDr3Url = `https://${vizierHost}/viz-bin/VizieR-3?-source=+I%2F355%2Fgaiadr3+I%2F355%2Fparamp` +
+  let gaiaDr3Url = `https://${vizierHost}/viz-bin/VizieR-3?-source=I/355/gaiadr3&-source=I/355/paramp` +
+    my_GM_getValue("gaiaDr3UrlExtraParams", "") +
     ((coord != null) ? `&-c=${encodeURIComponent(coord.ra + ' ' + coord.dec)}&-c.r=15&-c.u=arcsec#autoSubmit=true`  : '');
   gaiaDr3Url = appendGaiaIdForMatch(gaiaDr3Url);
 

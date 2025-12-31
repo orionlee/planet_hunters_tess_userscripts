@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
-// @version     1.4.5
+// @version     1.4.6
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/project_avatar/7a23bfaf-b1b6-4561-9156-1767264163fe.jpeg
@@ -133,7 +133,7 @@ function clickInfoBtnAndLog() {
 
 
 function exportSubjectClassifiedLog() {
-  let res = 'subject;tic;sector;source;markedTransits\n';
+  let res = 'subject;tic;sector;source;marked_transits\n';
   for ([k,v] of Object.entries(JSON.parse(localStorage['ctc2025SubjectLogs']))) {
     res += `${k};${v.join(';')}\n`;
   };

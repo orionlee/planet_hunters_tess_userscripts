@@ -14,7 +14,7 @@
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
 // @noframes
-// @version     1.14.1
+// @version     1.14.2
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -291,7 +291,8 @@ Distance to the center <i>arcsec</i>:       </td>
   // BEGIN case the coordinate matches a single result
   const idTableEl = getIdentifiersDOM();
   if (idTableEl) {
-    Array.from(idTableEl.querySelectorAll('tt'), tt => {
+    const idEls = idTableEl.querySelectorAll('tt');
+    Array.from(idEls, tt => {
       if (aliasList.includes(normalizeId(tt))) {
         tt.classList.add('matched-id');
         numIdsMatched++;
@@ -301,7 +302,7 @@ Distance to the center <i>arcsec</i>:       </td>
       }
     });
 
-    if (numIdsMatched > 0) {
+    if (numIdsMatched > 0 && numIdsMatched < idEls.length)  {
       // add UI to hide-show unmatched IDs, defaulted to hiding them.
       idTableEl.insertAdjacentHTML('beforebegin', `<button id="toggleUnmatchedIDsCtl"></button>`);
       const hideShowUnmatchedIDs = () => {

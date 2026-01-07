@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
-// @version     1.4.6
+// @version     1.6.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/project_avatar/7a23bfaf-b1b6-4561-9156-1767264163fe.jpeg
@@ -43,13 +43,13 @@ function getSubjectIdFromTalkNDone() {
     }
     // case Talk & Done has no URL yet (not enabled), enable it by selecting one of the option
     const oneAnswerEl = document.querySelector('.answers label.answer');
-    oneAnswerEl.click();  // click one answer temporarily
+    oneAnswerEl.click(); // click one answer temporarily
     subjectUrl = document.querySelector('.task-nav a').href;
-    setTimeout(() => oneAnswerEl.click(), 100);  // unclick it
+    setTimeout(() => oneAnswerEl.click(), 100); // unclick it
     return subjectUrl;
   }
 
-  [, subjectId] = getSubjectUrl()?.match(/subjects\/(\d+)/) || [null, null];
+  const [, subjectId] = getSubjectUrl()?.match(/subjects\/(\d+)/) || [null, null];
 
   return subjectId;
 }  // function getSubjectIdFromTalkNDone()
@@ -60,15 +60,9 @@ function createLogEntry() {
   // 1. In CTC 2025 classify page
   // 2. metadata pop-in is already shown
 
-  const tic = getMetaData('tic');
+  const tic = getMetaDataTIC();
   const sector = getMetaData('thissector');
-  const [source, markedTransits] = (() => {
-    if (getMetaData('RealTransit') == 'Transit-like events marked by volunteers') {
-      return ["pht", getMetaData('MarkedTransits')];
-    } else {
-      return ["auto", "[]"];  // the markedTransits from algorithm are just dummy times
-    }
-  })();
+  const [source, markedTransits] = getMetaDataSourceAndMarkedTransits();
 
   // done using the metadata pop-in. Now get subjectId
 
@@ -91,7 +85,7 @@ function saveLogs(logMap) {
 }
 
 
-let lastSubjectIdClassified = null;  // used by logSubjectClassified()
+let lastSubjectIdClassified = null; // used by logSubjectClassified()
 function logSubjectClassified() {
   // only log CTC 2025 subjects by volunteers, if enabled
   if (!toLogSubjectClassified()) {
@@ -118,6 +112,11 @@ function logSubjectClassified() {
     return;
   }
 
+  // add an index to track the order of entry, 1-based
+  // this is done so that when exporting the logs, the recent ones will be appended at the end
+  const entryIdx = Object.keys(logMap).length + 1;
+  logEntry.push(entryIdx);
+
   logMap[subjectId] = logEntry;
   console.debug('logSubjectClassified() Saving log:', subjectId, logEntry);
   saveLogs(logMap);
@@ -133,10 +132,19 @@ function clickInfoBtnAndLog() {
 
 
 function exportSubjectClassifiedLog() {
-  let res = 'subject;tic;sector;source;marked_transits\n';
-  for ([k,v] of Object.entries(JSON.parse(localStorage['ctc2025SubjectLogs']))) {
-    res += `${k};${v.join(';')}\n`;
+  // convert the dictionary of log entries into a sorted array by idx
+  const logs = [];
+  for (const [k,v] of Object.entries(JSON.parse(localStorage['ctc2025SubjectLogs']))) {
+    v.unshift(k); // prepend k to the v array
+    logs.push(v);
   };
+  logs.sort((l, r) => l[5] - r[5]); // sort by idx so that the recent ones are at the end.
+
+  let res = 'subject;tic;sector;source;marked_transits;idx\n';
+  for (const l of logs) {
+    res += `${l.join(';')}\n`;
+  }
+
   document.body.insertAdjacentHTML('beforeend',`\
 <div id="logOutputCtr" style="padding: 12px; z-index: 999; position: fixed; left: 25vw; top: 10vh; background-color: rgba(255, 255, 0, 0.8);">
     <div style="float: right; cursor: pointer;" onclick="this.parentElement.remove();">[X]</div>
@@ -213,6 +221,16 @@ window.addEventListener('keydown', handleViewerKeyboardShortcuts);
 //
 // Ctrl Double Click TICID in Metadata Popin spawns ExoFOP page
 //
+
+function fillTemplate(template, data) {
+  const keys = Object.keys(data);
+  const values = Object.values(data);
+
+  // The Function constructor takes the argument names as strings, then the function body as a string
+  const render = new Function(...keys, `return \`${template}\`;`);
+  return render(...values);
+}
+
 function getMetaData(name) {
   let row = null;
   document.querySelectorAll('.modal-dialog table tbody > tr').forEach(tr => {
@@ -235,18 +253,40 @@ ${msg}
 
 
 function getMetaDataTIC() {
-  let tic = getMetaData('TICID');  // old classifying-the-classified
+  let tic = getMetaData('TICID'); // old classifying-the-classified
   if (!tic) {
-    tic = getMetaData('tic');  // new classifying-the-classified-2025
+    tic = getMetaData('tic'); // new classifying-the-classified-2025
   }
   return tic;
 }
 
 
-function copySectorTicToClipboard(notifyUser=true) {
-  const tic = getMetaDataTIC();
-  const sector = getMetaData('thissector');
-  const text = `${sector}, ${tic}`;
+function getMetaDataSourceAndMarkedTransits() {
+  if (getMetaData('RealTransit') == 'Transit-like events marked by volunteers') {
+    return ["pht", getMetaData('MarkedTransits')];
+  } else {
+    return ["auto", "[]"]; // the markedTransits from algorithm are just dummy times
+  }
+}
+
+
+function extractSomeMetaData() {
+  // Get a subset of subject metadata,
+  // primarily for the purposes of filling in various templates
+  return {
+    tic: getMetaDataTIC(),
+    sector: getMetaData('thissector'),
+    markedTransits: getMetaDataSourceAndMarkedTransits()[1],
+  };
+}
+
+
+function copySomeMetaDataToClipboard(notifyUser=true) {
+  const text = fillTemplate(
+    my_GM_getValue("templateCopySomeMetaData", "${sector}, ${tic}"),
+    extractSomeMetaData(),
+  )
+
   GM_setClipboard(text);
   if (notifyUser) {
     message(`${text}<br>copied.`);
@@ -262,14 +302,15 @@ function onDblClickToSpawnExoFOP(evt) {
 
   // case on TICID cell
   if (!(evt.ctrlKey || evt.shiftKey || evt.altKey)) {
-    copySectorTicToClipboard();
+    copySomeMetaDataToClipboard();
     return;
   }
   // case with Ctrl / shift / AltKey
-  const tic = getMetaDataTIC();
-  const exofopURL = `https://exofop.ipac.caltech.edu/tess/target.php?id=${tic}` +
-    '#open=simbad|_vsx|_gaia-dr3-xmatch-var|_tce|_pht_talk|_gaia-dr3';
-  GM_openInTab(exofopURL, true); // in background
-  copySectorTicToClipboard();
+  const extURL = fillTemplate(
+    my_GM_getValue("templateExtURL", "https://exofop.ipac.caltech.edu/tess/target.php?id=${tic}"),
+    extractSomeMetaData(),
+  )
+  GM_openInTab(extURL, true); // in background
+  copySomeMetaDataToClipboard();
 }
 document.addEventListener('dblclick', onDblClickToSpawnExoFOP);

@@ -13,12 +13,25 @@
 // @match       http*://simbad.cfa.harvard.edu/simbad/*
 // @grant       GM_addStyle
 // @grant       GM_setClipboard
+// @grant       GM_getValue
+// @grant       GM_setValue
 // @noframes
-// @version     1.14.2
+// @version     1.15.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
+
+function my_GM_getValue(key, defaultValue="") {
+  const result = GM_getValue(key);
+  if (!result) {
+    // Store a empty string so that the value can be edited in Tampermonkey UI
+    GM_setValue(key, "");
+    return defaultValue;
+  }
+  return result;
+}
+
 
 (function injectCSS() {
   GM_addStyle(`\
@@ -272,12 +285,14 @@ Distance to the center <i>arcsec</i>:       </td>
 
     // traverse to individual page automatically if applicable
     // (the links have been processed to propagate the hash)
-    resultLinks.forEach(linkEl => {
-      // case multiple result, the one of them has matching ID
-      if (aliasList.includes(normalizeId(linkEl))) {
-        location.href = linkEl.href; // ID matched, go to the individual result page directly
-      }
-    });
+    if (my_GM_getValue("autoTraverseMultipleResults", "true") === "true") {
+      resultLinks.forEach(linkEl => {
+        // case multiple results, go to the one that has matching ID (if it exists)
+        if (aliasList.includes(normalizeId(linkEl))) {
+          location.href = linkEl.href; // ID matched, go to the individual result page directly
+        }
+      });
+    }
 
     // okay so we don't go to individual result page directly. make it easy to click first link instead
     if (resultLinks.length > 1) {

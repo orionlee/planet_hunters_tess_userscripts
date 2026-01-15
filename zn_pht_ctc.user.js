@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
-// @version     1.6.0
+// @version     1.7.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/project_avatar/7a23bfaf-b1b6-4561-9156-1767264163fe.jpeg
@@ -273,10 +273,23 @@ function getMetaDataSourceAndMarkedTransits() {
 function extractSomeMetaData() {
   // Get a subset of subject metadata,
   // primarily for the purposes of filling in various templates
+  const subject = (() => {
+    if (location.pathname.endsWith("/classify")) {
+      // case subject number not readily available, use lastSubjectIdClassified from subject log (but it might not have been enabled)
+      return lastSubjectIdClassified ? lastSubjectIdClassified : -1;
+    } else {
+      // case subject / talk page
+      // the selector for subject page / talk page respectively
+      const [, res] = document.querySelector('.talk-list-content h1, h1.talk-page-header')?.textContent?.match(/Subject\s+(\d+)/) || [null, -1];
+      return res;
+    }
+  })();
+
   return {
     tic: getMetaDataTIC(),
     sector: getMetaData('thissector'),
     markedTransits: getMetaDataSourceAndMarkedTransits()[1],
+    subject: subject,
   };
 }
 

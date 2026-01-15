@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.13.1
+// @version     1.14.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -1298,7 +1298,11 @@ When TIC will be observed:<br>
 </style>`);
     }
 
-    const replaceExpr = '$1<span class="tooltip-tic-ctr">TIC $2<span class="tooltip-tic"><a href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC $2" target="_pht_talk">[Talk]</a> | <a href="https://exofop.ipac.caltech.edu/tess/target.php?id=$2" target="_exofop">[ExoFOP]</a></span></span>';
+    const replaceExpr = '$1<span class="tooltip-tic-ctr">TIC $2<span class="tooltip-tic">' +
+      '<a href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC $2" target="_pht_talk">[Talk]</a> ' +
+      '| <a href="https://exofop.ipac.caltech.edu/tess/target.php?id=$2" target="_exofop">[ExoFOP]</a> ' +
+      '| <button onclick="navigator.clipboard.writeText(\'TIC $2\');">Copy</button> '
+      + '</span></span>';
     const ticReList = [
       // Note can't match pattern "#TIC 12345678", because #TIC has been linkified already (as hashtag link)
       /(\s+|[(])TIC(?:\s*ID)?\s*(\d+)/mgi,  // regular text match, with space or bracket preceding to ensure it is not, say, part of an URL inside <a> tag

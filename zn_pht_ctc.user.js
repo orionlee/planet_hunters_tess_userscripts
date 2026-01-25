@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
-// @version     1.8.0
+// @version     1.9.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/project_avatar/7a23bfaf-b1b6-4561-9156-1767264163fe.jpeg
@@ -182,7 +182,12 @@ function clickInfoBtn() {
 
 const keyMap = {
   KeyI: clickInfoBtnAndLog, // clickInfoBtn,
-  '!altKey': {},
+  '!altKey': {
+    KeyI: () => {
+      clickInfoBtnAndLog();
+      spawnExternalURLs();
+    },
+  },
   '!any-modifier': {},
 };
 
@@ -325,7 +330,16 @@ function openExternalURLInTab(templateName, defaultValue = '') {
   }
 }
 
-function onDblClickToSpawnExoFOP(evt) {
+function spawnExternalURLs() {
+  openExternalURLInTab(
+    'templateExtURL',
+    'https://exofop.ipac.caltech.edu/tess/target.php?id=${tic}',
+  );
+  openExternalURLInTab('templateExtURL2');
+  openExternalURLInTab('templateExtURL3');
+}
+
+function onDblClickToSpawnExternalURLs(evt) {
   if (
     !(
       evt.target.tagName === 'TD' &&
@@ -343,14 +357,7 @@ function onDblClickToSpawnExoFOP(evt) {
   }
 
   // case with Ctrl / shift / AltKey
-
-  openExternalURLInTab(
-    'templateExtURL',
-    'https://exofop.ipac.caltech.edu/tess/target.php?id=${tic}',
-  );
-  openExternalURLInTab('templateExtURL2');
-  openExternalURLInTab('templateExtURL3');
-
+  spawnExternalURLs();
   copySomeMetaDataToClipboard();
 }
-document.addEventListener('dblclick', onDblClickToSpawnExoFOP);
+document.addEventListener('dblclick', onDblClickToSpawnExternalURLs);

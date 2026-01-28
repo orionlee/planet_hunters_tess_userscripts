@@ -4,7 +4,7 @@
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.24.1
+// @version     1.24.2
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -200,6 +200,12 @@ titleForLinkifiedUrlImplList.push((url) => {
     /mast.stsci.edu\/api\/v0.1\/Download\/file[/]?[?]uri=mast:TESS\/.+-s(\d+)-s(\d+).+-0*(\d+)-\d+_dvs.pdf/,
   ) || [null, null, null, null];
   if (!tceSubId) {
+    // try to match the AWS links
+    [, startSector, endSector, tceSubId] = url.match(
+      /stpubdata..+.amazonaws.com\/tess\/.+tess.+-s(\d+)-s(\d+).+-0*(\d+)-\d+_dvs.pdf/,
+    ) || [null, null, null, null];
+  }
+  if (!tceSubId) {
     return null;
   }
   startSector = parseInt(startSector);
@@ -215,6 +221,12 @@ titleForLinkifiedUrlImplList.push((url) => {
   let [, startSector, endSector, dvmOrdvr] = url.match(
     /mast.stsci.edu\/api\/v0.1\/Download\/file[/]?[?]uri=mast:TESS\/.+-s(\d+)-s(\d+).+_(dvm|dvr).pdf/,
   ) || [null, null, null, null];
+  if (!dvmOrdvr) {
+    // try to match the AWS links
+    [, startSector, endSector, dvmOrdvr] = url.match(
+      /stpubdata..+.amazonaws.com\/tess\/.+tess.+-s(\d+)-s(\d+).+_(dvm|dvr).pdf/,
+    ) || [null, null, null, null];
+  }
   if (!dvmOrdvr) {
     return null;
   }

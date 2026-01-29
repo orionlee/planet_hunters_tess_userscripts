@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
-// @version     1.9.0
+// @version     1.9.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/project_avatar/7a23bfaf-b1b6-4561-9156-1767264163fe.jpeg
@@ -33,14 +33,19 @@ function toLogSubjectClassified() {
 
 function getSubjectIdFromTalkNDone() {
   function getSubjectUrl() {
-    let subjectUrl = document.querySelector('.task-nav a')?.href;
+    // let subjectUrl = document.querySelector('.task-nav a')?.href;
+    let subjectUrl = document.querySelector(
+      'a[class*="DoneAndTalkButton"]',
+    )?.href; // new CTC20205 classification UI
+
     if (subjectUrl) {
       return subjectUrl;
     }
     // case Talk & Done has no URL yet (not enabled), enable it by selecting one of the option
-    const oneAnswerEl = document.querySelector('.answers label.answer');
+    // const oneAnswerEl = document.querySelector('.answers label.answer');
+    const oneAnswerEl = document.querySelector('form fieldset input'); // new CTC20205 classification UI
     oneAnswerEl.click(); // click one answer temporarily
-    subjectUrl = document.querySelector('.task-nav a').href;
+    subjectUrl = document.querySelector('a[class*="DoneAndTalkButton"]').href; // new CTC20205 classification UI
     setTimeout(() => oneAnswerEl.click(), 100); // unclick it
     return subjectUrl;
   }
@@ -59,6 +64,16 @@ function createLogEntry() {
   // 2. metadata pop-in is already shown
 
   const tic = getMetaDataTIC();
+  if (!tic) {
+    console.error('createLogEntry(). Failed to extract TIC. Aborted');
+    console.debug(
+      'Modal metadata rows:',
+      document.querySelectorAll(
+        '.modal-dialog table tbody > tr, div[role="dialog"] table tbody > tr',
+      ),
+    );
+    return [null, null];
+  }
   const sector = getMetaData('thissector');
   const [source, markedTransits] = getMetaDataSourceAndMarkedTransits();
 
@@ -86,8 +101,9 @@ function logSubjectClassified() {
     return;
   }
   if (
-    '/projects/sofia-dot-marie/classifying-the-classified-2025/classify' !=
-    location.pathname
+    !location.pathname.startsWith(
+      '/projects/sofia-dot-marie/classifying-the-classified-2025/classify',
+    )
   ) {
     return;
   }
@@ -130,7 +146,8 @@ function logSubjectClassified() {
 
 function clickInfoBtnAndLog() {
   clickInfoBtn();
-  logSubjectClassified();
+  // new CTC20205 Classification UI: requires some delay for the info button modal to take effect
+  setTimeout(logSubjectClassified, 200);
 }
 
 function exportSubjectClassifiedLog() {
@@ -170,7 +187,12 @@ if (toLogSubjectClassified) {
 // END   logic to log a subject being classified in CTC 2025
 
 function clickInfoBtn() {
-  const infoBtn = document.querySelector('button[title="Metadata"]');
+  // selector
+  // button[data-testid="test-meta-tools-button"]  : for new UI in CTC2025 classification workflow
+  // button[title="Metadata"] : old classification UI, and subject / talk pages
+  const infoBtn = document.querySelector(
+    'button[title="Metadata"], button[data-testid="test-meta-tools-button"]',
+  );
   if (infoBtn) {
     infoBtn.click();
     return true;
@@ -185,7 +207,8 @@ const keyMap = {
   '!altKey': {
     KeyI: () => {
       clickInfoBtnAndLog();
-      spawnExternalURLs();
+      // new CTC20205 Classification UI: requires some delay for the info button modal to take effect
+      setTimeout(spawnExternalURLs, 300);
     },
   },
   '!any-modifier': {},
@@ -242,26 +265,17 @@ function fillTemplate(template, data) {
 
 function getMetaData(name) {
   let row = null;
-  document.querySelectorAll('.modal-dialog table tbody > tr').forEach((tr) => {
-    if (tr.querySelector('th')?.textContent === name) {
-      row = tr;
-    }
-  });
+  // div[role="dialog"] table tbody > tr : selector for new CTC classification UI
+  document
+    .querySelectorAll(
+      '.modal-dialog table tbody > tr, div[role="dialog"] table tbody > tr',
+    )
+    .forEach((tr) => {
+      if (tr.querySelector('th')?.textContent === name) {
+        row = tr;
+      }
+    });
   return row?.querySelector('td')?.textContent;
-}
-
-function message(msg, showDurationMillis = 3000) {
-  document.body.insertAdjacentHTML(
-    'beforeend',
-    `
-<div id="msgCtr" style="position: fixed;right: 4px;bottom: 10vh;background-color: rgba(255, 255, 0, 0.6);z-index: 9999;">
-${msg}
-</div>
-`,
-  );
-  setTimeout(() => {
-    document.getElementById('msgCtr')?.remove();
-  }, showDurationMillis);
 }
 
 function getMetaDataTIC() {
@@ -286,8 +300,9 @@ function extractSomeMetaData() {
   // Get a subset of subject metadata,
   // primarily for the purposes of filling in various templates
   const subject = (() => {
-    if (location.pathname.endsWith('/classify')) {
-      // case subject number not readily available, use lastSubjectIdClassified from subject log (but it might not have been enabled)
+    if (location.pathname.includes('/classify')) {
+      // case classification page, i.e, subject number not readily available,
+      // use lastSubjectIdClassified from subject log (but it might not have been enabled)
       return lastSubjectIdClassified ? lastSubjectIdClassified : -1;
     } else {
       // case subject / talk page
@@ -305,6 +320,20 @@ function extractSomeMetaData() {
     markedTransits: getMetaDataSourceAndMarkedTransits()[1],
     subject: subject,
   };
+}
+
+function message(msg, showDurationMillis = 3000) {
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `
+<div id="msgCtr" style="position: fixed;right: 4px;bottom: 10vh;background-color: rgba(255, 255, 0, 0.6);z-index: 9999;">
+${msg}
+</div>
+`,
+  );
+  setTimeout(() => {
+    document.getElementById('msgCtr')?.remove();
+  }, showDurationMillis);
 }
 
 function copySomeMetaDataToClipboard(notifyUser = true) {

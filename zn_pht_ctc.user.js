@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
-// @version     1.9.2
+// @version     1.9.3
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/project_avatar/7a23bfaf-b1b6-4561-9156-1767264163fe.jpeg
@@ -206,6 +206,7 @@ const keyMap = {
   KeyI: clickInfoBtnAndLog, // clickInfoBtn,
   '!altKey': {
     KeyI: () => {
+      window.scrollTo(0, 200); // get back to the top of the subject.
       clickInfoBtnAndLog();
       // new CTC20205 Classification UI: requires some delay for the info button modal to take effect
       setTimeout(spawnExternalURLs, 300);

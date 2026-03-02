@@ -8,7 +8,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
-// @version     1.9.3
+// @version     1.10.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/project_avatar/7a23bfaf-b1b6-4561-9156-1767264163fe.jpeg
@@ -202,6 +202,17 @@ function clickInfoBtn() {
   return false;
 } // function clickInfoBtn()
 
+function clickDoneButton() {
+  console.debug('In clickDoneButton()');
+  const btn = document.querySelector('button[class*="DoneButton"]');
+  if (btn) {
+    btn.click();
+    return true;
+  } else {
+    return false;
+  }
+}
+
 const keyMap = {
   KeyI: clickInfoBtnAndLog, // clickInfoBtn,
   '!altKey': {
@@ -213,6 +224,9 @@ const keyMap = {
       setTimeout(clickInfoBtn, 350); // close the metadata pop-in modal
     },
   },
+  '!shiftKey': {
+    Enter: clickDoneButton,
+  },
   '!any-modifier': {},
 };
 
@@ -220,8 +234,15 @@ const keyMap = {
 // The following generic code is copied from Planet Hunter TESS Tweaks userjs
 //
 function handleViewerKeyboardShortcuts(evt) {
-  if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(evt.target.tagName)) {
+  if (['TEXTAREA', 'BUTTON'].includes(evt.target.tagName)) {
     // user typing in an input box or focuses on a button, do nothing
+    return;
+  }
+  if ('INPUT' === evt.target.tagName && evt.target?.type !== 'checkbox') {
+    // do nothing if it's on input,
+    // but we allow <input type="checkbox">,
+    // to accommodate the classification option UI (Keep / Discard, etc) such that after users select
+    // some classifications (with the focus on <input type="checkbox">), keyboard shortcuts defined will work.
     return;
   }
 
@@ -235,6 +256,10 @@ function handleViewerKeyboardShortcuts(evt) {
     let res = null;
     if (evt.altKey && !evt.shiftKey && !evt.ctrlKey && !evt.metaKey) {
       res = keyMap['!altKey'][evt.code];
+    }
+
+    if (!evt.altKey && evt.shiftKey && !evt.ctrlKey && !evt.metaKey) {
+      res = keyMap['!shiftKey'][evt.code];
     }
 
     if (res == null) {

@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.14.0
+// @version     1.14.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -22,11 +22,14 @@ function doDecodeURIComponent(val) {
   return decodeURIComponent(val.replaceAll('+', ' '));
 }
 
-
 function fillAndSubmitSearchForm() {
   if (
-    !location.href.startsWith('https://vsx.aavso.org/index.php?view=search.top') &&
-    !location.href.startsWith('https://www.aavso.org/vsx/index.php?view=search.top')
+    !location.href.startsWith(
+      'https://vsx.aavso.org/index.php?view=search.top',
+    ) &&
+    !location.href.startsWith(
+      'https://www.aavso.org/vsx/index.php?view=search.top',
+    )
   ) {
     return;
   }
@@ -36,7 +39,10 @@ function fillAndSubmitSearchForm() {
   }
 
   function getCoordRequested() {
-    const [, coordEncoded] = location.hash.match(/#coord=([^&#]+)/) ||[null, null];
+    const [, coordEncoded] = location.hash.match(/#coord=([^&#]+)/) || [
+      null,
+      null,
+    ];
     if (coordEncoded) {
       return doDecodeURIComponent(coordEncoded);
     }
@@ -52,8 +58,8 @@ function fillAndSubmitSearchForm() {
 
   // Pre main logic: save the submitted aliases if any
   // (they are to be used by search result page)
-  if (location.hash != "") {
-    sessionStorage["_hash"] = location.hash;
+  if (location.hash != '') {
+    sessionStorage['_hash'] = location.hash;
   }
 
   // Main logic
@@ -77,25 +83,25 @@ function fillAndSubmitSearchForm() {
       document.querySelector('input[name="format"][value="s"]').checked = true;
     }
 
-    document.querySelector('input[name="fieldsize"]').value = 120;                 // 2
-    document.querySelector('select[name="fieldunit"]').value = 3;                // arc seconds
-    document.querySelector('input[name="geometry"][value="r"]').checked = true;  // radius
+    document.querySelector('input[name="fieldsize"]').value = 120; // 2
+    document.querySelector('select[name="fieldunit"]').value = 3; // arc seconds
+    document.querySelector('input[name="geometry"][value="r"]').checked = true; // radius
 
     document.querySelector('select[name="order"]').value = 9; // order by angular sep.
 
     // clear out existing name in the form, if any (due to users' having used it)
-    document.querySelector('input[name="ident"]').value = "";
+    document.querySelector('input[name="ident"]').value = '';
 
     // auto submit to search
     document.querySelector('input[value="Search"]').click();
     return;
-  }  // if (coord) {
+  } // if (coord) {
 
   //
   // Case it is not a coordinate search from hash
   // See if it's a search by name from hash
   //
-  const [, nameEncoded] = location.hash.match(/#name=([^&#]+)/) ||[null, null];
+  const [, nameEncoded] = location.hash.match(/#name=([^&#]+)/) || [null, null];
   if (nameEncoded) {
     const name = doDecodeURIComponent(nameEncoded);
 
@@ -106,16 +112,14 @@ function fillAndSubmitSearchForm() {
       document.querySelector('input[name="targetcenter"]').value = '';
     }
 
-      document.querySelector('select[name="order"]').value = 2; // order by Alphanumeric
+    document.querySelector('select[name="order"]').value = 2; // order by Alphanumeric
 
     // auto submit to search
     document.querySelector('input[value="Search"]').click();
     return;
-  }  // if (nameEncoded) {
-
+  } // if (nameEncoded) {
 }
 fillAndSubmitSearchForm();
-
 
 // The tweaks above make the search form
 // not as friendly for interactive use when searching by name.
@@ -124,7 +128,9 @@ function tweakSearchFormForInteractiveUse() {
   function safeSetFormValue(inputSelector, value) {
     const inputEl = document.querySelector(inputSelector);
     if (!inputEl) {
-      console.warn(`tweakSearchFormForInteractiveUse(): cannot find input of selector ${inputSelector}. Its value is not set`);
+      console.warn(
+        `tweakSearchFormForInteractiveUse(): cannot find input of selector ${inputSelector}. Its value is not set`,
+      );
       return false;
     }
     inputEl.value = value;
@@ -133,10 +139,12 @@ function tweakSearchFormForInteractiveUse() {
 
   const nameEl = document.querySelector('input[name="ident"]');
   if (!nameEl) {
-    console.warn('tweakSearchFormForInteractiveUse(): Name <input> not found. No-op');
+    console.warn(
+      'tweakSearchFormForInteractiveUse(): Name <input> not found. No-op',
+    );
   } else {
     nameEl.onchange = (_evt) => {
-      if (nameEl.value === '' ) {
+      if (nameEl.value === '') {
         return;
       }
       safeSetFormValue('input[name="targetcenter"]', '');
@@ -147,10 +155,12 @@ function tweakSearchFormForInteractiveUse() {
   const posEl = document.querySelector('input[name="targetcenter"]');
   if (!posEl) {
     // position input is not present in simple form
-    console.debug('tweakSearchFormForInteractiveUse(): Position <input> not found. No-op');
+    console.debug(
+      'tweakSearchFormForInteractiveUse(): Position <input> not found. No-op',
+    );
   } else {
     posEl.onchange = (_evt) => {
-      if (posEl.value === '' ) {
+      if (posEl.value === '') {
         return;
       }
       safeSetFormValue('input[name="ident"]', '');
@@ -160,7 +170,6 @@ function tweakSearchFormForInteractiveUse() {
 }
 tweakSearchFormForInteractiveUse();
 
-
 function tweakUIForMobile() {
   if (!/Android|iPhone|Mobile|Tablet/i.test(navigator.userAgent)) {
     // not mobile devices, NO-OP.
@@ -168,7 +177,10 @@ function tweakUIForMobile() {
   }
 
   // else UA hints it's a mobile device
-  document.head.insertAdjacentHTML('beforeend', '<meta name="viewport" content="width=device-width" />');
+  document.head.insertAdjacentHTML(
+    'beforeend',
+    '<meta name="viewport" content="width=device-width" />',
+  );
   document.documentElement.classList.add('mobile');
 
   // tried to use device with @media (max-width: 800px) { }, rather than UA check
@@ -194,7 +206,7 @@ function tweakUIForMobile() {
     // make help table's width wider
     const helpTable = document.querySelector('table.window');
     if (helpTable) {
-      helpTable.width = '98%';  // up from a fixed 370(px)
+      helpTable.width = '98%'; // up from a fixed 370(px)
     }
     GM_addStyle(`
     /* increase line spacing for help pages as the text are dense there */
@@ -206,9 +218,10 @@ function tweakUIForMobile() {
 
   // make footer wrap so that it doesn't make the viewport wider than the screen
   // (other elements can still make the viewport wider though)
-  const footerEl = document.querySelector('.linkbar td.onelink')
-  if (footerEl) { footerEl.removeAttribute("nowrap"); }
-
+  const footerEl = document.querySelector('.linkbar td.onelink');
+  if (footerEl) {
+    footerEl.removeAttribute('nowrap');
+  }
 }
 tweakUIForMobile();
 
@@ -232,7 +245,9 @@ function getMatchingInfoFromHash(aliasFilter = null) {
   const aliasList = aliasesStr.split(',').filter(aliasFilter);
 
   const otherParamsMatch = location.hash.match(/other_params=([^&]+)/);
-  let otherParams = otherParamsMatch ? decodeURIComponent(otherParamsMatch[1]) : '';
+  let otherParams = otherParamsMatch
+    ? decodeURIComponent(otherParamsMatch[1])
+    : '';
   otherParams = annotateOtherParams(otherParams);
   return [aliasList, otherParams];
 }
@@ -243,7 +258,7 @@ function getMatchingInfoFromHash(aliasFilter = null) {
 // 1) there is no extra hash in the URL
 // 2) if there is a need, users could still get the hash back by going back.
 function resetMatchingInfoHash() {
-  history.pushState("", document.title, location.pathname + location.search);
+  history.pushState('', document.title, location.pathname + location.search);
 }
 
 function annotateOtherParams(otherParams) {
@@ -251,10 +266,15 @@ function annotateOtherParams(otherParams) {
 
   // convert it to parallax in mas
   // (easier to compare with the value in SIMBAD single result details page)
-  const distanceInPc = parseFloat((res.match(/Distance\(pc\):\s*([0-9.]+)/) || ['', '0'])[1]);
+  const distanceInPc = parseFloat(
+    (res.match(/Distance\(pc\):\s*([0-9.]+)/) || ['', '0'])[1],
+  );
   if (distanceInPc > 0) {
     const parallaxInMas = 1000 / distanceInPc;
-    res = res.replace(/Distance\(pc\):[^;]+;/, `$& Parallax(mas): ${parallaxInMas.toFixed(4)} ; `);
+    res = res.replace(
+      /Distance\(pc\):[^;]+;/,
+      `$& Parallax(mas): ${parallaxInMas.toFixed(4)} ; `,
+    );
   }
 
   // convert apparent magnitude to absolute one
@@ -264,13 +284,18 @@ function annotateOtherParams(otherParams) {
     const magBand = magMatch[1];
     const magApparent = parseFloat(magMatch[2]);
     const magAbsolute = magApparent - 5 * Math.log10(distanceInPc / 10);
-    res = res.replace(/Magnitudes:[^;]+;/,  `$& Abs. magnitude: ${magBand}${magAbsolute.toFixed(2)} ; `);
+    res = res.replace(
+      /Magnitudes:[^;]+;/,
+      `$& Abs. magnitude: ${magBand}${magAbsolute.toFixed(2)} ; `,
+    );
   }
   return res;
 }
 
 function showMatchingInfo(aliases, otherParams) {
-  document.body.insertAdjacentHTML('beforeend', `\
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `\
   <div id="tessAliasesCtr" style="background-color:rgba(255,255,0,0.9);
     position: fixed; top: 0px; right: 0px; padding: 0.5em 4ch 0.5em 2ch;
   max-width: 15vw;
@@ -280,28 +305,32 @@ function showMatchingInfo(aliases, otherParams) {
   <span id="tessAliases">${aliases}</span>
   <div id="tessAliasesMatchMsg" style="font-weight: bold;"></div>
   <span id="tessOtherParams">${otherParams}</span>
-  </div>`);
+  </div>`,
+  );
 }
 
 //
 // END generic cross match helpers / UI
-
 
 //
 // Search Result
 //
 
 function getSearchResultRows() {
-  let resRows = Array.from(document.querySelectorAll('.content table:nth-of-type(2) tr:nth-of-type(4) tbody > tr'));
+  let resRows = Array.from(
+    document.querySelectorAll(
+      '.content table:nth-of-type(2) tr:nth-of-type(4) tbody > tr',
+    ),
+  );
 
   // the list of <tr> have some header rows and footer row (at least 2 header and 1 footer)
   // but if the list is long, header rows would repeat.
   // The test `td.indexdata` would ensure we only get the actual data rows
-  resRows = resRows.filter(tr => tr.querySelector('td.indexdata') != null);
+  resRows = resRows.filter((tr) => tr.querySelector('td.indexdata') != null);
 
   // Filter out the error message "There were no records that matched the search criteria."
   // (a row with a single <td>)
-  resRows = resRows.filter(tr => tr.querySelectorAll('td').length > 1);
+  resRows = resRows.filter((tr) => tr.querySelectorAll('td').length > 1);
 
   return resRows;
 }
@@ -310,22 +339,24 @@ function tweakSearchResultBasedOnHash() {
   try {
     // the hash comes from VSX search generated from ExoFOP tweak, containing infos
     // such as IDs, for matches.
-    const hashFromSearchForm = sessionStorage["_hash"];
+    const hashFromSearchForm = sessionStorage['_hash'];
     if (!hashFromSearchForm) {
       return;
     }
-    console.debug("Processing hash: ", hashFromSearchForm);
+    console.debug('Processing hash: ', hashFromSearchForm);
     getSearchResultRows().forEach((tr, i) => {
       const oidLinkEl = tr.querySelector('a');
       if (oidLinkEl) {
         oidLinkEl.href = oidLinkEl + hashFromSearchForm;
       } else {
         // should never happen, but just in case.
-        console.warn(`oid link hash tweak: cannot find link for row ${i+1}. No-op.`);
+        console.warn(
+          `oid link hash tweak: cannot find link for row ${i + 1}. No-op.`,
+        );
       }
     });
   } finally {
-    sessionStorage["_hash"] = "";
+    sessionStorage['_hash'] = '';
   }
 }
 
@@ -344,28 +375,30 @@ function tweakSearchResult() {
   document.title = `(${resRows.length}) - ${document.title}`;
   if (resRows.length > 0) {
     // indicate the angular distance of the first match as well.
-    const angDist1stMatch = parseInt(resRows[0].querySelector('td').textContent.trim());
+    const angDist1stMatch = parseInt(
+      resRows[0].querySelector('td').textContent.trim(),
+    );
     document.title = `${angDist1stMatch}" ` + document.title;
   }
 
   // Add link to variable type helper
   //
   const encodeJsLink = (text) => {
-          // issue: the javascript link below doesn't work when the starType contains +, even though
-          // the code has correctly encoded the + as %2B  by using encodeURIComponent.
-          // To make it work with how browser interpret the string, the % in %2B needs to be further encoded
-          // End result: + is encoded as %25%2B.
-          return encodeURIComponent(text).replace(/%/g, '%25');
+    // issue: the javascript link below doesn't work when the starType contains +, even though
+    // the code has correctly encoded the + as %2B  by using encodeURIComponent.
+    // To make it work with how browser interpret the string, the % in %2B needs to be further encoded
+    // End result: + is encoded as %25%2B.
+    return encodeURIComponent(text).replace(/%/g, '%25');
   };
-  resRows.forEach(tr => {
+  resRows.forEach((tr) => {
     const typeTd = tr.querySelector('td:nth-of-type(7)');
     const starType = typeTd ? typeTd.textContent : null;
     if (starType) {
-          typeTd.innerHTML = `<a href='javascript:window.open("index.php?abbrev=${encodeJsLink(starType)}&view=help.vartype&nolayout=1", "VarTypeHelp", "width=390,height=400")'>
+      typeTd.innerHTML = `<a href='javascript:window.open("index.php?abbrev=${encodeJsLink(starType)}&view=help.vartype&nolayout=1", "VarTypeHelp", "width=390,height=400")'>
   ${starType} <img style="vertical-align: -5px" src="_images/help.gif" width="15" height="15" border="0" align="absbottom" title="Get description for this type">
 </a>`;
-          // to make it really work, I probably need to recreate varTypeHelp function
-          // (that exists in target detail page), so that encoding is done within the script
+      // to make it really work, I probably need to recreate varTypeHelp function
+      // (that exists in target detail page), so that encoding is done within the script
     }
 
     // add shortcuts to search result as Alt-1, Alt-2, etc.
@@ -375,7 +408,9 @@ function tweakSearchResult() {
         el.accessKey = i + 1;
       } else {
         // should never happen, but just in case
-        console.warn(`accesskey assignment: cannot find object detail link for row ${i+1}. No-op`);
+        console.warn(
+          `accesskey assignment: cannot find object detail link for row ${i + 1}. No-op`,
+        );
       }
     });
 
@@ -386,9 +421,10 @@ function tweakSearchResult() {
     const objectLinkEl = tr.querySelector('td:nth-of-type(3) a');
     if (objectLinkEl) {
       const distance = tr.querySelector('td:nth-of-type(1)').textContent.trim();
-      objectLinkEl.setAttribute('href',
-        objectLinkEl.getAttribute('href') + `#distance_from_coord=${distance}`
-        );
+      objectLinkEl.setAttribute(
+        'href',
+        objectLinkEl.getAttribute('href') + `#distance_from_coord=${distance}`,
+      );
     }
   });
 
@@ -396,10 +432,13 @@ function tweakSearchResult() {
   //
   if (resRows.length > 0) {
     const oidUrl = resRows[0].querySelector('a');
-    document.querySelector('td.datasheethead').insertAdjacentHTML('beforeend', `\
+    document.querySelector('td.datasheethead').insertAdjacentHTML(
+      'beforeend',
+      `\
 <input id="urlOf1stMatch" type="text" accesskey="L" title="URL of 1st match" value="${oidUrl}"
        onclick="this.select();" readonly>
-    `);
+    `,
+    );
   }
 
   tweakSearchResultBasedOnHash();
@@ -412,33 +451,37 @@ function tweakSearchResult() {
 }
 tweakSearchResult();
 
-
 //
 // VSX Entry Detail Page
 //
-
 
 function tweakDetailPage() {
   if (location.href.indexOf('/index.php?view=detail.top&oid=') < 0) {
     return;
   }
 
-
   function getVSXCoord() {
     // get coordinate of the target in the detail sheet
-    const searchNearbyEl = document.querySelector('td > a[href^="index.php?view=results.nearby&oid="]');
+    const searchNearbyEl = document.querySelector(
+      'td > a[href^="index.php?view=results.nearby&oid="]',
+    );
     const coordEl = searchNearbyEl?.parentElement?.previousElementSibling;
     if (!coordEl) {
-      console.warn('getTargetCoord(): cannot find Coordinate Value DOM. Return null');
+      console.warn(
+        'getTargetCoord(): cannot find Coordinate Value DOM. Return null',
+      );
       return [null, null];
     }
-    const [_, ra, dec] = coordEl.textContent.match(/[(]([0-9.]+)\s+([-+0-9.]+)[)]/) || [null, null, null];
+    const [_, ra, dec] = coordEl.textContent.match(
+      /[(]([0-9.]+)\s+([-+0-9.]+)[)]/,
+    ) || [null, null, null];
     return [ra, dec];
   }
 
-
-  function getVSXName(returnCtr=false) {
-    const ctr = document.querySelector('table.datasheet table tr:nth-of-type(1) td:nth-of-type(2) table td')
+  function getVSXName(returnCtr = false) {
+    const ctr = document.querySelector(
+      'table.datasheet table tr:nth-of-type(1) td:nth-of-type(2) table td',
+    );
     const id = ctr.textContent.trim();
     if (returnCtr) {
       return [id, ctr];
@@ -453,7 +496,9 @@ function tweakDetailPage() {
   }
 
   function getOtherNamesCtr() {
-    const idCtr = document.querySelector('a[href^="index.php?view=addname.top&"]')?.parentElement;
+    const idCtr = document.querySelector(
+      'a[href^="index.php?view=addname.top&"]',
+    )?.parentElement;
     if (idCtr) {
       return idCtr;
     }
@@ -461,9 +506,9 @@ function tweakDetailPage() {
     // if user is not logged in, idCtr will still be null
     // we loop through entire data table to find the container
     // (its actual row varies slightly from one page to another, so we have to loop)
-    const idCtrMatches =
-      Array.from(document.querySelectorAll('table.datasheet table tr td:nth-of-type(2)'))
-        .filter(td => td.textContent?.indexOf("Add name") >= 0);
+    const idCtrMatches = Array.from(
+      document.querySelectorAll('table.datasheet table tr td:nth-of-type(2)'),
+    ).filter((td) => td.textContent?.indexOf('Add name') >= 0);
     return idCtrMatches?.[0];
   }
 
@@ -480,11 +525,14 @@ function tweakDetailPage() {
       return [a, sortKey];
     });
     aliasesWithSortKey.sort((a, b) => a[1] - b[1]);
-    return aliasesWithSortKey.map(e => e[0])
+    return aliasesWithSortKey.map((e) => e[0]);
   }
 
-  function showMatchResultMsg(aliasesMatched, aliasesNotMatched, extraNamesToShow) {
-
+  function showMatchResultMsg(
+    aliasesMatched,
+    aliasesNotMatched,
+    extraNamesToShow,
+  ) {
     const ctr = document.querySelector('#tessAliasesMatchMsg');
     ctr.innerHTML = `
 ${aliasesMatched.length} (aliases) matched.<br>
@@ -497,13 +545,15 @@ Not matched:<br>
     aliasesNotMatched = moveNotUsefulAliasToEnd(aliasesNotMatched);
     const submissionText = (() => {
       if (aliasesNotMatched.length < 1) {
-        return "";
+        return '';
       }
       return `\
 ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.join()}`;
     })();
 
-    const submissionInCtl = document.getElementById('notMatchedNamesForVSXSubmission');
+    const submissionInCtl = document.getElementById(
+      'notMatchedNamesForVSXSubmission',
+    );
     if (submissionText) {
       submissionInCtl.value = submissionText;
     } else {
@@ -523,7 +573,9 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
 
     const idCtr = getOtherNamesCtr();
     if (!idCtr) {
-      console.warn("doMatchIds(): Cannot find the element for IDs (Other names in UI). No-op");
+      console.warn(
+        'doMatchIds(): Cannot find the element for IDs (Other names in UI). No-op',
+      );
       return;
     }
     const [aliasesMatched, aliasesNotMatchedSet] = [[], new Set(aliasList)];
@@ -542,17 +594,19 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
       // 1. normalize KIC / KID if needed
       // 2. Filter out edge case not a real ID, but the text
       //   "Please note that aliases shown in grey link to obsolete records."
-      const res = Array.from(idCtr.querySelectorAll('td'), td => [normalize(td.textContent.trim()), td])
-        .filter(idCtrPair => !idCtrPair[0].startsWith('Please note'));
-      res.push(getVSXName(true))
+      const res = Array.from(idCtr.querySelectorAll('td'), (td) => [
+        normalize(td.textContent.trim()),
+        td,
+      ]).filter((idCtrPair) => !idCtrPair[0].startsWith('Please note'));
+      res.push(getVSXName(true));
       return res;
     })();
 
-    existingIdCtrPairs.forEach(idCtrPair => {
+    existingIdCtrPairs.forEach((idCtrPair) => {
       const [id, td] = idCtrPair;
       if (aliasList.includes(id)) {
         aliasesMatched.push(id);
-        td.classList.add("cross_matched");
+        td.classList.add('cross_matched');
         aliasesNotMatchedSet.delete(id);
       }
     });
@@ -561,16 +615,19 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
     // currently, if VSX entry has ASAS-SN names, I'd like to know
     // as it could be helpful when I indirectly cross match with ASAS-SN
     const extraNamesToShow = [];
-    existingIdCtrPairs.forEach(idCtrPair => {
-      const [id,] = idCtrPair;
-      if (id.startsWith("ASASSN-V")) {
+    existingIdCtrPairs.forEach((idCtrPair) => {
+      const [id] = idCtrPair;
+      if (id.startsWith('ASASSN-V')) {
         extraNamesToShow.push(id);
       }
     });
 
-    showMatchResultMsg(aliasesMatched, Array.from(aliasesNotMatchedSet), extraNamesToShow);
+    showMatchResultMsg(
+      aliasesMatched,
+      Array.from(aliasesNotMatchedSet),
+      extraNamesToShow,
+    );
   }
-
 
   // Tweak to facilitate matching: matching IDs given (from ExoFOP), show
   // other helpful info such as magnitude (on ExoFOP).
@@ -587,14 +644,18 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
   }
 
   function showDistanceFromCoordIfAvailable() {
-    const [, distance] = location.hash.match(/#distance_from_coord=([^#]+)/) || [null, null];
+    const [, distance] = location.hash.match(
+      /#distance_from_coord=([^#]+)/,
+    ) || [null, null];
     if (!distance) {
       return;
     }
 
-    const td = document.querySelector('table.datasheet tbody > tr:nth-of-type(1) td')
+    const td = document.querySelector(
+      'table.datasheet tbody > tr:nth-of-type(1) td',
+    );
     // use the empty cell left of the rough distance message "within 2' of <co-ordinate"
-    td.textContent= `(${distance} arcsec)`;   // assumed it's arcsec (the default applied in searchForm above)
+    td.textContent = `(${distance} arcsec)`; // assumed it's arcsec (the default applied in searchForm above)
     td.title = 'Distance from search coordinate';
 
     // add distance from search coordinate to title
@@ -602,9 +663,10 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
     document.title = `${distanceRounded}" ` + document.title;
   }
 
-
   function addLinkToLCGv2() {
-    const aavsoUidEl = document.querySelector("table.datasheet table > tbody > tr:nth-child(2) > td:nth-child(2) td");
+    const aavsoUidEl = document.querySelector(
+      'table.datasheet table > tbody > tr:nth-child(2) > td:nth-child(2) td',
+    );
     if (!aavsoUidEl) {
       console.warn('addLinkToLCGv2(): cannot find AAVSO UID table cell. No-op');
       return;
@@ -618,36 +680,44 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
     }
 
     // convert current time to JD, see https://en.wikipedia.org/wiki/Julian_day
-    const toJD = parseFloat(((Date.now() / 86400000) + 2440587.5).toFixed(2))
-    const fromJD = toJD - 366 * 2   // 2 years, the default for LCGv2
-    const lcg2Url = 'https://www.aavso.org/LCGv2/index.htm?DateFormat=Calendar&RequestedBands=&view=api.delim' +
+    const toJD = parseFloat((Date.now() / 86400000 + 2440587.5).toFixed(2));
+    const fromJD = toJD - 366 * 2; // 2 years, the default for LCGv2
+    const lcg2Url =
+      'https://www.aavso.org/LCGv2/index.htm?DateFormat=Calendar&RequestedBands=&view=api.delim' +
       `&ident=${encodeURIComponent(getVSXName())}&fromjd=${fromJD}&tojd=${toJD}8&delimiter=@@@`;
 
-    aavsoUidEl.insertAdjacentHTML('beforeend', `&emsp;( <a href="${lcg2Url}" target="_blank">LCGv2</a> )`);
+    aavsoUidEl.insertAdjacentHTML(
+      'beforeend',
+      `&emsp;( <a href="${lcg2Url}" target="_blank">LCGv2</a> )`,
+    );
   }
 
-
   function addLinksToExoFOPEtc() {
-    const extLinksRowEl = document.querySelector('td > select[name="linkout"]')?.parentElement?.parentElement;
+    const extLinksRowEl = document.querySelector('td > select[name="linkout"]')
+      ?.parentElement?.parentElement;
     if (!extLinksRowEl) {
-      console.warn('addLinkToExoFOP(): cannot find external link DOM element. No-op');
+      console.warn(
+        'addLinkToExoFOP(): cannot find external link DOM element. No-op',
+      );
       return;
     }
 
     // 1. ExoFOP URLs
-    const  exofopNameUrl = `https://exofop.ipac.caltech.edu/tess/gototicid.php?target=${getVSXName()}`;
+    const exofopNameUrl = `https://exofop.ipac.caltech.edu/tess/gototicid.php?target=${getVSXName()}`;
 
     // Note: In coordinate search,
     // for stars with large proper motion, the search might return nothing because
     // in ExoFOP, coordinate is in  epoch 2015.5 (Gaia DR2) while VSX coordinate is in J2000
     const [ra, dec] = getVSXCoord();
-    const coord = `${ra} ${dec}`;  // For ExoFOP, ra dec must be separated by space, without comma
+    const coord = `${ra} ${dec}`; // For ExoFOP, ra dec must be separated by space, without comma
     const exofopCoordURL = `https://exofop.ipac.caltech.edu/tess/gototicid.php?target=${coord}`;
 
     // 2. Gaia DR3 URL
     const gaiaDR3URL = `https://vizier.cfa.harvard.edu/viz-bin/VizieR-4?-ref=VIZ694ecaa272761&-to=-4b&-from=-3&-this=-4&%2F%2Fsource=%2BI%2F355%2Fgaiadr3%2BI%2F355%2Fparamp&%2F%2Fc=${coord}&%2F%2Ftables=I%2F355%2Fgaiadr3&%2F%2Ftables=I%2F355%2Fparamp&-out.max=50&%2F%2FCDSportal=http%3A%2F%2Fcdsportal.u-strasbg.fr%2FStoreVizierData.html&-out.form=HTML+Table&-out.add=_r&-out.add=_p&%2F%2Foutaddvalue=default&-sort=_r&-order=I&-oc.form=sexa&-out.src=I%2F355%2Fgaiadr3%2CI%2F355%2Fparamp&-nav=cat%3AI%2F355%26tab%3A%7BI%2F355%2Fgaiadr3%7D%26tab%3A%7BI%2F355%2Fparamp%7D%26key%3Asource%3D%2BI%2F355%2Fgaiadr3%2BI%2F355%2Fparamp%26key%3Ac%3D${coord}%26pos%3A${coord}%28+15+arcsec%29%26HTTPPRM%3A&-c=${coord}&-c.eq=J2000&-c.r=+15&-c.u=arcsec&-c.geom=r&-source=&-x.rs=10&-source=I%2F355%2Fgaiadr3+I%2F355%2Fparamp&-out.orig=standard&-out=Source&-out=Plx&-out=PM&-out=pmRA&-out=pmDE&-out=sepsi&-out=IPDfmp&-out=RUWE&-out=Dup&-out=Gmag&-out=BPmag&-out=RPmag&-out=BP-RP&-out=RV&-out=e_RV&-out=VarFlag&-out=NSS&-out=XPcont&-out=XPsamp&-out=RVS&-out=EpochPh&-out=EpochRV&-out=MCMCGSP&-out=MCMCMSC&-out=Teff&-out=logg&-out=%5BFe%2FH%5D&-out=Dist&-out=A0&-out=HIP&-out=PS1&-out=SDSS13&-out=SKYM2&-out=TYC2&-out=URAT1&-out=AllWISE&-out=APASS9&-out=GSC23&-out=RAVE5&-out=2MASS&-out=RAVE6&-out=RAJ2000&-out=DEJ2000&-out=Pstar&-out=PWD&-out=Pbin&-out=ABP&-out=ARP&-out=GMAG&-out=Rad&-out=SpType-ELS&-out=Rad-Flame&-out=Lum-Flame&-out=Mass-Flame&-out=Age-Flame&-out=Flags-Flame&-out=Evol&-out=z-Flame&-meta.ucd=2&-meta=1&-meta.foot=1&-usenav=1&-bmark=GET`;
 
-    extLinksRowEl.insertAdjacentHTML('afterend', `
+    extLinksRowEl.insertAdjacentHTML(
+      'afterend',
+      `
 <tr>
       <td class="detailtitle"></td>
       <td class="detaildata" colspan="2">
@@ -657,9 +727,9 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
         Gaia DR3 <a href="${gaiaDR3URL}" target="_blank">by coordinate</a>
       </td>
 </tr>
-`)
+`,
+    );
   }
-
 
   //
   // main logic

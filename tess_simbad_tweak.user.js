@@ -16,22 +16,21 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.15.0
+// @version     1.16.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
 
-function my_GM_getValue(key, defaultValue="") {
+function my_GM_getValue(key, defaultValue = '') {
   const result = GM_getValue(key);
   if (!result) {
     // Store a empty string so that the value can be edited in Tampermonkey UI
-    GM_setValue(key, "");
+    GM_setValue(key, '');
     return defaultValue;
   }
   return result;
 }
-
 
 (function injectCSS() {
   GM_addStyle(`\
@@ -54,9 +53,8 @@ function my_GM_getValue(key, defaultValue="") {
 a[href^="https://en.wikipedia.org/wiki/"] {
     text-decoration: dotted underline;
 }
-`)
+`);
 })(); // function injectCSS()
-
 
 // BEGIN generic cross match helpers / UI
 //
@@ -85,7 +83,9 @@ function getMatchingInfoFromHash(aliasFilter = null) {
   }
 
   const otherParamsMatch = location.hash.match(/other_params=([^&]+)/);
-  let otherParams = otherParamsMatch ? decodeURIComponent(otherParamsMatch[1]) : '';
+  let otherParams = otherParamsMatch
+    ? decodeURIComponent(otherParamsMatch[1])
+    : '';
   otherParams = annotateOtherParams(otherParams);
   return [aliasList, otherParams];
 }
@@ -96,7 +96,7 @@ function getMatchingInfoFromHash(aliasFilter = null) {
 // 1) there is no extra hash in the URL
 // 2) if there is a need, users could still get the hash back by going back.
 function resetMatchingInfoHash() {
-  history.pushState("", document.title, location.pathname + location.search);
+  history.pushState('', document.title, location.pathname + location.search);
 }
 
 function annotateOtherParams(otherParams) {
@@ -104,10 +104,15 @@ function annotateOtherParams(otherParams) {
 
   // convert it to parallax in mas
   // (easier to compare with the value in SIMBAD single result details page)
-  const distanceInPc = parseFloat((res.match(/Distance\(pc\):\s*([0-9.]+)/) || ['', '0'])[1]);
+  const distanceInPc = parseFloat(
+    (res.match(/Distance\(pc\):\s*([0-9.]+)/) || ['', '0'])[1],
+  );
   if (distanceInPc > 0) {
     const parallaxInMas = 1000 / distanceInPc;
-    res = res.replace(/Distance\(pc\):[^;]+;/, `$& Parallax(mas): ${parallaxInMas.toFixed(4)} ; `);
+    res = res.replace(
+      /Distance\(pc\):[^;]+;/,
+      `$& Parallax(mas): ${parallaxInMas.toFixed(4)} ; `,
+    );
   }
 
   // convert apparent magnitude to absolute one
@@ -117,13 +122,16 @@ function annotateOtherParams(otherParams) {
     const magBand = magMatch[1];
     const magApparent = parseFloat(magMatch[2]);
     const magAbsolute = magApparent - 5 * Math.log10(distanceInPc / 10);
-    res = res.replace(/Magnitudes:[^;]+;/,  `$& Abs. magnitude: ${magBand}${magAbsolute.toFixed(2)} ; `);
+    res = res.replace(
+      /Magnitudes:[^;]+;/,
+      `$& Abs. magnitude: ${magBand}${magAbsolute.toFixed(2)} ; `,
+    );
   }
   return res;
 }
 
 function showMatchingInfo(aliases, otherParams) {
-  const otherParamsFormatted = (()=> {
+  const otherParamsFormatted = (() => {
     // make magnitude info more readable
     let res = otherParams;
     res = res.replace(/;/g, '<br>');
@@ -131,7 +139,9 @@ function showMatchingInfo(aliases, otherParams) {
     res = res.replace(/\s*±\s([0-9.]+)/g, '<sub>±$1 </sub>');
     return res;
   })();
-  document.body.insertAdjacentHTML('beforeend', `\
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `\
   <div id="tessAliasesCtr" style="background-color:rgba(255,255,0,0.9);
     position: fixed; top: 0px; right: 0px; padding: 0.5em 4ch 0.5em 2ch;
   max-width: 15vw;
@@ -144,39 +154,42 @@ function showMatchingInfo(aliases, otherParams) {
     </details>
     <br>
     <span id="tessOtherParams">${otherParamsFormatted}</span>
-  </div>`);
+  </div>`,
+  );
 }
 
 //
 // END generic cross match helpers / UI
 
-
 // BEGIN generic helpers
 //
 
-function message(msg, showDurationMillis=3000) {
-  document.body.insertAdjacentHTML('beforeend', `
+function message(msg, showDurationMillis = 3000) {
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `
 <div id="msgCtr" style="position: fixed;right: 4px;bottom: 10vh;background-color: rgba(255, 255, 0, 0.6);z-index: 9999;">
 ${msg}
 </div>
-`);
-  setTimeout(() => { document.getElementById('msgCtr')?.remove(); }, showDurationMillis);
+`,
+  );
+  setTimeout(() => {
+    document.getElementById('msgCtr')?.remove();
+  }, showDurationMillis);
 }
 
 //
 // END generic helpers
 
-
 // If current page is in https, ensure internal SIMBAD links are also in https.
 // (e.g., links to paper references are often in plain http, causing warnings in Chrome)
 function fixHttpLinks() {
-  if ('https:' !== location.protocol ) {
+  if ('https:' !== location.protocol) {
     return false;
   }
   const links = document.querySelectorAll('a[href^="http://simbad"]');
   links.forEach((a) => {
     a.href = a.href.replace('http://simbad', 'https://simbad');
-
   });
   return links.length;
 }
@@ -191,13 +204,15 @@ function normalizeId(idEl) {
 function getIdentifiersDOM() {
   // return the <table> element of the Identifiers section (in single object page)
   try {
-    let tab = document.querySelector('a[name="lab_ident"]').parentElement.nextElementSibling.nextElementSibling.nextElementSibling;
-    if (tab.tagName ==  "TABLE") {
+    let tab = document.querySelector('a[name="lab_ident"]').parentElement
+      .nextElementSibling.nextElementSibling.nextElementSibling;
+    if (tab.tagName == 'TABLE') {
       return tab;
     }
-    if (tab.tagName == "BUTTON") {  // case a button is added by tweakUIWithCrossMatch() below
+    if (tab.tagName == 'BUTTON') {
+      // case a button is added by tweakUIWithCrossMatch() below
       tab = tab.nextElementSibling;
-      if (tab.tagName ==  "TABLE") {
+      if (tab.tagName == 'TABLE') {
         return tab;
       }
     }
@@ -209,23 +224,31 @@ function getIdentifiersDOM() {
 
 // Cross match info in hash, that come from links from customized ExoFOP
 function tweakUIWithCrossMatch() {
-  (() => { // annotate distance from center from hash
+  (() => {
+    // annotate distance from center from hash
     // use case: if the SIMBAD entry page is from the link of a multi-result page
     // the distance from center is lost in standard SIMBAD UI,
     // we compensate it here.
     // (The distance is hash is added by the `resultLinks` tweaks in the later part of the function)
-    const [, angDist] = location.hash.match(/&dist_asec=([^&]+)/) || [null, null]
+    const [, angDist] = location.hash.match(/&dist_asec=([^&]+)/) || [
+      null,
+      null,
+    ];
     if (!angDist) {
       return;
     }
     const idRow = document.querySelector('#basic_data table tr:first-of-type');
     if (!idRow) {
-      console.warn('tweakUIWithCrossMatch(): failed to annotate distance to the center because the ID row DOM not found.');
+      console.warn(
+        'tweakUIWithCrossMatch(): failed to annotate distance to the center because the ID row DOM not found.',
+      );
       return;
     }
     // the placement of the data and the UI is consistent with how SIMBAD presents it
     // (in the case of coordinate search with only 1 result)
-    idRow.insertAdjacentHTML('afterend',`
+    idRow.insertAdjacentHTML(
+      'afterend',
+      `
   <tr>
     <td align="LEFT" valign="TOP" nowrap="">
 Distance to the center <i>arcsec</i>:       </td>
@@ -237,9 +260,9 @@ Distance to the center <i>arcsec</i>:       </td>
      </font>
     </td>
    </tr>
-`);
+`,
+    );
   })();
-
 
   const [aliasList, otherParams] = getMatchingInfoFromHash();
   if (!aliasList) {
@@ -258,7 +281,9 @@ Distance to the center <i>arcsec</i>:       </td>
   //    - Note: it probably should be done separately.
   // - some minor UI tweak
   if (!document.querySelector('a[name="lab_ident"]')) {
-    const resultLinks = Array.from(document.querySelectorAll('#datatable tr td:nth-of-type(2) a'));
+    const resultLinks = Array.from(
+      document.querySelectorAll('#datatable tr td:nth-of-type(2) a'),
+    );
     /// console.debug('result links:', resultLinks);
 
     // indicate num entries found. 0 would be helpful to ignore the result without opening the tab
@@ -266,27 +291,33 @@ Distance to the center <i>arcsec</i>:       </td>
 
     if (resultLinks.length > 0) {
       // indicate the angular distance of the first match as well.
-      const angDist1stMatch = parseInt(resultLinks[0]?.parentElement?.nextElementSibling?.textContent?.trim());
+      const angDist1stMatch = parseInt(
+        resultLinks[0]?.parentElement?.nextElementSibling?.textContent?.trim(),
+      );
       document.title = `${angDist1stMatch}" ` + document.title;
     }
 
-    resultLinks.forEach(linkEl => {
+    resultLinks.forEach((linkEl) => {
       // propagate the aliases to the links of individual result
       linkEl.href += location.hash;
 
       // also propagate distance from center
-      const dist = linkEl?.parentElement?.nextElementSibling?.textContent?.trim();
+      const dist =
+        linkEl?.parentElement?.nextElementSibling?.textContent?.trim();
       if (dist) {
         linkEl.href += `&dist_asec=${dist}`;
       } else {
-        console.warn('tweakUIWithCrossMatch(): cannot annotate the distance from center for ' + linkEl.textContent);
+        console.warn(
+          'tweakUIWithCrossMatch(): cannot annotate the distance from center for ' +
+            linkEl.textContent,
+        );
       }
     });
 
     // traverse to individual page automatically if applicable
     // (the links have been processed to propagate the hash)
-    if (my_GM_getValue("autoTraverseMultipleResults", "true") === "true") {
-      resultLinks.forEach(linkEl => {
+    if (my_GM_getValue('autoTraverseMultipleResults', 'true') === 'true') {
+      resultLinks.forEach((linkEl) => {
         // case multiple results, go to the one that has matching ID (if it exists)
         if (aliasList.includes(normalizeId(linkEl))) {
           location.href = linkEl.href; // ID matched, go to the individual result page directly
@@ -297,35 +328,46 @@ Distance to the center <i>arcsec</i>:       </td>
     // okay so we don't go to individual result page directly. make it easy to click first link instead
     if (resultLinks.length > 1) {
       resultLinks[0].focus(); // doesn't work if the tab is spawned as a background one
-      resultLinks.forEach( (a, i) => { a.accessKey = i+1; });  // assign keyboard short, Alt-1, Alt-2, ...
+      resultLinks.forEach((a, i) => {
+        a.accessKey = i + 1;
+      }); // assign keyboard short, Alt-1, Alt-2, ...
     }
   }
   // END for case the coordinate has multiple results
 
-
   // BEGIN case the coordinate matches a single result
   const idTableEl = getIdentifiersDOM();
+  const aliasesMatched = [];
   if (idTableEl) {
     const idEls = idTableEl.querySelectorAll('tt');
-    Array.from(idEls, tt => {
-      if (aliasList.includes(normalizeId(tt))) {
+    Array.from(idEls, (tt) => {
+      const curAlias = normalizeId(tt);
+      if (aliasList.includes(curAlias)) {
         tt.classList.add('matched-id');
         numIdsMatched++;
+        aliasesMatched.push(curAlias);
       } else {
         // hide but the <td>s, not just the <tt> elements
         tt.parentElement.parentElement.classList.add('un-matched-id');
       }
     });
 
-    if (numIdsMatched > 0 && numIdsMatched < idEls.length)  {
+    if (numIdsMatched > 0 && numIdsMatched < idEls.length) {
       // add UI to hide-show unmatched IDs, defaulted to hiding them.
-      idTableEl.insertAdjacentHTML('beforebegin', `<button id="toggleUnmatchedIDsCtl"></button>`);
+      idTableEl.insertAdjacentHTML(
+        'beforebegin',
+        `<button id="toggleUnmatchedIDsCtl"></button>`,
+      );
       const hideShowUnmatchedIDs = () => {
         idTableEl.classList.toggle('filter-matched');
-        const labelPrefix = idTableEl.classList.contains('filter-matched') ? 'Show' : 'Hide';
-        document.getElementById('toggleUnmatchedIDsCtl').textContent = `${labelPrefix} un-matched IDs`;
+        const labelPrefix = idTableEl.classList.contains('filter-matched')
+          ? 'Show'
+          : 'Hide';
+        document.getElementById('toggleUnmatchedIDsCtl').textContent =
+          `${labelPrefix} un-matched IDs`;
       };
-      document.getElementById('toggleUnmatchedIDsCtl').onclick = hideShowUnmatchedIDs;
+      document.getElementById('toggleUnmatchedIDsCtl').onclick =
+        hideShowUnmatchedIDs;
       hideShowUnmatchedIDs(); // initialized, by first hiding them
     }
   }
@@ -333,17 +375,20 @@ Distance to the center <i>arcsec</i>:       </td>
 
   const aliasMatchMsgCtr = document.querySelector('#tessAliasesMatchMsg');
   if (numIdsMatched > 0) {
-    aliasMatchMsgCtr.textContent = ` ${numIdsMatched} IDs matched. `;
+    const canonicalURL = location.href
+      .replace(/&submit=submit/, '')
+      .replace(/#.+/, '');
+    const aliasOutputStr = `${aliasesMatched}\t${canonicalURL}`;
+    aliasMatchMsgCtr.innerHTML = ` ${numIdsMatched} IDs matched. <br>
+<input type="text" value="${aliasOutputStr}" style="font-size: 80% !important;" accessKey="L" onclick="this.select();" readonly>`;
   } else {
     aliasMatchMsgCtr.textContent = ` No IDs matched. `;
     aliasMatchMsgCtr.style.backgroundColor = 'red';
   }
 
   resetMatchingInfoHash();
-
 }
 tweakUIWithCrossMatch();
-
 
 function makeIdentifiersCopyable() {
   // identifying the DOM element for Identifiers section (in single result case)
@@ -352,17 +397,17 @@ function makeIdentifiersCopyable() {
     return;
   }
   // double click to copy the ids
-  idTableEl.addEventListener("dblclick", (evt => {
-    if (!evt.target.tagName == "TT") {  // the IDs are in <tt> elements
+  idTableEl.addEventListener('dblclick', (evt) => {
+    if (!evt.target.tagName == 'TT') {
+      // the IDs are in <tt> elements
       return;
     }
     const text = evt.target.textContent.trim();
     GM_setClipboard(text);
     message(`${text}<br>copied.`);
-  }));
+  });
 }
 makeIdentifiersCopyable();
-
 
 // For single result case,
 // link star type to wikipedia, if it exists, e.g., link Eclipsing binary in the following:
@@ -370,12 +415,12 @@ makeIdentifiersCopyable();
 function simbadStarTypeToWikiLinkHtml(starType) {
   function escape(text) {
     const tagsToReplace = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;'
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
     };
-    return text.replace(/[&<>]/g, function(tag) {
-        return tagsToReplace[tag] || tag;
+    return text.replace(/[&<>]/g, function (tag) {
+      return tagsToReplace[tag] || tag;
     });
   }
 
@@ -394,57 +439,57 @@ function simbadStarTypeToWikiLinkHtml(starType) {
 
   const NO_LINK = '[NO-LINK]';
   const wikiTitleExceptionsMap = toKeyEscaped({
-      // exceptions to be added
-      'Star': NO_LINK,
-      'Eruptive variable Star': 'Eruptive variable',
-      'Eclipsing binary of Algol type': 'Algol variable',
-      'Long Period Variable candidate': 'Long Period Variable star',
-      'Low-mass star (M<1solMass)': 'Low-mass star',
-      'Variable Star of RR Lyr type': 'RR Lyrae variable',
-      'Variable of BY Dra type': 'BY Draconis variable',
-      'Double or multiple star': 'Double star',
-      'Eclipsing binary of W UMa type': 'W Ursae Majoris variable',
-      'Variable Star of gamma Dor type': 'Gamma Doradus variable',
-      'Brightest galaxy in a Cluster (BCG)': 'Brightest cluster galaxy',
-      'Variable Star of delta Sct type': 'Delta Scuti variable',
-      'Possible Horizontal Branch Star': 'Horizontal branch',
-      'Possible Red supergiant star': 'Red supergiant star',
-      'Possible Blue supergiant star': 'Blue supergiant star',
-      'Variable Star of beta Cep type': 'Beta Cephei variable',
-      'Variable Star of Orion Type': 'Orion variable',
-      'CV DQ Her type (intermediate polar)': 'Intermediate polar',
-      'CV of AM Her type (polar)': 'Polar (star)',
-      'Variable of RS CVn type': 'RS Canum Venaticorum variable',
-      'Variable Star of Mira Cet type': 'Mira variable',
-      'Variable Star of R CrB type': 'R Coronae Borealis variable',
-      'Variable Star of alpha2 CVn type': 'Alpha2 Canum Venaticorum variable',
-      'T Tau-type Star': 'T Tauri star',
-      'Ellipsoidal variable Star': 'Rotating ellipsoidal variable',
-      'Variable Star of W Vir type': 'W Virginis variable',
-      'Blue supergiant star': 'Blue supergiant',
-      'Variable Star of irregular type': 'Irregular variable',
-      'Emission-line Star': 'Emission-line star',
-      'Be Star': 'Be star',
-      'Hot subdwarf': 'Hot subdwarf',
-      'Wolf-Rayet Star': 'Wolf–Rayet star',
-      'Carbon Star': 'Carbon star',
-      'Eclipsing binary': 'Eclipsing binary',
-      'Long-period variable star': 'Long-period variable star',
-      'Spectroscopic binary': 'Spectroscopic binary',
-    });
+    // exceptions to be added
+    Star: NO_LINK,
+    'Eruptive variable Star': 'Eruptive variable',
+    'Eclipsing binary of Algol type': 'Algol variable',
+    'Long Period Variable candidate': 'Long Period Variable star',
+    'Low-mass star (M<1solMass)': 'Low-mass star',
+    'Variable Star of RR Lyr type': 'RR Lyrae variable',
+    'Variable of BY Dra type': 'BY Draconis variable',
+    'Double or multiple star': 'Double star',
+    'Eclipsing binary of W UMa type': 'W Ursae Majoris variable',
+    'Variable Star of gamma Dor type': 'Gamma Doradus variable',
+    'Brightest galaxy in a Cluster (BCG)': 'Brightest cluster galaxy',
+    'Variable Star of delta Sct type': 'Delta Scuti variable',
+    'Possible Horizontal Branch Star': 'Horizontal branch',
+    'Possible Red supergiant star': 'Red supergiant star',
+    'Possible Blue supergiant star': 'Blue supergiant star',
+    'Variable Star of beta Cep type': 'Beta Cephei variable',
+    'Variable Star of Orion Type': 'Orion variable',
+    'CV DQ Her type (intermediate polar)': 'Intermediate polar',
+    'CV of AM Her type (polar)': 'Polar (star)',
+    'Variable of RS CVn type': 'RS Canum Venaticorum variable',
+    'Variable Star of Mira Cet type': 'Mira variable',
+    'Variable Star of R CrB type': 'R Coronae Borealis variable',
+    'Variable Star of alpha2 CVn type': 'Alpha2 Canum Venaticorum variable',
+    'T Tau-type Star': 'T Tauri star',
+    'Ellipsoidal variable Star': 'Rotating ellipsoidal variable',
+    'Variable Star of W Vir type': 'W Virginis variable',
+    'Blue supergiant star': 'Blue supergiant',
+    'Variable Star of irregular type': 'Irregular variable',
+    'Emission-line Star': 'Emission-line star',
+    'Be Star': 'Be star',
+    'Hot subdwarf': 'Hot subdwarf',
+    'Wolf-Rayet Star': 'Wolf–Rayet star',
+    'Carbon Star': 'Carbon star',
+    'Eclipsing binary': 'Eclipsing binary',
+    'Long-period variable star': 'Long-period variable star',
+    'Spectroscopic binary': 'Spectroscopic binary',
+  });
 
   // default is starType, and the mapping takes care of special cases
   const wikiTitle = wikiTitleExceptionsMap[starType];
 
   if (!wikiTitle) {
-    return   `<a target="wiki_star_type"
+    return `<a target="wiki_star_type"
                  href="https://en.wikipedia.org/w/index.php?title=Special:Search&search=${starType}">${starType}</a>`;
   } else if (wikiTitle === NO_LINK) {
     return starType;
   } else {
     // case there is a specific mapping, link to wiki page directly
     return `<a target="wiki_star_type"
-               href="https://en.wikipedia.org/wiki/${escapeTitle(wikiTitle)}">${starType}</a>`
+               href="https://en.wikipedia.org/wiki/${escapeTitle(wikiTitle)}">${starType}</a>`;
   }
 }
 
@@ -452,136 +497,140 @@ function simbadStarIdToWikiUrl(starId) {
   const mapConstellationAbbrev = {
     // extracted from:
     // https://skyandtelescope.org/astronomy-resources/constellation-names-and-abbreviations/
-    "And": "Andromedae",
-    "Ant": "Antliae",
-    "Aps": "Apodis",
-    "Aqr": "Aquarii",
-    "Aql": "Aquilae",
-    "Ara": "Arae",
-    "Ari": "Arietis",
-    "Aur": "Aurigae",
-    "Boo": "Boötis",
-    "Cae": "Caeli",
-    "Cam": "Camelopardalis",
-    "Cnc": "Cancri",
-    "CVn": "Canum Venaticorum",
-    "CMa": "Canis Majoris",
-    "CMi": "Canis Minoris",
-    "Cap": "Capricorni",
-    "Car": "Carinae",
-    "Cas": "Cassiopeiae",
-    "Cen": "Centauri",
-    "Cep": "Cephei",
-    "Cet": "Ceti",
-    "Cha": "Chamaeleontis",
-    "Cir": "Circini",
-    "Col": "Columbae",
-    "Com": "Comae Berenices",
-    "CrA": "Coronae Australis",
-    "CrB": "Coronae Borealis",
-    "Crv": "Corvi",
-    "Crt": "Crateris",
-    "Cru": "Crucis",
-    "Cyg": "Cygni",
-    "Del": "Delphini",
-    "Dor": "Doradus",
-    "Dra": "Draconis",
-    "Eql": "Equulei",
-    "Eri": "Eridani",
-    "For": "Fornacis",
-    "Gem": "Geminorum",
-    "Gru": "Gruis",
-    "Her": "Herculis",
-    "Hor": "Horologii",
-    "Hya": "Hydrae",
-    "Hyi": "Hydri",
-    "Ind": "Indi",
-    "Lac": "Lacertae",
-    "Leo": "Leonis",
-    "LMi": "Leonis Minoris",
-    "Lep": "Leporis",
-    "Lib": "Librae",
-    "Lup": "Lupi",
-    "Lyn": "Lyncis",
-    "Lyr": "Lyrae",
-    "Men": "Mensae",
-    "Mic": "Microscopii",
-    "Mon": "Monocerotis",
-    "Mus": "Muscae",
-    "Nor": "Normae",
-    "Oct": "Octantis",
-    "Oph": "Ophiuchi",
-    "Ori": "Orionis",
-    "Pav": "Pavonis",
-    "Peg": "Pegasi",
-    "Per": "Persei",
-    "Phe": "Phoenicis",
-    "Pic": "Pictoris",
-    "Psc": "Piscium",
-    "PsA": "Piscis Austrini",
-    "Pup": "Puppis",
-    "Pyx": "Pyxidis",
-    "Ret": "Reticulii",
-    "Sge": "Sagittae",
-    "Sgr": "Sagittarii",
-    "Sco": "Scorpii",
-    "Scl": "Sculptoris",
-    "Sct": "Scuti",
-    "Ser": "Serpentis",
-    "Sex": "Sextantis",
-    "Tau": "Tauri",
-    "Tel": "Telescopii",
-    "Tri": "Trianguli",
-    "TrA": "Trianguli Australis",
-    "Tuc": "Tucanae",
-    "UMa": "Ursae Majoris",
-    "UMi": "Ursae Minoris",
-    "Vel": "Velorum",
-    "Vir": "Virginis",
-    "Vol": "Volantis",
-    "Vul": "Vulpeculae"
+    And: 'Andromedae',
+    Ant: 'Antliae',
+    Aps: 'Apodis',
+    Aqr: 'Aquarii',
+    Aql: 'Aquilae',
+    Ara: 'Arae',
+    Ari: 'Arietis',
+    Aur: 'Aurigae',
+    Boo: 'Boötis',
+    Cae: 'Caeli',
+    Cam: 'Camelopardalis',
+    Cnc: 'Cancri',
+    CVn: 'Canum Venaticorum',
+    CMa: 'Canis Majoris',
+    CMi: 'Canis Minoris',
+    Cap: 'Capricorni',
+    Car: 'Carinae',
+    Cas: 'Cassiopeiae',
+    Cen: 'Centauri',
+    Cep: 'Cephei',
+    Cet: 'Ceti',
+    Cha: 'Chamaeleontis',
+    Cir: 'Circini',
+    Col: 'Columbae',
+    Com: 'Comae Berenices',
+    CrA: 'Coronae Australis',
+    CrB: 'Coronae Borealis',
+    Crv: 'Corvi',
+    Crt: 'Crateris',
+    Cru: 'Crucis',
+    Cyg: 'Cygni',
+    Del: 'Delphini',
+    Dor: 'Doradus',
+    Dra: 'Draconis',
+    Eql: 'Equulei',
+    Eri: 'Eridani',
+    For: 'Fornacis',
+    Gem: 'Geminorum',
+    Gru: 'Gruis',
+    Her: 'Herculis',
+    Hor: 'Horologii',
+    Hya: 'Hydrae',
+    Hyi: 'Hydri',
+    Ind: 'Indi',
+    Lac: 'Lacertae',
+    Leo: 'Leonis',
+    LMi: 'Leonis Minoris',
+    Lep: 'Leporis',
+    Lib: 'Librae',
+    Lup: 'Lupi',
+    Lyn: 'Lyncis',
+    Lyr: 'Lyrae',
+    Men: 'Mensae',
+    Mic: 'Microscopii',
+    Mon: 'Monocerotis',
+    Mus: 'Muscae',
+    Nor: 'Normae',
+    Oct: 'Octantis',
+    Oph: 'Ophiuchi',
+    Ori: 'Orionis',
+    Pav: 'Pavonis',
+    Peg: 'Pegasi',
+    Per: 'Persei',
+    Phe: 'Phoenicis',
+    Pic: 'Pictoris',
+    Psc: 'Piscium',
+    PsA: 'Piscis Austrini',
+    Pup: 'Puppis',
+    Pyx: 'Pyxidis',
+    Ret: 'Reticulii',
+    Sge: 'Sagittae',
+    Sgr: 'Sagittarii',
+    Sco: 'Scorpii',
+    Scl: 'Sculptoris',
+    Sct: 'Scuti',
+    Ser: 'Serpentis',
+    Sex: 'Sextantis',
+    Tau: 'Tauri',
+    Tel: 'Telescopii',
+    Tri: 'Trianguli',
+    TrA: 'Trianguli Australis',
+    Tuc: 'Tucanae',
+    UMa: 'Ursae Majoris',
+    UMi: 'Ursae Minoris',
+    Vel: 'Velorum',
+    Vir: 'Virginis',
+    Vol: 'Volantis',
+    Vul: 'Vulpeculae',
   };
   // the greek character latin abbreviation used in SIMBAD, mapped it to the full english name
   // used in wikipedia title
   // source: http://simbad.u-strasbg.fr/guide/chA.htx , https://en.wikipedia.org/wiki/Greek_alphabet
   const mapGreekAbbrev = {
-    "alf": "Alpha",
-    "bet": "Beta",
-    "gam": "Gamma",
-    'del': 'Delta',
-    'eps': 'Epsilon',
-    'zet': 'Zeta',
-    'eta': 'Eta',
-    'tet': 'Theta',
-    'iot': 'Iota',
-    'kap': 'Kappa',
-    'lam': 'Lambda',
+    alf: 'Alpha',
+    bet: 'Beta',
+    gam: 'Gamma',
+    del: 'Delta',
+    eps: 'Epsilon',
+    zet: 'Zeta',
+    eta: 'Eta',
+    tet: 'Theta',
+    iot: 'Iota',
+    kap: 'Kappa',
+    lam: 'Lambda',
     'mu.': 'Mu',
-    "nu.": "Nu",
-    'ksi': 'Xi',
-    'omi': 'Omicron',
+    'nu.': 'Nu',
+    ksi: 'Xi',
+    omi: 'Omicron',
     'pi.': 'Pi',
-    'rho': 'Rho',
-    'sig': 'Sigma',
-    'tau': 'Tau',
-    'ups': 'Upsilon',
-    'phi': 'Phi',
-    'khi': 'Chi',
-    'psi': 'Psi',
-    'ome': 'Omega',
+    rho: 'Rho',
+    sig: 'Sigma',
+    tau: 'Tau',
+    ups: 'Upsilon',
+    phi: 'Phi',
+    khi: 'Chi',
+    psi: 'Psi',
+    ome: 'Omega',
   };
-    let starIdCleanedUp = starId.replace(/^V?[*]+\s*/, '');
+  let starIdCleanedUp = starId.replace(/^V?[*]+\s*/, '');
   // check if it is a Bayer / Flamsteed designation, with 3 letter abbreviation for constellation
-  const [, id, constellationAbbrev] =
-    starIdCleanedUp.match(/^([a-zA-Z.]{1,3}|\p{Script_Extensions=Greek}|\d{1,3})\s+(\w{3})\s*$/u) || [null, null, null];
+  const [, id, constellationAbbrev] = starIdCleanedUp.match(
+    /^([a-zA-Z.]{1,3}|\p{Script_Extensions=Greek}|\d{1,3})\s+(\w{3})\s*$/u,
+  ) || [null, null, null];
   if (id) {
     const constellationFull = mapConstellationAbbrev[constellationAbbrev];
     if (constellationFull) {
       // convert it to the pattern using constellation full name, the preferred format in wikipedia title
-      const idCleanedUp  = mapGreekAbbrev[id] ? mapGreekAbbrev[id] : id;
+      const idCleanedUp = mapGreekAbbrev[id] ? mapGreekAbbrev[id] : id;
       starIdCleanedUp = `${idCleanedUp} ${constellationFull}`;
     } else {
-      console.warn("The ID has Bayer / Flamsteed designation pattern, but the abbreviation does not match a constellation: ", starIdCleanedUp);
+      console.warn(
+        'The ID has Bayer / Flamsteed designation pattern, but the abbreviation does not match a constellation: ',
+        starIdCleanedUp,
+      );
     }
   }
   return `https://en.wikipedia.org/w/index.php?title=Special:Search&search=${starIdCleanedUp}`;
@@ -590,7 +639,10 @@ function simbadStarIdToWikiUrl(starId) {
 function simbadStarIdToStellariumUrl(starId) {
   // the logic is also used in the WikiUrl function (which does more mapping)
   const starIdCleanedUp = starId.replace(/^V?[*]+\s*/, '');
-  return "https://stellarium-web.org/skysource/" + encodeURIComponent(starIdCleanedUp)
+  return (
+    'https://stellarium-web.org/skysource/' +
+    encodeURIComponent(starIdCleanedUp)
+  );
 }
 
 const startTitleEl = document.querySelector('#basic_data font[size="+2"]');
@@ -599,10 +651,16 @@ if (startTitleEl) {
   let html = startTitleEl.innerHTML;
   const starIdAndTypeMatch = html.match(reStarIdAndType);
   if (starIdAndTypeMatch) {
-    const typeWikiLinkHtml = simbadStarTypeToWikiLinkHtml(starIdAndTypeMatch[2]);
+    const typeWikiLinkHtml = simbadStarTypeToWikiLinkHtml(
+      starIdAndTypeMatch[2],
+    );
     const starIdWikiUrl = simbadStarIdToWikiUrl(starIdAndTypeMatch[1]);
-    const starIdStellariumUrl = simbadStarIdToStellariumUrl(starIdAndTypeMatch[1]);
-    html = html.replace(reStarIdAndType, `\
+    const starIdStellariumUrl = simbadStarIdToStellariumUrl(
+      starIdAndTypeMatch[1],
+    );
+    html = html.replace(
+      reStarIdAndType,
+      `\
 <b><a target="stellarium_star"
       href="${starIdStellariumUrl}">$1</a></b>
 <!-- style stellarium block to reduce horizontal space -->
@@ -615,25 +673,37 @@ margin-left: -10px;
 --
 ${typeWikiLinkHtml}
 <svg style="height: 0.8em; width: 1em; background: transparent;" aria-hidden="true" data-prefix="fas" data-icon="external-link-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M576 24v127.984c0 21.461-25.96 31.98-40.971 16.971l-35.707-35.709-243.523 243.523c-9.373 9.373-24.568 9.373-33.941 0l-22.627-22.627c-9.373-9.373-9.373-24.569 0-33.941L442.756 76.676l-35.703-35.705C391.982 25.9 402.656 0 424.024 0H552c13.255 0 24 10.745 24 24zM407.029 270.794l-16 16A23.999 23.999 0 0 0 384 303.765V448H64V128h264a24.003 24.003 0 0 0 16.97-7.029l16-16C376.089 89.851 365.381 64 344 64H48C21.49 64 0 85.49 0 112v352c0 26.51 21.49 48 48 48h352c26.51 0 48-21.49 48-48V287.764c0-21.382-25.852-32.09-40.971-16.97z"></path></svg>
-`);
-// ^ external indicator svg adapted from ExoFOP
+`,
+    );
+    // ^ external indicator svg adapted from ExoFOP
     startTitleEl.innerHTML = html;
   }
 }
 
 function highlightInterestingObjectTypes() {
   const uninterestingTypes = (() => {
-    const baseTypes = ['*', '**', 'PM*', 'IR', 'FIR', 'MIR', 'NIR', 'UV', 'X', 'G', ];
+    const baseTypes = [
+      '*',
+      '**',
+      'PM*',
+      'IR',
+      'FIR',
+      'MIR',
+      'NIR',
+      'UV',
+      'X',
+      'G',
+    ];
     // include those that aren't uncertain (probably not needed)
     // baseTypes + baseTypes.map(t => t + '?');
     return baseTypes;
   })();
 
   const interestingTypesFound = [];
-  Array.from(document.querySelectorAll('td > tt[title] > b'), el => {
+  Array.from(document.querySelectorAll('td > tt[title] > b'), (el) => {
     const oType = el.textContent.trim();
     if (!uninterestingTypes.includes(oType)) {
-      el.style.backgroundColor = "rgba(255, 255, 0, 0.5)";
+      el.style.backgroundColor = 'rgba(255, 255, 0, 0.5)';
       interestingTypesFound.push(oType);
     }
     el.innerHTML = `\
@@ -643,7 +713,9 @@ function highlightInterestingObjectTypes() {
 
   // add interesting type to tab bar title
   if (interestingTypesFound.length > 0) {
-    const typeText = interestingTypesFound.map(t => t.replace(/[*]/g, '')).join(', ');
+    const typeText = interestingTypesFound
+      .map((t) => t.replace(/[*]/g, ''))
+      .join(', ');
     document.title = `${typeText} | ${document.title}`;
   }
 }
@@ -656,32 +728,37 @@ function addAladinLiteLink() {
   if (ctr && targetId) {
     // Set Field of View to 0.1 deg, about 6 arcmin, slightly larger than
     // typical 11x11 pixel TESS TPF (~ 4arcmin)
-    ctr.insertAdjacentHTML('afterbegin', `<a
+    ctr.insertAdjacentHTML(
+      'afterbegin',
+      `<a
       href="https://aladin.u-strasbg.fr/AladinLite/?target=${encodeURIComponent(targetId)}&fov=0.1"
-      target="_aladin_lite">Aladin Lite</a>&emsp;`);
+      target="_aladin_lite">Aladin Lite</a>&emsp;`,
+    );
   }
 }
 addAladinLiteLink();
 
-
 function makeCanonicalLink() {
   // normalize the link so that the copied link has less variation
   // right now: remove useless query string parameters
-  const rePattern = /&submit=submit/
+  const rePattern = /&submit=submit/;
   if (location.search.match(rePattern)) {
-    history.pushState("", document.title, location.pathname + location.search.replace(rePattern, ""));
+    history.pushState(
+      '',
+      document.title,
+      location.pathname + location.search.replace(rePattern, ''),
+    );
   }
 }
 makeCanonicalLink();
-
 
 function tweakOTypesGuide() {
   if (location.pathname != '/guide/otypes.htx') {
     return;
   }
-  console.debug("In OTypes Guide tweak");
+  console.debug('In OTypes Guide tweak');
 
-  const [, otype] = location.hash.match('#otype=([^&]+)') || [null, null]
+  const [, otype] = location.hash.match('#otype=([^&]+)') || [null, null];
   if (!otype) {
     return;
   }
@@ -692,10 +769,8 @@ function tweakOTypesGuide() {
     document.querySelector('input#txtSearch').value = otype;
     document.querySelector('button#btnSearch').click();
   }, 1000);
-
 }
 tweakOTypesGuide();
-
 
 function tweakBibReference() {
   // Add link to ADS, which has a better UI with
@@ -703,7 +778,10 @@ function tweakBibReference() {
   if (!location.href.includes('/simbad/sim-ref?bibcode=')) {
     return;
   }
-  let [, bibcode] = location.search.match(/[?&]bibcode=([^&]*)/) || [null, null];
+  let [, bibcode] = location.search.match(/[?&]bibcode=([^&]*)/) || [
+    null,
+    null,
+  ];
   if (!bibcode) {
     console.warn('tweakBibReference(): cannot identify bibcode. No-Op.');
     return;
@@ -714,17 +792,17 @@ function tweakBibReference() {
   // `);
 
   // Add the link to before the abstract so that it is above the fold.
-  document.querySelector('div.abstract')?.insertAdjacentHTML('beforebegin', `
+  document.querySelector('div.abstract')?.insertAdjacentHTML(
+    'beforebegin',
+    `
 <div id="ads_link_ctr">
   <img src="//simbad.cds.unistra.fr/icons//action.png" alt="goto" id="goto" align="LEFT" height="16" width="16">
   <a href="https://ui.adsabs.harvard.edu/abs/${bibcode}/abstract">NASA ADS Entry</a>
 </div>
-`);
-
-
+`,
+  );
 }
 tweakBibReference();
-
 
 function addAngularDistanceToTitleForSingleObject() {
   // for single object case, add distance to to the center to title
@@ -743,4 +821,3 @@ function addAngularDistanceToTitleForSingleObject() {
   document.title = `${angDist}" ${document.title}`;
 }
 addAngularDistanceToTitleForSingleObject();
-

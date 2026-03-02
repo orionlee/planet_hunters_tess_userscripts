@@ -3,7 +3,7 @@
 // @namespace   astro.tess
 // @match       https://asas-sn.osu.edu/variables*
 // @grant       GM_addStyle
-// @version     1.7.1
+// @version     1.8.0
 // @author      orionlee
 // @description
 // ==/UserScript==
@@ -37,21 +37,25 @@ function tweakSearchResult() {
   document.title = `(${resRows.length}) - ${document.title}`;
   if (resRows.length > 0) {
     // indicate the angular distance (5th column) of the first match as well.
-    const angDist1stMatch = parseInt(resRows[0].querySelector('td:nth-of-type(5)').textContent.trim());
+    const angDist1stMatch = parseInt(
+      resRows[0].querySelector('td:nth-of-type(5)').textContent.trim(),
+    );
     document.title = `${angDist1stMatch}" ` + document.title;
   }
 
   function tweakSearchResultRows() {
     getSearchResultRows().forEach((tr, i) => {
-      const linkEl = tr.querySelector('a')
-      const distance = tr.querySelector('td:nth-of-type(5)').textContent
-      linkEl.setAttribute('href', linkEl.getAttribute('href') + `#distance=${distance}`);
+      const linkEl = tr.querySelector('a');
+      const distance = tr.querySelector('td:nth-of-type(5)').textContent;
+      linkEl.setAttribute(
+        'href',
+        linkEl.getAttribute('href') + `#distance=${distance}`,
+      );
       linkEl.removeAttribute('target');
-      linkEl.accessKey = i + 1;  // Alt-1, Alt-2, etc.
+      linkEl.accessKey = i + 1; // Alt-1, Alt-2, etc.
     });
   }
   tweakSearchResultRows();
-
 
   function gotoObjectDetailIfOnly1ResultReturned() {
     const rows = getSearchResultRows();
@@ -67,16 +71,14 @@ function tweakSearchResult() {
 }
 tweakSearchResult();
 
-
 //
 // Object Detail UI
 //
 
-
 // reset the hash, so that if an user copies the URL, the user won't copy the extra parameters in the hash
 // (that would be useless in general)
 function resetHash() {
-  history.pushState("", document.title, location.pathname + location.search);
+  history.pushState('', document.title, location.pathname + location.search);
 }
 
 function isObjectDetailPage() {
@@ -100,17 +102,21 @@ a#variable-db-atlas-link {
 }
 `);
 
-  const [, distance] = location.hash.match(/distance=([0-9.]+)/) || [null, null];
+  const [, distance] = location.hash.match(/distance=([0-9.]+)/) || [
+    null,
+    null,
+  ];
   if (distance) {
-    document.querySelector('h3').insertAdjacentHTML('afterend', `
-<span id="distance_ctr">distance: ${distance}"</span>`);
-      document.title = `${parseInt(distance)}" ${document.title}`;
+    document.querySelector('h3').insertAdjacentHTML(
+      'afterend',
+      `
+<span id="distance_ctr">distance: ${distance}"</span>`,
+    );
+    document.title = `${parseInt(distance)}" ${document.title}`;
     resetHash();
   }
-
 }
 tweakObjectDetail();
-
 
 function normalizeAlias(aliasText) {
   let res = aliasText?.trim();
@@ -132,18 +138,33 @@ function extractIds() {
     return;
   }
 
-  const [asasSnId] = document.querySelector('h3').textContent.trim().match(/^ASASSN-V J[0-9-.+]+/) || [null];
-  const allwiseId = document.querySelector('.variable-star-data > div:nth-of-type(4) .row > div:nth-of-type(3) .star-data__value' )?.textContent;
-  const otherId = normalizeAlias(document.querySelector('.variable-star-data > div:nth-of-type(4) .row > div:nth-of-type(4) .star-data__value' )?.textContent?.replace(/^-$/, ''));
-
+  const [asasSnId] = document
+    .querySelector('h3')
+    .textContent.trim()
+    .match(/^ASASSN-V J[0-9-.+]+/) || [null];
+  const allwiseId = document.querySelector(
+    '.variable-star-data > div:nth-of-type(4) .row > div:nth-of-type(3) .star-data__value',
+  )?.textContent;
+  const otherId = normalizeAlias(
+    document
+      .querySelector(
+        '.variable-star-data > div:nth-of-type(4) .row > div:nth-of-type(4) .star-data__value',
+      )
+      ?.textContent?.replace(/^-$/, ''),
+  );
+  const meanVmag = document.querySelector('.panel-body')?.innerText;
   const url = location.href;
 
-  document.body.insertAdjacentHTML('beforeend', `
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `
 <div id="crossMatchCtr" style="position: fixed;right: 6px;top: 6px;padding: 4px 6px;background-color: rgba(255, 255, 0, 0.7);"
      title="For cross-match's use. Shortcut: Alt-L">
   <input id="crossMatchOut" value="" accessKey="L" onclick="this.select();" readonly>
 </div>
-  `);
-  document.getElementById('crossMatchOut').value = `${asasSnId}\t${otherId},WISEA ${allwiseId}\t${url}`
+  `,
+  );
+  document.getElementById('crossMatchOut').value =
+    `${asasSnId}\t${otherId},WISEA ${allwiseId}\t${meanVmag}\t${url}`;
 }
 extractIds();

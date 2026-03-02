@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.14.1
+// @version     1.15.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -528,6 +528,159 @@ function tweakDetailPage() {
     return aliasesWithSortKey.map((e) => e[0]);
   }
 
+  function initVSXNamesSubmissionEntryUI() {
+    function concatUnique(ary1, ary2) {
+      let res = ary1;
+      for (a of ary2) {
+        if (!ary1.includes(a)) {
+          res = res.concat(a);
+        }
+      }
+      return res;
+    }
+
+    function doCreateVSXEntry(
+      notMatchedStr,
+      simbadStr,
+      asassnStr,
+      includeGaiaDR3,
+    ) {
+      const [vsxName, notMatchedNamesStr, oid, dummy, asassnNamesInVSXStr] =
+        notMatchedStr.split('\t'); // stands for not matched
+      // names in TIC but not in VSX
+      const notMatchedNames = notMatchedNamesStr.split(',');
+
+      const [simbadNamesStr, simbadURL] = simbadStr.split('\t');
+      const simbadNames = simbadNamesStr ? simbadNamesStr.split(',') : [];
+      const [asassnId, asassnNamesStr, asassnVmagStr, asassnURL] =
+        asassnStr.split('\t');
+      const asassnNames = asassnNamesStr ? asassnNamesStr.split(',') : [];
+      const asassnVmag = asassnVmagStr ? parseFloat(asassnVmagStr) : -99999;
+
+      // Start the matches
+
+      // always include TIC
+      let names = notMatchedNames.filter((n) => n.startsWith('TIC '));
+
+      // those also in SIMBAD, except Gaia
+      names = concatUnique(
+        names,
+        notMatchedNames.filter(
+          (n) => !n.startsWith('Gaia DR') && simbadNames.includes(n),
+        ),
+      );
+      console.debug('after SIMBAD', names);
+
+      // those also in ASAS-SN, except Gaia
+      names = concatUnique(
+        names,
+        notMatchedNames.filter(
+          (n) => !n.startsWith('Gaia DR') && asassnNames.includes(n),
+        ),
+      );
+      console.debug('after ASAS-SN', names);
+
+      if (
+        asassnId &&
+        !asassnNamesInVSXStr.includes(asassnId) &&
+        asassnVmag > 9
+      ) {
+        names = concatUnique(names, [asassnId]);
+      }
+
+      if (includeGaiaDR3) {
+        names = concatUnique(
+          names,
+          notMatchedNames.filter((n) => n.startsWith('Gaia DR3 ')),
+        );
+      }
+
+      const vsxEntry = [
+        vsxName,
+        names.join(','),
+        oid,
+        simbadURL,
+        asassnURL,
+      ].join('\t');
+      const namesExcluded = notMatchedNames.filter((n) => !names.includes(n));
+      return [vsxEntry, namesExcluded];
+    }
+
+    function createVSXEntry() {
+      const notMatchedStr = document.querySelector(
+        '#namesMatchCtr #notMatched',
+      ).value;
+      const simbadStr = document.querySelector(
+        '#namesMatchCtr #simbadMatches',
+      ).value;
+      const asassnStr = document.querySelector(
+        '#namesMatchCtr #asassnMatches',
+      ).value;
+      const includeGaiaDR3 = document.querySelector(
+        '#namesMatchCtr #includeGaiaDR3',
+      ).checked;
+
+      const [vsxEntry, namesExcluded] = doCreateVSXEntry(
+        notMatchedStr,
+        simbadStr,
+        asassnStr,
+        includeGaiaDR3,
+      );
+      document.querySelector('#namesMatchCtr #vsxEntryOutput').value = vsxEntry;
+      document.querySelector('#namesMatchCtr #namesExcludedOutput').value =
+        namesExcluded.join(',');
+    }
+
+    function createUI() {
+      document.querySelector('#namesMatchCtr')?.remove(); // remove existing UI if any
+      document.body.insertAdjacentHTML(
+        'beforeend',
+        `
+        <div id="namesMatchCtr" style="background-color:rgba(255,192,0,0.9);
+            position: fixed; top: 5vh; left: 10vw; padding: 0.5em 4ch 0.5em 2ch; max-width: 80vw;
+            z-index: 999; font-size: 14px; line-height: 1.2;">
+              <style type="text/css">
+                #namesMatchCtr input[type="text"] {
+                  width: 80ch;
+                }
+              </style>
+              <b>Names Match:</b> <a href="javascript:void(0);" onclick="this.parentElement.style.display='none';" style="float: right;">[X]</a><br></br>
+
+              Not Matched:     <input id="notMatched" type="text" title="Names not matched in a form suitable for batch submission to VSX.">
+              <br>
+              SIMBAD Matches:  <input id="simbadMatches" type="text">
+              <br>
+              ASAS-SN Matches: <input id="asassnMatches" type="text">
+              <br>
+              <input id="includeGaiaDR3" type="checkbox">Include Gaia DR3
+              <br>
+              <button id="processVSXMatchesCtl">Process</button>
+              <hr>
+              VSX name entry:
+              <input id="vsxEntryOutput" type="text" onclick="this.select();" readonly>
+              <br>
+              Names Excluded:
+              <input id="namesExcludedOutput" type="text" onclick="this.select();" readonly>
+        </div>
+`,
+      );
+      document.querySelector('#namesMatchCtr #notMatched').value =
+        document.querySelector('#notMatchedNamesForVSXSubmission').value;
+      document.querySelector('#namesMatchCtr #processVSXMatchesCtl').onclick =
+        createVSXEntry;
+      document.querySelector('#namesMatchCtr #simbadMatches').focus();
+    } // function createUI()
+
+    // bind the UI init logic to keyboard / pointer
+    document.querySelector('#notMatchedNamesForVSXSubmission').ondblclick =
+      createUI;
+    document.addEventListener('keydown', (evt) => {
+      if (evt.altKey && evt.shiftKey && evt.code == 'KeyM') {
+        createUI();
+      }
+    });
+  }
+
   function showMatchResultMsg(
     aliasesMatched,
     aliasesNotMatched,
@@ -556,6 +709,7 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
     );
     if (submissionText) {
       submissionInCtl.value = submissionText;
+      initVSXNamesSubmissionEntryUI();
     } else {
       submissionInCtl.disabled = true;
     }

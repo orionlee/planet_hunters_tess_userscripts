@@ -12,7 +12,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR?*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.13.2
+// @version     1.13.3
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -199,6 +199,8 @@ function annotateFrequencyValuesWithPeriod() {
         // in the detail single object view
         // (the header uses the long name in the detail view)
         'Freq1/d', // Freq1/d used by I/358/vmsosc
+        'FundFreq1d-1', // I/358/vrrlyr
+        'FundFreq2d-1', // I/358/vrrlyr
       ];
       const thEls = tabEl.querySelectorAll('tr:first-of-type th');
       for (i = 0; i < thEls.length; i++) {

@@ -3,8 +3,10 @@
 // @namespace   zooniverse.org
 // @match       https://www.zooniverse.org/*
 // @grant       GM_addStyle
+// @grant       GM_getValue
+// @grant       GM_setValue
 // @noframes
-// @version     1.24.2
+// @version     1.25.0
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -37,6 +39,16 @@ function capitalize(text) {
   }
 
   return res;
+}
+
+function my_GM_getValue(key, defaultValue = '') {
+  const result = GM_getValue(key);
+  if (!result) {
+    // Store a empty string so that the value can be edited in Tampermonkey UI
+    GM_setValue(key, '');
+    return defaultValue;
+  }
+  return result;
 }
 
 //
@@ -116,7 +128,7 @@ titleForLinkifiedUrlImplList.push((url) => {
       [, id] = url.match(/Ident=([^&]+)/) || [null, null];
     }
 
-    if (id) {
+    if (id && my_GM_getValue('link.simbadIncludesID', 'false') == 'true') {
       // decodeURI / decodeURIComponent can't handle + as space
       // (used by SIMBAD in some cases but sometimes it uses %20)
       // so we have to do it ourselves.

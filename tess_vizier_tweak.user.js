@@ -12,7 +12,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR?*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.13.3
+// @version     1.14.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -344,6 +344,45 @@ function highlightGaiaDR3XMatchVar() {
   addLinksToCats();
 }
 highlightGaiaDR3XMatchVar();
+
+function tweakOgleBlgEclTable() {
+  // only applicable to search result of J/AcA/66/405/ecl :
+  // Galactic bulge eclipsing & ellipsoidal binaries (Soszynski+, 2016)
+  if (
+    (location.search.search('source=J/AcA/66/405/ecl') < 0 &&
+      location.search.search('source=J%2FAcA%2F66%2F405%2Fecl') < 0) ||
+    isSearchForm()
+  ) {
+    return;
+  }
+
+  let [pOrbColIdx, lcColIdx] = [0, 0]; // required column idx (1-based in CSS)
+  document.querySelectorAll('table.sort th').forEach((th, i) => {
+    if (th.textContent.trim() == 'Porb\nd') {
+      pOrbColIdx = i + 1;
+    }
+    if (th.textContent.trim() == 'LC') {
+      lcColIdx = i + 1;
+    }
+  });
+  if (pOrbColIdx <= 0 || lcColIdx <= 0) {
+    return;
+  }
+
+  document.querySelectorAll('table.sort tr:not(:first-child)').forEach((tr) => {
+    const pOrb = tr
+      .querySelector(`td:nth-of-type(${pOrbColIdx})`)
+      .textContent.trim();
+    // tweak the LC pop-up javascript link, to fold with the orbital period and show I band only
+    const lcTd = tr.querySelector(`td:nth-of-type(${lcColIdx})`);
+    lcTd.innerHTML = lcTd.innerHTML.replace(
+      /'_640x680','([^']+)'/,
+      `'_640x680','$1F=I&amp;P=${pOrb}&amp;'`,
+    );
+    console.debug('DBG1', pOrb, lcTd);
+  });
+}
+tweakOgleBlgEclTable();
 
 // Provides an alternative in the form a short URL (that can be bookmarked)
 // Comparing it with the Vizier-standard bookmark feature, the URL is much shorter

@@ -16,7 +16,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.16.0
+// @version     1.17.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -389,6 +389,52 @@ Distance to the center <i>arcsec</i>:       </td>
   resetMatchingInfoHash();
 }
 tweakUIWithCrossMatch();
+
+function tweakIdentifiersUI() {
+  function addVizierLink(tt, url, description) {
+    tt.parentElement.insertAdjacentHTML(
+      'afterend',
+      `\
+<a href="${url}" target="_blank">
+<img src="//simbad.cds.unistra.fr/icons/vizier_20.png" title="${description} " border="0">
+</a>`,
+    );
+  }
+
+  getIdentifiersDOM()
+    ?.querySelectorAll('tt')
+    .forEach((tt) => {
+      const curAlias = normalizeId(tt);
+
+      // add a Vizier link to OGLE BLG-ECL names
+      const [, ogleEclNum] = curAlias.match(/OGLE BLG-ECL-(\d+)/) || [
+        null,
+        null,
+      ];
+      if (ogleEclNum) {
+        // https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/66/405/ecl&Star=OGLE-BLG-ECL-063214&-sort=_r&-order=I&-out.add=_r&-out.add=_p&%2F%2Foutaddvalue=default
+        // In Vizier OGLE ECL table J/AcA/66/405/ecl, the name is standardize differently from the one in SIMBAD
+        // in the form of OGLE-BLG-ECL-123456  (fixed 6 digits)
+        const ogleVizierName = `OGLE-BLG-ECL-${ogleEclNum.padStart(6, '0')}`;
+        addVizierLink(
+          tt,
+          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/66/405/ecl&Star=${ogleVizierName}`,
+          'Vizier data from 2016AcA,OGLE',
+        );
+      }
+
+      // add a Vizier link to ATO names, e.g., ATO J285.4962-18.4176
+      const [, atoId] = curAlias.match(/ATO (J.+)/) || [null, null];
+      if (atoId) {
+        addVizierLink(
+          tt,
+          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AJ/156/241&ATOID=${atoId}`,
+          'Vizier data from 2018AJ,ATLAS',
+        );
+      }
+    });
+}
+tweakIdentifiersUI();
 
 function makeIdentifiersCopyable() {
   // identifying the DOM element for Identifiers section (in single result case)

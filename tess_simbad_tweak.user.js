@@ -16,7 +16,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.17.0
+// @version     1.17.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -412,13 +412,28 @@ function tweakIdentifiersUI() {
         null,
       ];
       if (ogleEclNum) {
-        // https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/66/405/ecl&Star=OGLE-BLG-ECL-063214&-sort=_r&-order=I&-out.add=_r&-out.add=_p&%2F%2Foutaddvalue=default
         // In Vizier OGLE ECL table J/AcA/66/405/ecl, the name is standardize differently from the one in SIMBAD
         // in the form of OGLE-BLG-ECL-123456  (fixed 6 digits)
-        const ogleVizierName = `OGLE-BLG-ECL-${ogleEclNum.padStart(6, '0')}`;
+        const ogleEclVizierName = `OGLE-BLG-ECL-${ogleEclNum.padStart(6, '0')}`;
         addVizierLink(
           tt,
-          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/66/405/ecl&Star=${ogleVizierName}`,
+          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/66/405/ecl&Star=${ogleEclVizierName}`,
+          'Vizier data from 2016AcA,OGLE',
+        );
+      }
+
+      // add a Vizier link to OGLE BLG-ELL names
+      const [, ogleEllNum] = curAlias.match(/OGLE BLG-ELL-(\d+)/) || [
+        null,
+        null,
+      ];
+      if (ogleEllNum) {
+        // In Vizier OGLE ELL table J/AcA/66/405/ell, the name is standardize differently from the one in SIMBAD
+        // in the form of OGLE-BLG-ELL-123456  (fixed 6 digits)
+        const ogleEllVizierName = `OGLE-BLG-ELL-${ogleEllNum.padStart(6, '0')}`;
+        addVizierLink(
+          tt,
+          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/66/405/ell&Star=${ogleEllVizierName}`,
           'Vizier data from 2016AcA,OGLE',
         );
       }

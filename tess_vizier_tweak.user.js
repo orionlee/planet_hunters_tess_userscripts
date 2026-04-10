@@ -12,7 +12,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR?*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.14.0
+// @version     1.14.1
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -345,12 +345,12 @@ function highlightGaiaDR3XMatchVar() {
 }
 highlightGaiaDR3XMatchVar();
 
-function tweakOgleBlgEclTable() {
-  // only applicable to search result of J/AcA/66/405/ecl :
+function tweakOgleBlgEclEllTables() {
+  // only applicable to search result of J/AcA/66/405/ecl and J/AcA/66/405/ell
   // Galactic bulge eclipsing & ellipsoidal binaries (Soszynski+, 2016)
   if (
-    (location.search.search('source=J/AcA/66/405/ecl') < 0 &&
-      location.search.search('source=J%2FAcA%2F66%2F405%2Fecl') < 0) ||
+    (location.search.search('source=J/AcA/66/405/e') < 0 &&
+      location.search.search('source=J%2FAcA%2F66%2F405%2Fe') < 0) ||
     isSearchForm()
   ) {
     return;
@@ -379,10 +379,9 @@ function tweakOgleBlgEclTable() {
       /'_640x680','([^']+)'/,
       `'_640x680','$1F=I&amp;P=${pOrb}&amp;'`,
     );
-    console.debug('DBG1', pOrb, lcTd);
   });
 }
-tweakOgleBlgEclTable();
+tweakOgleBlgEclEllTables();
 
 // Provides an alternative in the form a short URL (that can be bookmarked)
 // Comparing it with the Vizier-standard bookmark feature, the URL is much shorter

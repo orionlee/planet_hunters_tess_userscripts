@@ -6,7 +6,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.25.0
+// @version     1.25.1
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -401,6 +401,21 @@ function createTitleForLinkifiedUrl(url) {
   return null;
 }
 
+function normalizeUrl(url) {
+  // convert TESS TCE DVs link at AWS S3 to the canonical link at MAST, e.g.
+  // From:
+  // https://stpubdata.s3.us-east-1.amazonaws.com/tess/public/tid/s0092/0000/0001/2711/5861/tess2018206190142-s0001-s0092-0000000127115861-01-01022_dvs.pdf
+  // To:
+  // https://mast.stsci.edu/api/v0.1/Download/file/?uri=mast:TESS/product/tess2018206190142-s0001-s0092-0000000127115861-01-01022_dvs.pdf
+  //
+  url = url.replace(
+    /\/\/stpubdata.s3.+tess(\d)/,
+    '//mast.stsci.edu/api/v0.1/Download/file/?uri=mast:TESS/product/tess$1',
+  );
+
+  return url;
+}
+
 function processLinksImages(text) {
   function isImage(link) {
     return /[.](png|jpg|jpeg|gif)$/.test(link);
@@ -416,6 +431,7 @@ function processLinksImages(text) {
       // case images
       return `![Alt Title](${text})`;
     } else {
+      text = normalizeUrl(text);
       const urlTitle = createTitleForLinkifiedUrl(text) || 'Title';
       return `[${urlTitle}](${text})`;
     }

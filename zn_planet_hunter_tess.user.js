@@ -8,23 +8,24 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.14.0
+// @version     1.14.1
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
 // ==/UserScript==
 
 // helper for debug messages used to understand timing of ajax loading (and related MutationObserver)
-const DEBUG_PHT_AJAX = (localStorage['DEBUG_PHT_AJAX'] === 'true');
-console.debug(`PHT Tweak userscript. AJAX debug: ${DEBUG_PHT_AJAX} . To turn on AJAX debug:  localStorage['DEBUG_PHT_AJAX'] = true; then reload the page.`);
-function ajaxDbg(... args) {
+const DEBUG_PHT_AJAX = localStorage['DEBUG_PHT_AJAX'] === 'true';
+console.debug(
+  `PHT Tweak userscript. AJAX debug: ${DEBUG_PHT_AJAX} . To turn on AJAX debug:  localStorage['DEBUG_PHT_AJAX'] = true; then reload the page.`,
+);
+function ajaxDbg(...args) {
   if (DEBUG_PHT_AJAX) {
-    console.debug(...(['[ADBG]'].concat(args)));
+    console.debug(...['[ADBG]'].concat(args));
   }
 }
 
 const urlChangeNotifier = (() => {
-
   class UrlChangeNotifier {
     constructor() {
       this.lastHref = location.href;
@@ -47,7 +48,7 @@ const urlChangeNotifier = (() => {
 
     _notifyListeners() {
       // OPEN: consider to pass lastLocation, curLocation to the listeners
-      this._listeners.forEach(listener => listener());
+      this._listeners.forEach((listener) => listener());
     }
 
     start() {
@@ -76,7 +77,6 @@ const urlChangeNotifier = (() => {
     }
   }
 
-
   function trackUrlChange() {
     ajaxDbg('URL change:', location.href);
   }
@@ -95,11 +95,15 @@ const urlChangeNotifier = (() => {
 function onElementLoaded(elementSelector, msgHelper, handleFn) {
   const mainEl = document.querySelector(elementSelector);
   if (!mainEl) {
-    console.error(`${msgHelper.prefix} - the ${msgHelper.elementName} element is missing unexpectedly. Cannot wait.`);
+    console.error(
+      `${msgHelper.prefix} - the ${msgHelper.elementName} element is missing unexpectedly. Cannot wait.`,
+    );
     return false;
   }
-  const mainObserver = new MutationObserver(function(mutations, observer) {
-    ajaxDbg(`${msgHelper.prefix} - ${msgHelper.elementName} is changed, begin handling`);
+  const mainObserver = new MutationObserver(function (mutations, observer) {
+    ajaxDbg(
+      `${msgHelper.prefix} - ${msgHelper.elementName} is changed, begin handling`,
+    );
     // ensure handleFn is not called repeatedly when there is a rapid series of mutations.
     if (handleFn.running) {
       return;
@@ -109,19 +113,26 @@ function onElementLoaded(elementSelector, msgHelper, handleFn) {
       handleFn.running = true;
       handleRes = handleFn();
     } catch (err) {
-      console.error('`${msgHelper.prefix} - ${msgHelper.elementName} - error in running handler ${handleFn.name ? handleFn.name : handleFn}', err);
+      console.error(
+        '`${msgHelper.prefix} - ${msgHelper.elementName} - error in running handler ${handleFn.name ? handleFn.name : handleFn}',
+        err,
+      );
     } finally {
       handleFn.running = false;
     }
     if (handleRes) {
-      ajaxDbg(`${msgHelper.prefix} - stop observing as hooks to wait for ajax load done. handleFn:`,
-      (handleFn.name ? handleFn.name : handleFn));
+      ajaxDbg(
+        `${msgHelper.prefix} - stop observing as hooks to wait for ajax load done. handleFn:`,
+        handleFn.name ? handleFn.name : handleFn,
+      );
       observer.disconnect();
     } else {
-      ajaxDbg(`${msgHelper.prefix} - continue to observe per handleFn's request (it is not done yet). handleFn:`,
-      (handleFn.name ? handleFn.name : handleFn));
+      ajaxDbg(
+        `${msgHelper.prefix} - continue to observe per handleFn's request (it is not done yet). handleFn:`,
+        handleFn.name ? handleFn.name : handleFn,
+      );
     }
-  })
+  });
   mainObserver.observe(mainEl, { childList: true, subtree: true });
 }
 
@@ -130,16 +141,20 @@ function onElementLoaded(elementSelector, msgHelper, handleFn) {
  * (it does not work on home and classify though)
  */
 function onPanoptesMainLoaded(handleFn) {
-  onElementLoaded('#panoptes-main-container',
-    { prefix: 'onPanoptesMainLoaded()', elementName: '#panoptes-main-container'},
-    handleFn);
+  onElementLoaded(
+    '#panoptes-main-container',
+    {
+      prefix: 'onPanoptesMainLoaded()',
+      elementName: '#panoptes-main-container',
+    },
+    handleFn,
+  );
 }
 
 unsafeWindow.urlChange = {}; // export URL change tracking for use in devtools and other userscripts
 unsafeWindow.urlChange.urlChangeNotifier = urlChangeNotifier;
 unsafeWindow.urlChange.onElementLoaded = onElementLoaded;
 unsafeWindow.urlChange.onPanoptesMainLoaded = onPanoptesMainLoaded;
-
 
 //
 // Miscellaneous Generic helpers
@@ -155,7 +170,10 @@ function scrollIntoViewWithBackgroundTab(elementSelector) {
     if (el) {
       el.scrollIntoView();
     } else {
-      console.warn('doScrollIntoView() - cannot find element:', elementSelector);
+      console.warn(
+        'doScrollIntoView() - cannot find element:',
+        elementSelector,
+      );
     }
   }
 
@@ -163,7 +181,6 @@ function scrollIntoViewWithBackgroundTab(elementSelector) {
     // scroll immediately on focus has no effect. A small delay is needed for it to work
     setTimeout(doScrollIntoView, 10);
     window.removeEventListener('focus', doScrollIntoViewOnFocus);
-
   }
 
   if (document.hasFocus()) {
@@ -188,14 +205,21 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     return;
   }
 
-  const handler =(() => {
-    const hasAnyModifier = evt.altKey || evt.shiftKey || evt.ctrlKey || evt.metaKey;
+  const handler = (() => {
+    const hasAnyModifier =
+      evt.altKey || evt.shiftKey || evt.ctrlKey || evt.metaKey;
     if (!hasAnyModifier) {
       return keyMap[evt.code];
     }
 
     let res = null;
-    if (keyMap['!altKey'] && evt.altKey && !evt.shiftKey && !evt.ctrlKey && !evt.metaKey) {
+    if (
+      keyMap['!altKey'] &&
+      evt.altKey &&
+      !evt.shiftKey &&
+      !evt.ctrlKey &&
+      !evt.metaKey
+    ) {
       res = keyMap['!altKey'][evt.code];
     }
 
@@ -211,7 +235,6 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
       evt.preventDefault();
     }
   }
-
 }
 
 //
@@ -219,7 +242,8 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
 //
 
 (function customizeClassify() {
-  const PATH_CLASSIFY = '/projects/nora-dot-eisner/planet-hunters-tess/classify/workflow/11235';
+  const PATH_CLASSIFY =
+    '/projects/nora-dot-eisner/planet-hunters-tess/classify/workflow/11235';
 
   (function injectCSS() {
     GM_addStyle(`
@@ -292,9 +316,11 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
 
   // Helper to react to classify tab's top-level ajax load
   function onMainLoaded(handleFn) {
-    onElementLoaded('main',
-      { prefix: 'onMainLoaded()', elementName: '<main>'},
-      handleFn);
+    onElementLoaded(
+      'main',
+      { prefix: 'onMainLoaded()', elementName: '<main>' },
+      handleFn,
+    );
   }
 
   function getViewerSVGEl() {
@@ -307,7 +333,9 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     const rootEl = document.querySelector('main > div');
     rootEl?.classList?.add('x-light-curve-root');
     if (!rootEl) {
-      console.warn('annotateViewerRoot(): cannot find root container. CSS class x-light-curve-root not added.');
+      console.warn(
+        'annotateViewerRoot(): cannot find root container. CSS class x-light-curve-root not added.',
+      );
     }
     return rootEl;
     // 2022111: old codes for the previous version of the UI
@@ -351,7 +379,6 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     return false;
   } // function clickViewerBtn(..)
 
-
   function toggleExpandedViewer() {
     // only applicable to classify page
     if (location.pathname !== PATH_CLASSIFY) {
@@ -361,12 +388,14 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     // add expanded at doc root, so that in case LC viewer is not yet loaded, we can still let it be in expanded state
     document.documentElement.classList.toggle('lcv-expanded');
 
-    const rootEl = annotateViewerRoot()
+    const rootEl = annotateViewerRoot();
     if (rootEl) {
       rootEl.scrollIntoView();
       rootEl.querySelector('svg').focus(); // to make built-in keyboard shortcuts work without users clicking
     } else {
-      console.warn('toggleExpandedViewer() - cannot find light curve viewer container - cannot focus it')
+      console.warn(
+        'toggleExpandedViewer() - cannot find light curve viewer container - cannot focus it',
+      );
     }
   } // function toggleExpandedViewer()
 
@@ -398,20 +427,20 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
   //   return true;
   // } // function initToggleExpandedViewerUI()
 
-
   // BEGIN Common helpers used by
   // 1) key map customization,  2) customizeViewerSubjectLevel()
   //
 
   function getSubjectInfoBtnOnClassify() {
     if (location.pathname !== PATH_CLASSIFY) {
-      return ;
+      return;
     }
 
     // infoBtn selector: the UI is changed to require an extra layer of <div>,
-    return document.querySelector('main section > div:first-of-type > div:last-of-type > button:first-of-type');
+    return document.querySelector(
+      'main section > div:first-of-type > div:last-of-type > button:first-of-type',
+    );
   }
-
 
   function clickSubjectInfoOnClassify() {
     const infoBtn = getSubjectInfoBtnOnClassify();
@@ -424,17 +453,17 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     return false;
   } // function clickSubjectInfoOnClassify()
 
-
   // should only be called after a subject is loaded, as it relies on the subject's metadata
   function addDipDepthCalculator() {
-
     function getSubjectMetaAndDo(keys, handleFn) {
       // TODO: the codes are similar to getTicIdFromMetadataPopIn(), but
       // 1. the details, e.g., CSS path to elements, are different
       // 2. actual extraction is done asynchronously. (a necessity here), thus changing the api
       const clickSucceeded = clickSubjectInfoOnClassify();
       if (!clickSucceeded) {
-        console.warn('getSubjectMeta(): click to open metadata modal dialog failed. no-op');
+        console.warn(
+          'getSubjectMeta(): click to open metadata modal dialog failed. no-op',
+        );
         return null;
       }
 
@@ -443,15 +472,20 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
         try {
           // the pop-in div has no id, but it's always added at the end of <body>
           // so we use body > > div:last-of-type to match it.
-          const metadataCtr = document.querySelector('body > div:last-of-type table');
+          const metadataCtr = document.querySelector(
+            'body > div:last-of-type table',
+          );
           if (!metadataCtr) {
-            console.warn('getSubjectMeta(): cannot find metadata modal dialog. no-op');
+            console.warn(
+              'getSubjectMeta(): cannot find metadata modal dialog. no-op',
+            );
             return null;
           }
 
           const meta = (key) => {
-            const filteredThs = Array.from(metadataCtr.querySelectorAll('th'))
-            .filter(th => th.textContent === key);
+            const filteredThs = Array.from(
+              metadataCtr.querySelectorAll('th'),
+            ).filter((th) => th.textContent === key);
 
             if (filteredThs.length < 1) {
               return null;
@@ -460,7 +494,7 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
             return filteredThs[0].parentElement.querySelector('td').textContent;
           };
 
-          const values = []
+          const values = [];
           for (const key of keys) {
             values.push(meta(key));
           }
@@ -468,7 +502,9 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
           handleFn(...values);
         } finally {
           // close the modal
-          const closeBtn = document.querySelector('body > div:last-of-type button[aria-label="Close"]');
+          const closeBtn = document.querySelector(
+            'body > div:last-of-type button[aria-label="Close"]',
+          );
           if (closeBtn) {
             closeBtn.click();
           }
@@ -479,17 +515,23 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
       setTimeout(doGetSubjectMetaAndDo, 20);
     }
 
-
     function getSubjectRadiusTempMagAndDo(handleFn) {
-      getSubjectMetaAndDo(['Radius (solar radii)', 'Magnitude', 'Temperature (K)'], (radiusText, magText, temperatureText) => {
-        if (radiusText) {
-          // if the text is "null", it will be parsed as NaN, the handler needs to deal with it.
-          handleFn(parseFloat(radiusText), parseFloat(magText), parseFloat(temperatureText));
-        }
-      });
+      getSubjectMetaAndDo(
+        ['Radius (solar radii)', 'Magnitude', 'Temperature (K)'],
+        (radiusText, magText, temperatureText) => {
+          if (radiusText) {
+            // if the text is "null", it will be parsed as NaN, the handler needs to deal with it.
+            handleFn(
+              parseFloat(radiusText),
+              parseFloat(magText),
+              parseFloat(temperatureText),
+            );
+          }
+        },
+      );
     }
 
-    const R_JUPITER_IN_R_SUN = 0.1028
+    const R_JUPITER_IN_R_SUN = 0.1028;
 
     // units: usually is r_sun, but as long as the two have the same unit, it is okay
     function calcDipDepth(rStar, rObject) {
@@ -500,7 +542,6 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
       return Math.sqrt(Math.pow(rStar, 2) * dipDepth);
     }
 
-
     // Prepare output container: it is shown irrespective of whether extracting radius is successful
     // (useful for cases when the extraction fails (intermittently) due to timing issues. The
     //  user can still fill out the form)
@@ -510,7 +551,9 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
         return ctr;
       }
       const infoBtn = getSubjectInfoBtnOnClassify();
-      infoBtn.insertAdjacentHTML('beforebegin', `<div id="classifyHintOut" title="Dip's depth estimator. Press Alt-C to activate it if it is not present."
+      infoBtn.insertAdjacentHTML(
+        'beforebegin',
+        `<div id="classifyHintOut" title="Dip's depth estimator. Press Alt-C to activate it if it is not present."
           style="margin-right: 16px; margin-top: 4px; padding: 2px 4px; box-shadow: 2px 2px #ccc; border-bottom-right-radius: 6%;">
       R<sub>s</sub> <span style="font-size: 80%;">[R<sub>☉</sub>]</span>: <input name="r_*" type="number" style="width: 6ch;" step="0.1" placeholder="Enter stellar radius">&emsp;
       R<sub>p</sub> <span style="font-size: 80%;">[R<sub>j</sub>]</span>: <input name="r_p" type="number" style="width: 6ch;" step="0.1" value="1">
@@ -521,37 +564,51 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
       </span>
       <span id="stellarParamsOut"
             title="Magnitude / Temperature"></span>
-  </div>`);
+  </div>`,
+      );
       const calcDipDepthFromInput = () => {
         const ctr = document.querySelector('#classifyHintOut');
         const rStar = parseFloat(ctr.querySelector('input[name="r_*"]').value);
-        const rObject = parseFloat(ctr.querySelector('input[name="r_p"]').value) * R_JUPITER_IN_R_SUN;
+        const rObject =
+          parseFloat(ctr.querySelector('input[name="r_p"]').value) *
+          R_JUPITER_IN_R_SUN;
         const depth = calcDipDepth(rStar, rObject);
-        ctr.querySelector('#dipDepthOut').value = depth ? (depth * 100).toFixed(3) : '';
+        ctr.querySelector('#dipDepthOut').value = depth
+          ? (depth * 100).toFixed(3)
+          : '';
       };
-      document.querySelector('#classifyHintOut input[name="r_*"]').onchange = calcDipDepthFromInput;
-      document.querySelector('#classifyHintOut input[name="r_p"]').onchange = calcDipDepthFromInput;
-      document.querySelector('#classifyHintOut #dipDepthGoBtn').onclick = calcDipDepthFromInput;
+      document.querySelector('#classifyHintOut input[name="r_*"]').onchange =
+        calcDipDepthFromInput;
+      document.querySelector('#classifyHintOut input[name="r_p"]').onchange =
+        calcDipDepthFromInput;
+      document.querySelector('#classifyHintOut #dipDepthGoBtn').onclick =
+        calcDipDepthFromInput;
 
       // support use case that user modifies the depth, and return the estimated planet radius
       const calcCompanionRadiusFromInput = () => {
         const ctr = document.querySelector('#classifyHintOut');
         const rStar = parseFloat(ctr.querySelector('input[name="r_*"]').value);
         const depth = parseFloat(ctr.querySelector('#dipDepthOut').value) / 100;
-        const rObjectInRJupiter = calcCompanionRadius(rStar, depth) / R_JUPITER_IN_R_SUN;
+        const rObjectInRJupiter =
+          calcCompanionRadius(rStar, depth) / R_JUPITER_IN_R_SUN;
 
-        ctr.querySelector('input[name="r_p"]').value = rObjectInRJupiter ? rObjectInRJupiter.toFixed(3) : '';
+        ctr.querySelector('input[name="r_p"]').value = rObjectInRJupiter
+          ? rObjectInRJupiter.toFixed(3)
+          : '';
       };
-      document.querySelector('#classifyHintOut #dipDepthOut').onchange = calcCompanionRadiusFromInput;
+      document.querySelector('#classifyHintOut #dipDepthOut').onchange =
+        calcCompanionRadiusFromInput;
 
       return document.querySelector('#classifyHintOut');
     })();
 
-    getSubjectRadiusTempMagAndDo((rStar, mag, temperature)=> {
+    getSubjectRadiusTempMagAndDo((rStar, mag, temperature) => {
       const fillDipDepthCalculator = (ctr, rStar, rObject) => {
         // enter 0 when not available, as a way to signal to the user that no data is available
         ctr.querySelector('input[name="r_*"]').value = rStar ? rStar : 0;
-        ctr.querySelector('input[name="r_p"]').value = rObject ? rObject / R_JUPITER_IN_R_SUN : '';
+        ctr.querySelector('input[name="r_p"]').value = rObject
+          ? rObject / R_JUPITER_IN_R_SUN
+          : '';
         if (rStar && rObject) {
           document.querySelector('#classifyHintOut #dipDepthGoBtn').click();
         }
@@ -564,18 +621,20 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
       }
 
       // show other stellar parameters
-      mag = !isNaN(mag) ? mag : "";
-      temperature = !isNaN(temperature) ? `${temperature}K` : "";
-      document.querySelector('#stellarParamsOut').textContent = `${mag} / ${temperature}`;
-
+      mag = !isNaN(mag) ? mag : '';
+      temperature = !isNaN(temperature) ? `${temperature}K` : '';
+      document.querySelector('#stellarParamsOut').textContent =
+        `${mag} / ${temperature}`;
     });
   } // function addDipDepthCalculator()
 
   // define a reference to customizeViewerSubjectLevel so that it can be referenced
   // by key map customization.
   // the real definition comes later.
-  let customizeViewerSubjectLevel = function() {
-    console.error("customizeViewerSubjectLevel(): the placeholder version is called. It should never happen");
+  let customizeViewerSubjectLevel = function () {
+    console.error(
+      'customizeViewerSubjectLevel(): the placeholder version is called. It should never happen',
+    );
   };
 
   //
@@ -603,8 +662,9 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     }
 
     function clickDone() {
-      const doneBtn = Array.from(document.querySelectorAll('button[type="button"]'))
-                      .find(btn => btn.textContent.toLowerCase() == 'done');
+      const doneBtn = Array.from(
+        document.querySelectorAll('button[type="button"]'),
+      ).find((btn) => btn.textContent.toLowerCase() == 'done');
       if (doneBtn) {
         doneBtn.click();
       } else {
@@ -613,30 +673,30 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     }
 
     const keyMap = {
-      "KeyI":    clickSubjectInfoOnClassify,
-      "Numpad1": clickSubjectInfoOnClassify,
+      KeyI: clickSubjectInfoOnClassify,
+      Numpad1: clickSubjectInfoOnClassify,
       // also accepts Numpad1 is convenient for users who frequent use numpad +/-/0
 
-      "Digit0":  clickReset,
-      "Numpad0": clickReset,
-      "KeyO":    clickReset,
+      Digit0: clickReset,
+      Numpad0: clickReset,
+      KeyO: clickReset,
       // also accepts  KeyO as an alterative as it's close to keyM used below
 
-      "KeyM":    clickMove,
+      KeyM: clickMove,
 
-      "KeyA":    clickAnnotate,
-      "Comma":   clickAnnotate,
+      KeyA: clickAnnotate,
+      Comma: clickAnnotate,
       // also accepts use comma as an alternative as it is close to keyM
-      "!any-modifier": {
-        "Enter": clickDone,
-        "NumpadEnter": clickDone,
+      '!any-modifier': {
+        Enter: clickDone,
+        NumpadEnter: clickDone,
       },
-      "!altKey": {
+      '!altKey': {
         // Alt-C to bring up dip's depth calculator, fixing on wheel listener to the subject, etc.
         // It is needed as a workaround
         // when the calculator does not show up intermittently
         // (probably due to some issues related to subject ajax loading timing).
-        "KeyC": customizeViewerSubjectLevel,
+        KeyC: customizeViewerSubjectLevel,
       },
     };
 
@@ -645,14 +705,14 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     }
 
     window.addEventListener('keydown', handleViewerKeyboardShortcuts);
-
   } // function addKeyMapToViewer()
 
   function tweakWheelOnViewer() {
-
     const lcvEl = getViewerSVGEl();
     if (!lcvEl) {
-      console.warn('tweakWheelOnViewer(): Viewer <svg> element not found. Cannot apply the wheel customization. No-op');
+      console.warn(
+        'tweakWheelOnViewer(): Viewer <svg> element not found. Cannot apply the wheel customization. No-op',
+      );
       return false;
     }
     if (lcvEl.tweakWheelOnViewerCalled) {
@@ -662,7 +722,6 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     // else start the init
     lcvEl.tweakWheelOnViewerCalled = true;
     // console.debug(`tweakWheelOnViewer() - to add listeners to 'svg.light-curve-viewer': `, lcvEl);
-
 
     function isBtnHighlighted(btnTitle) {
       // .goRgga css class for active button in ZN light theme,
@@ -674,7 +733,9 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
       //   getComputedStyle(el).backgroundColor === "rgb(0, 151, 157)"
       // - we might consider to cut down getComputedStyle by caching,
       //   however, caching wil break when user switches theme.
-      return document.querySelector(`button.goRgga[aria-label="${btnTitle}"], button.bXWwGw[aria-label="${btnTitle}"]`);
+      return document.querySelector(
+        `button.goRgga[aria-label="${btnTitle}"], button.bXWwGw[aria-label="${btnTitle}"]`,
+      );
     }
 
     // make wheel scrolling within viewer work better part 1
@@ -691,7 +752,6 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
       clickViewerBtn('Move subject');
     } // function changeToMoveOnWheelInViewer(..)
     lcvEl.addEventListener('wheel', changeToMoveOnWheelInViewer);
-
 
     // Use middle button to toggle between Annotate / Move subject
     function toggleAnnotateMoveOnMiddleClickInViewer(evt) {
@@ -714,7 +774,10 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
         clickViewerBtn('Annotate');
       }
     } // function toggleAnnotateMoveOnMiddleClickInViewer(..)
-    lcvEl.addEventListener('mousedown', toggleAnnotateMoveOnMiddleClickInViewer);
+    lcvEl.addEventListener(
+      'mousedown',
+      toggleAnnotateMoveOnMiddleClickInViewer,
+    );
 
     return true;
   } // function tweakWheelOnViewer()
@@ -744,7 +807,6 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     doCustomizeViewerGenericLevel();
   }
 
-
   // Customization that needs to be triggered for every subject
   // define the reference declared earlier on
   customizeViewerSubjectLevel = function () {
@@ -764,7 +826,7 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     addDipDepthCalculator();
   };
 
-  function customizeViewerOnSVGLoaded(force=false) {
+  function customizeViewerOnSVGLoaded(force = false) {
     function doCustomizeAll() {
       // wrap the actual work
       customizeViewerGenericLevel();
@@ -772,12 +834,14 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     }
 
     const lcvEl = getViewerSVGEl();
-    const lcvObserver = new MutationObserver(function(mutations, observer) {
+    const lcvObserver = new MutationObserver(function (mutations, observer) {
       ajaxDbg('customizeViewerOnSVGLoaded() - viewer observer called');
       observer.disconnect();
       // The SVG will be modified a few times by zooniverse code (to load lightcurve, etc.)
       // So we wait a bit to let it finish before customizing
-      ajaxDbg('customizeViewerOnSVGLoaded(): about to do actual customization with a timeout call.');
+      ajaxDbg(
+        'customizeViewerOnSVGLoaded(): about to do actual customization with a timeout call.',
+      );
       // hack 2023-10-13: SVG seemed to have been destroyed in running doCustomizeAll() -> customizeViewerSubjectLevel() ->  tweakWheelOnViewer()
       // increasing timeout from 500 to 1500 seem to ensure the SVG element can be found.
       setTimeout(doCustomizeAll, 1500);
@@ -789,7 +853,10 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     }
     if (!force) {
       // normal path
-      ajaxDbg('customizeViewerOnSVGLoaded() - wait for svg loaded. svg children:', document.querySelector('svg.light-curve-viewer').children);
+      ajaxDbg(
+        'customizeViewerOnSVGLoaded() - wait for svg loaded. svg children:',
+        document.querySelector('svg.light-curve-viewer').children,
+      );
       lcvObserver.observe(lcvEl, { childList: true, subtree: true });
       // Issue 2023-10-13: for the initial loading of the viewer page.
       // It seems that the <svg> has been loaded successfully by the time observer is initialized.
@@ -799,7 +866,9 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     } else {
       // path used by the retry hack, by the time the retry happened, the svg has been loaded.
       // so we must not use the observer to trigger the work
-      ajaxDbg('customizeViewerOnSVGLoaded() - in force mode, i.e., during the retry hack');
+      ajaxDbg(
+        'customizeViewerOnSVGLoaded() - in force mode, i.e., during the retry hack',
+      );
       doCustomizeAll();
     }
     return true;
@@ -837,20 +906,17 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     }
   } // function customizeViewerOnDoneClicked(..)
   window.addEventListener('click', customizeViewerOnDoneClicked);
-
 })();
-
 
 (function customizeTalk() {
   function openTalkSearchInNewTab(talkForm) {
     const query = talkForm.querySelector('input').value;
-    const searchUrl = query.startsWith('#') ?
-    `https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/tags/${query.slice(1)}` :
-    `https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=${encodeURIComponent(query)}`;
+    const searchUrl = query.startsWith('#')
+      ? `https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/tags/${query.slice(1)}`
+      : `https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=${encodeURIComponent(query)}`;
 
     GM_openInTab(searchUrl, true); // open the search in the a new tab in background.
   }
-
 
   function tweakTalkSearch() {
     const talkForm = document.querySelector('form.talk-search-form');
@@ -865,9 +931,9 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     talkForm.tweakCalled = true;
 
     // Add keyboard shortcut to Search input field
-    talkForm.querySelector('input').accessKey = "/";
-    talkForm.querySelector('input').placeholder = "Search or enter a #tag. Alt-/ : shortcut";
-
+    talkForm.querySelector('input').accessKey = '/';
+    talkForm.querySelector('input').placeholder =
+      'Search or enter a #tag. Alt-/ : shortcut';
 
     // Open talk search in a new tab for:
 
@@ -891,14 +957,17 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
   }
 
   urlChangeNotifier.addListener(() => {
-    if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk')) {
+    if (
+      location.pathname.startsWith(
+        '/projects/nora-dot-eisner/planet-hunters-tess/talk',
+      )
+    ) {
       onPanoptesMainLoaded(tweakTalkSearch);
     }
-  })
+  });
 })();
 
 (function customizeSubjectTalk() {
-
   // Helpers for subject / talk pages
   function getThreadContainer() {
     // subject pages and general talk pages have different container
@@ -926,13 +995,16 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
         return null;
       }
       try {
-        const metadataCtr = document.querySelector('.modal-dialog .content-container > table');
+        const metadataCtr = document.querySelector(
+          '.modal-dialog .content-container > table',
+        );
         if (!metadataCtr) {
           return null;
         }
 
-        const ticThs = Array.from(metadataCtr.querySelectorAll('th'))
-          .filter( th => th.textContent == 'TIC ID' );
+        const ticThs = Array.from(metadataCtr.querySelectorAll('th')).filter(
+          (th) => th.textContent == 'TIC ID',
+        );
 
         if (ticThs.length < 1) {
           return null;
@@ -943,17 +1015,24 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
         // extra parsing of metadata textContent:
         // to workaround a bug the the value would precede with some error message
         // "Cannot use 'in' operator to search for 'message' in 66"
-        const ticIdText = ticThs[0].parentElement.querySelector('td').textContent;
+        const ticIdText =
+          ticThs[0].parentElement.querySelector('td').textContent;
         const [, ticId] = ticIdText.match(/(\d+)/) || [null, ''];
 
-        const sectorThs = Array.from(metadataCtr.querySelectorAll('th'))
-          .filter( th => th.textContent == 'Sector' );
-        const sectorText = sectorThs.length > 0 ? sectorThs[0].parentElement.querySelector('td').textContent : '';
+        const sectorThs = Array.from(metadataCtr.querySelectorAll('th')).filter(
+          (th) => th.textContent == 'Sector',
+        );
+        const sectorText =
+          sectorThs.length > 0
+            ? sectorThs[0].parentElement.querySelector('td').textContent
+            : '';
         const [, sector] = sectorText.match(/(\d+)/) || [null, ''];
 
-        return {ticId, sector};
+        return { ticId, sector };
       } finally {
-        const closeBtn = document.querySelector('form.modal-dialog button.modal-dialog-close-button');
+        const closeBtn = document.querySelector(
+          'form.modal-dialog button.modal-dialog-close-button',
+        );
         if (closeBtn) {
           closeBtn.click();
         } else {
@@ -1000,7 +1079,7 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     return meta;
   }
 
-  function showHideTicPopin(meta, autoClickDefaults=false) {
+  function showHideTicPopin(meta, autoClickDefaults = false) {
     function doAutoClickDefaults() {
       // call _pht_talk the last, it will then be put right next to the current tab
       GM_openInTab(document.querySelector('a[target="_exofop"]').href, true);
@@ -1018,7 +1097,8 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
         if (popinCtr.dataset['meta'] == JSON.stringify(meta)) {
           // case there is an UI, that refers to the same subject
           // toggle hide show
-          popinCtr.style.display = popinCtr.style.display === 'none' ? 'block' : 'none';
+          popinCtr.style.display =
+            popinCtr.style.display === 'none' ? 'block' : 'none';
           if (autoClickDefaults && popinCtr.style.display === 'block') {
             doAutoClickDefaults();
           }
@@ -1031,7 +1111,9 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
       }
 
       // create one
-      document.body.insertAdjacentHTML('beforeend', `\
+      document.body.insertAdjacentHTML(
+        'beforeend',
+        `\
 <div id="ticPopin" style="display: block; position: fixed; top: 20px; right: 10vh; padding: 1em 3ch; z-index: 9999; background-color: lightgray; border: 1px solid black;">
 <a style="float: right; font-weight: bold;" href="javascript:void(0);" onclick="this.parentElement.style.display='none';">[X]</a>
 
@@ -1059,14 +1141,16 @@ MAST Portal:<br>
 <br><br>
 When TIC will be observed:<br>
 <!-- <a target="_wtv" href="https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}" ref="noopener nofollow">https://heasarc.gsfc.nasa.gov/cgi-bin/tess/webtess/wtv.py?Entry=${ticId}</a> -->
-<a target="_wtv" href="https://heasarc.gsfc.nasa.gov/wsgi-scripts/TESS/TESS-point_Web_Tool/TESS-point_Web_Tool/wtv_v2.0.py/#tic=${ticId}"  ref="noopener nofollow">WTV2</a>
+<a target="_wtv" href="https://heasarc.gsfc.nasa.gov/wsgi-scripts/TESS/TESS-point_Web_Tool/TESS-point_Web_Tool/wtv_v2.0.py/TICID_result/ticid=${ticId}"  ref="noopener nofollow">WTV2</a>
 
 
 <br><br>
 <button id="ticShowMetadataCtl" accesskey="I" title="Subject Metadata shortcut: Alt-I">Metadata (<u>I</u>)</button>
-</div>`);
+</div>`,
+      );
 
-      document.getElementById('ticPopin').dataset['meta'] = JSON.stringify(meta);
+      document.getElementById('ticPopin').dataset['meta'] =
+        JSON.stringify(meta);
 
       // bind buttons generated to actual logic
 
@@ -1083,8 +1167,12 @@ When TIC will be observed:<br>
 
       const addTicToNote = () => {
         const ticId = document.getElementById('ticIdForCopy').value;
-        const noteEl = document.querySelector('form.talk-comment-form textarea');
-        const addNewLine = !(['', '\n', '\r'].includes(noteEl.value.charAt(noteEl.value.length - 1)));
+        const noteEl = document.querySelector(
+          'form.talk-comment-form textarea',
+        );
+        const addNewLine = !['', '\n', '\r'].includes(
+          noteEl.value.charAt(noteEl.value.length - 1),
+        );
         noteEl.value += `${addNewLine ? '\n' : ''}TIC ${ticId}\n`;
         // noteEl.focus();  // no longer put the note in focus, more handy for my workflow.
       };
@@ -1106,16 +1194,24 @@ When TIC will be observed:<br>
       };
 
       // add a listener to auto-close the pop-in if users clicks outside of it
-      window.addEventListener('click', (evt) => {
-        if (!isElementOrAncestor(evt.target, el => {
-          return ['extractTicIdIfAnyCtl', 'ticPopin'].includes(el.id) || // ignore when it's clicked related to the pop-in
-            (el.tagName === 'BUTTON' && el.title === 'Metadata') || el.classList.contains('modal-dialog'); // also ignore when metadata button (because the pop-in logic clicks it)
-        })) {
-          document.getElementById('ticPopin').style.display = 'none';
-        }
-        return true;
-      }, { passive: true });
-
+      window.addEventListener(
+        'click',
+        (evt) => {
+          if (
+            !isElementOrAncestor(evt.target, (el) => {
+              return (
+                ['extractTicIdIfAnyCtl', 'ticPopin'].includes(el.id) || // ignore when it's clicked related to the pop-in
+                (el.tagName === 'BUTTON' && el.title === 'Metadata') ||
+                el.classList.contains('modal-dialog')
+              ); // also ignore when metadata button (because the pop-in logic clicks it)
+            })
+          ) {
+            document.getElementById('ticPopin').style.display = 'none';
+          }
+          return true;
+        },
+        { passive: true },
+      );
 
       if (autoClickDefaults) {
         doAutoClickDefaults();
@@ -1128,7 +1224,7 @@ When TIC will be observed:<br>
     }
   } // function showTicPopin()
 
-  function extractTicIdIfAny(autoClickDefaults=false) {
+  function extractTicIdIfAny(autoClickDefaults = false) {
     const meta = getTicIdFromMetadataPopIn();
     showHideTicPopin(meta, autoClickDefaults);
   } // function extractTicIdIfAny()
@@ -1141,11 +1237,16 @@ When TIC will be observed:<br>
     // attach the button to discussion thread container,
     // so that if the user traverses to other pages, via ajx, the UI will be automatically removed
     // as part of the discussion thread.
-    getThreadContainer().insertAdjacentHTML('beforeend', `
+    getThreadContainer().insertAdjacentHTML(
+      'beforeend',
+      `
 <div id="extractTicIdIfAnyCtr" style="z-index: 9; position: fixed; top: 50px; right: 4px; padding: 4px 8px; background-color: rgba(255,168,0,0.5);">
   <button id="extractTicIdIfAnyCtl" accesskey="T">TIC</button>
-</div>`);
-    document.getElementById('extractTicIdIfAnyCtl').onclick = () => { extractTicIdIfAny(); };
+</div>`,
+    );
+    document.getElementById('extractTicIdIfAnyCtl').onclick = () => {
+      extractTicIdIfAny();
+    };
 
     document.addEventListener('keydown', (evt) => {
       // open Tic Pop-in, and auto click the defaults
@@ -1171,7 +1272,8 @@ When TIC will be observed:<br>
       // add subject to the title if it's not there
       if (!title.match(/^S.\d+/)) {
         const extra = (() => {
-          const subjectNumberMatch = location.pathname.match(/\/subjects\/(\d+)/);
+          const subjectNumberMatch =
+            location.pathname.match(/\/subjects\/(\d+)/);
           if (subjectNumberMatch) {
             // use S. short form to make subject number more likely to fit in the visible portion of the tab.
             return `S.${subjectNumberMatch[1]} | `;
@@ -1189,7 +1291,7 @@ When TIC will be observed:<br>
 
       document.title = title;
     } else {
-      console.warn('showTicOnTitleIfAny() - tic id not available yet')
+      console.warn('showTicOnTitleIfAny() - tic id not available yet');
     }
   }
 
@@ -1215,21 +1317,34 @@ When TIC will be observed:<br>
   }
 
   urlChangeNotifier.addListener(() => {
-    if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/')
-      || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2112/') // Notes (of subjects)
-      || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2110/') // Planets!
-      || location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/2107/') // Strange Stars
+    if (
+      location.pathname.startsWith(
+        '/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/',
+      ) ||
+      location.pathname.startsWith(
+        '/projects/nora-dot-eisner/planet-hunters-tess/talk/2112/',
+      ) || // Notes (of subjects)
+      location.pathname.startsWith(
+        '/projects/nora-dot-eisner/planet-hunters-tess/talk/2110/',
+      ) || // Planets!
+      location.pathname.startsWith(
+        '/projects/nora-dot-eisner/planet-hunters-tess/talk/2107/',
+      ) // Strange Stars
     ) {
       onPanoptesMainLoaded(customizeIfTicPresent);
     }
-  })
+  });
 
   // ------------
 
   let addKeyMapToTalkCalled = false;
   function addKeyMapToTalk() {
     // applicable to talk pages only
-    if (!location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/')) {
+    if (
+      !location.pathname.startsWith(
+        '/projects/nora-dot-eisner/planet-hunters-tess/talk/',
+      )
+    ) {
       return;
     }
 
@@ -1240,7 +1355,7 @@ When TIC will be observed:<br>
     }
 
     const keyMap = {
-      "KeyI":    clickSubjectInfoOnTalk,
+      KeyI: clickSubjectInfoOnTalk,
       // removed Numpad1 shortcut, as it conflicts with the more frequently used "End"
       // meaning for Numpad1
       // "Numpad1": clickSubjectInfoOnTalk,
@@ -1251,10 +1366,8 @@ When TIC will be observed:<br>
     }
 
     window.addEventListener('keydown', handleTalkKeyboardShortcuts);
-
   } // function addKeyMapToTalk()
   addKeyMapToTalk();
-
 
   // ------------
 
@@ -1262,7 +1375,9 @@ When TIC will be observed:<br>
    * Add links to TIC ids in a discussion thread
    */
   function autoLinkTICIds() {
-    const commentElList = document.querySelectorAll('.talk-comment-body .markdown');
+    const commentElList = document.querySelectorAll(
+      '.talk-comment-body .markdown',
+    );
     if (commentElList.length < 1) {
       // discussion thread content not yet loaded.
       return false;
@@ -1270,7 +1385,9 @@ When TIC will be observed:<br>
 
     if (!document.getElementById('ticToolTipStyles')) {
       // give the style an id so that we will only insert it once.
-      document.head.insertAdjacentHTML('beforeend', `<style id="ticToolTipStyles">
+      document.head.insertAdjacentHTML(
+        'beforeend',
+        `<style id="ticToolTipStyles">
   .tooltip-tic-ctr {
     position: relative;
     display: inline-block;
@@ -1295,25 +1412,27 @@ When TIC will be observed:<br>
   .tooltip-tic-ctr:hover .tooltip-tic {
     display: inline;
   }
-</style>`);
+</style>`,
+      );
     }
 
-    const replaceExpr = '$1<span class="tooltip-tic-ctr">TIC $2<span class="tooltip-tic">' +
+    const replaceExpr =
+      '$1<span class="tooltip-tic-ctr">TIC $2<span class="tooltip-tic">' +
       '<a href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC $2" target="_pht_talk">[Talk]</a> ' +
       '| <a href="https://exofop.ipac.caltech.edu/tess/target.php?id=$2" target="_exofop">[ExoFOP]</a> ' +
-      '| <button onclick="navigator.clipboard.writeText(\'TIC $2\');">Copy</button> '
-      + '</span></span>';
+      '| <button onclick="navigator.clipboard.writeText(\'TIC $2\');">Copy</button> ' +
+      '</span></span>';
     const ticReList = [
       // Note can't match pattern "#TIC 12345678", because #TIC has been linkified already (as hashtag link)
-      /(\s+|[(])TIC(?:\s*ID)?\s*(\d+)/mgi,  // regular text match, with space or bracket preceding to ensure it is not, say, part of an URL inside <a> tag
-      /(^)TIC(?:\s*ID)?\s*(\d+)/mgi,  // cases the TIC  is at start of a line
-      /(<p>)TIC(?:\s*ID)?\s*(\d+)/mgi, // cases the TIC is visually at the start of the line, e.g., <p>TIC 12345678
-      /(<br>)TIC(?:\s*ID)?\s*(\d+)/mgi, // cases the TIC is visually at the start of the line, e.g., <br>TIC 12345678
+      /(\s+|[(])TIC(?:\s*ID)?\s*(\d+)/gim, // regular text match, with space or bracket preceding to ensure it is not, say, part of an URL inside <a> tag
+      /(^)TIC(?:\s*ID)?\s*(\d+)/gim, // cases the TIC  is at start of a line
+      /(<p>)TIC(?:\s*ID)?\s*(\d+)/gim, // cases the TIC is visually at the start of the line, e.g., <p>TIC 12345678
+      /(<br>)TIC(?:\s*ID)?\s*(\d+)/gim, // cases the TIC is visually at the start of the line, e.g., <br>TIC 12345678
     ];
-    Array.from(commentElList, commentEl => {
+    Array.from(commentElList, (commentEl) => {
       let changed = false;
       let html = commentEl.innerHTML;
-      ticReList.forEach( ticRe => {
+      ticReList.forEach((ticRe) => {
         if (html.match(ticRe)) {
           html = html.replace(ticRe, replaceExpr);
           changed = true;
@@ -1328,9 +1447,13 @@ When TIC will be observed:<br>
 
   function setupAutoLinkTICIds() {
     function autoLinkTICIdsOnUpdate(evt) {
-      if (!(evt.target.tagName === 'BUTTON' &&
-        evt.target.classList.contains('talk-comment-submit-button'))) {
-          return;
+      if (
+        !(
+          evt.target.tagName === 'BUTTON' &&
+          evt.target.classList.contains('talk-comment-submit-button')
+        )
+      ) {
+        return;
       }
       // user edit / update a comment, re-run auto link
       // OPEN: use a crude timeout to re-run, as it's difficult to known when ajax load is finished.
@@ -1338,7 +1461,6 @@ When TIC will be observed:<br>
       setTimeout(autoLinkTICIds, 1000);
       setTimeout(autoLinkTICIds, 3000);
     }
-
 
     if (autoLinkTICIds()) {
       const threadCtr = getThreadContainer();
@@ -1362,22 +1484,32 @@ When TIC will be observed:<br>
 
   urlChangeNotifier.addListener(() => {
     // match any threads
-    if (location.pathname.startsWith('/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/')
-      || location.pathname.match(/\/projects\/nora-dot-eisner\/planet-hunters-tess\/talk\/\d+\/\d+.*/)) {
-        onPanoptesMainLoaded(setupAutoLinkTICIds);
-        if (/comment=\d+/.test(location.search)) {
-          scrollToActiveComment();
-        }
+    if (
+      location.pathname.startsWith(
+        '/projects/nora-dot-eisner/planet-hunters-tess/talk/subjects/',
+      ) ||
+      location.pathname.match(
+        /\/projects\/nora-dot-eisner\/planet-hunters-tess\/talk\/\d+\/\d+.*/,
+      )
+    ) {
+      onPanoptesMainLoaded(setupAutoLinkTICIds);
+      if (/comment=\d+/.test(location.search)) {
+        scrollToActiveComment();
+      }
     }
   });
-
 })();
-
 
 (function customizeCollection() {
   function isPathNamePHTCollection() {
-    return /\/projects\/nora-dot-eisner\/planet-hunters-tess\/collections\/.+\/.+/.test(location.pathname)
-      ||  /\/projects\/nora-dot-eisner\/planet-hunters-tess\/recents.*/.test(location.pathname);
+    return (
+      /\/projects\/nora-dot-eisner\/planet-hunters-tess\/collections\/.+\/.+/.test(
+        location.pathname,
+      ) ||
+      /\/projects\/nora-dot-eisner\/planet-hunters-tess\/recents.*/.test(
+        location.pathname,
+      )
+    );
   }
 
   function addStyle() {
@@ -1389,7 +1521,8 @@ When TIC will be observed:<br>
   }
 
   function showSubjectNumInThumbnails() {
-    if (!isPathNamePHTCollection()) { // current path indicates it's not a collection, so no-op
+    if (!isPathNamePHTCollection()) {
+      // current path indicates it's not a collection, so no-op
       return false;
     }
 
@@ -1398,13 +1531,23 @@ When TIC will be observed:<br>
     }
 
     // from indicateSubjectOfReferrer()
-    const referrerSubjectId = document.getElementById("referrerSubjectIdCtr")?.dataset?.["subjectId"];
+    const referrerSubjectId = document.getElementById('referrerSubjectIdCtr')
+      ?.dataset?.['subjectId'];
 
     Array.from(document.querySelectorAll('.subject-viewer'), (ctr) => {
-      if (ctr.subjectAdded) { return; }
-      const [,  subjNum] = ctr.querySelector('.subject-container a.subject-link').href.match(/\/subjects\/(.+)$/);
-      const extraCssClass = referrerSubjectId == subjNum ? "referred" : "";
-      ctr.querySelector('.subject-tools').insertAdjacentHTML('beforeend', `<span class="subject-num ${extraCssClass}" title="Subject number">${subjNum}&nbsp;</span>`);
+      if (ctr.subjectAdded) {
+        return;
+      }
+      const [, subjNum] = ctr
+        .querySelector('.subject-container a.subject-link')
+        .href.match(/\/subjects\/(.+)$/);
+      const extraCssClass = referrerSubjectId == subjNum ? 'referred' : '';
+      ctr
+        .querySelector('.subject-tools')
+        .insertAdjacentHTML(
+          'beforeend',
+          `<span class="subject-num ${extraCssClass}" title="Subject number">${subjNum}&nbsp;</span>`,
+        );
       ctr.subjectAdded = true;
     });
     return true;
@@ -1415,11 +1558,16 @@ When TIC will be observed:<br>
   // - click the collection from where they want to remove the subject
   // - (The UI tweak) show the subject number to help users to locate it in the collection.
   function indicateSubjectOfReferrer() {
-    const [, subject] = document.referrer?.match(/\/talk\/subjects\/(\d+)/) || [null, null];
+    const [, subject] = document.referrer?.match(/\/talk\/subjects\/(\d+)/) || [
+      null,
+      null,
+    ];
     if (!subject) {
       return;
     }
-    document.body.insertAdjacentHTML('beforeend', `
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      `
 <div style="position: fixed;top: 30px;right: 6px;padding: 6px;background-color: rgba(255, 255, 0, 0.95); z-index: 99;"
      title="The subject you visit before traversing to this collection"
      id="referrerSubjectIdCtr" data-subject-id="${subject}">
@@ -1427,10 +1575,9 @@ When TIC will be observed:<br>
 From subject:&emsp;<br>
 ${subject}
 </div>
-`);
+`,
+    );
   }
-
-
 
   // main logic
   if (isPathNamePHTCollection()) {
@@ -1442,5 +1589,5 @@ ${subject}
     if (isPathNamePHTCollection()) {
       onPanoptesMainLoaded(showSubjectNumInThumbnails);
     }
-  })
+  });
 })();

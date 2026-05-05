@@ -16,7 +16,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.17.1
+// @version     1.18.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -435,6 +435,22 @@ function tweakIdentifiersUI() {
           tt,
           `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/66/405/ell&Star=${ogleEllVizierName}`,
           'Vizier data from 2016AcA,OGLE',
+        );
+      }
+
+      // add a Vizier link to OGLE GD-CEP names
+      const [, ogleGdCepNum] = curAlias.match(/OGLE GD-CEP-(\d+)/) || [
+        null,
+        null,
+      ];
+      if (ogleGdCepNum) {
+        // In Vizier OGLE GD CEP tables J/AcA/68/315, the name is standardize differently from the one in SIMBAD
+        // in the form of OGLE-GD-CEP-0634  (fixed 4 digits)
+        const ogleGdCepVizierName = `OGLE-GD-CEP-${ogleGdCepNum.padStart(4, '0')}`;
+        addVizierLink(
+          tt,
+          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/68/315&Star=${ogleGdCepVizierName}`,
+          'Vizier data from 2018AcA,OGLE',
         );
       }
 

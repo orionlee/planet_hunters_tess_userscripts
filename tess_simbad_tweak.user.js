@@ -16,7 +16,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.18.0
+// @version     1.19.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -451,6 +451,21 @@ function tweakIdentifiersUI() {
           tt,
           `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/68/315&Star=${ogleGdCepVizierName}`,
           'Vizier data from 2018AcA,OGLE',
+        );
+      }
+
+      // add a Vizier link to OGLE GD-ECL names
+      const [, ogleGdEclNum] = curAlias.match(/OGLE GD-ECL-(\d+)/) || [
+        null,
+        null,
+      ];
+      if (ogleGdEclNum) {
+        // In Vizier OGLE GD ECL tables J/AcA/63/115/, the Star column has the number only (no padding)
+        const ogleGdEclVizierName = ogleGdEclNum;
+        addVizierLink(
+          tt,
+          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/63/115&Star=${ogleGdEclVizierName}`,
+          'Vizier data from 2013AcA,OGLE',
         );
       }
 

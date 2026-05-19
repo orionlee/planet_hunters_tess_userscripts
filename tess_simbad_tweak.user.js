@@ -16,7 +16,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.19.1
+// @version     1.20.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -481,6 +481,15 @@ function tweakIdentifiersUI() {
         (n) => n, // Vizier name is the entire J number
         'https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AJ/156/241&ATOID=${vizierName}',
         'Vizier data from 2018AJ,ATLAS',
+      );
+
+      matchNameToAddVizierLink(
+        tt,
+        // match names from ASAS-3 names, e.g., ASAS J151543-2035.5
+        /ASAS J(.+)/,
+        (n) => n, // Vizier name is the entire J number without the J
+        'https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=II/264/asas3&-source=II/264/ivar&-source=J/AcA/50/177&ASAS=${vizierName}',
+        'Vizier data from 2002AcA / 2000AcA, ASAS-3',
       );
     });
 }

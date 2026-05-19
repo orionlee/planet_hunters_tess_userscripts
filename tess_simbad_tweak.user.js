@@ -16,7 +16,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.19.0
+// @version     1.19.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -399,85 +399,89 @@ function tweakIdentifiersUI() {
 <img src="//simbad.cds.unistra.fr/icons/vizier_20.png" title="${description} " border="0">
 </a>`,
     );
-  }
+  } // function addVizierLink()
+
+  function matchNameToAddVizierLink(
+    tt,
+    matchRE,
+    vizierNameConverter,
+    vizierUrlTemplate,
+    vizierDescription,
+  ) {
+    // to evaluate the string vizierUrlTemplate as a template string
+    // expecting vizierName to be substituted.
+    // based on: https://stackoverflow.com/a/41015840
+    const interpolate = (template, vizierName) => {
+      return new Function('vizierName', `return \`${template}\`;`)(vizierName);
+    };
+    const curAlias = normalizeId(tt);
+
+    const [, matchedName] = curAlias.match(matchRE) || [null, null];
+
+    if (!matchedName) {
+      return false;
+    }
+
+    const vizierName = vizierNameConverter(matchedName);
+    const vizierUrl = interpolate(vizierUrlTemplate, vizierName);
+    addVizierLink(tt, vizierUrl, vizierDescription);
+    return true;
+  } // function matchNameToAddVizierLink()
 
   getIdentifiersDOM()
     ?.querySelectorAll('tt')
     .forEach((tt) => {
-      const curAlias = normalizeId(tt);
-
-      // add a Vizier link to OGLE BLG-ECL names
-      const [, ogleEclNum] = curAlias.match(/OGLE BLG-ECL-(\d+)/) || [
-        null,
-        null,
-      ];
-      if (ogleEclNum) {
+      matchNameToAddVizierLink(
+        tt,
+        // OGLE BLG-ECL names
+        /OGLE BLG-ECL-(\d+)/,
         // In Vizier OGLE ECL table J/AcA/66/405/ecl, the name is standardize differently from the one in SIMBAD
         // in the form of OGLE-BLG-ECL-123456  (fixed 6 digits)
-        const ogleEclVizierName = `OGLE-BLG-ECL-${ogleEclNum.padStart(6, '0')}`;
-        addVizierLink(
-          tt,
-          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/66/405/ecl&Star=${ogleEclVizierName}`,
-          'Vizier data from 2016AcA,OGLE',
-        );
-      }
+        (n) => `OGLE-BLG-ECL-${n.padStart(6, '0')}`,
+        'https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/66/405/ecl&Star=${vizierName}',
+        'Vizier data from 2016AcA,OGLE',
+      );
 
-      // add a Vizier link to OGLE BLG-ELL names
-      const [, ogleEllNum] = curAlias.match(/OGLE BLG-ELL-(\d+)/) || [
-        null,
-        null,
-      ];
-      if (ogleEllNum) {
+      matchNameToAddVizierLink(
+        tt,
+        // OGLE BLG-ELL names
+        /OGLE BLG-ELL-(\d+)/,
         // In Vizier OGLE ELL table J/AcA/66/405/ell, the name is standardize differently from the one in SIMBAD
         // in the form of OGLE-BLG-ELL-123456  (fixed 6 digits)
-        const ogleEllVizierName = `OGLE-BLG-ELL-${ogleEllNum.padStart(6, '0')}`;
-        addVizierLink(
-          tt,
-          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/66/405/ell&Star=${ogleEllVizierName}`,
-          'Vizier data from 2016AcA,OGLE',
-        );
-      }
+        (n) => `OGLE-BLG-ELL-${n.padStart(6, '0')}`,
+        'https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/66/405/ell&Star=${vizierName}',
+        'Vizier data from 2016AcA,OGLE',
+      );
 
-      // add a Vizier link to OGLE GD-CEP names
-      const [, ogleGdCepNum] = curAlias.match(/OGLE GD-CEP-(\d+)/) || [
-        null,
-        null,
-      ];
-      if (ogleGdCepNum) {
+      matchNameToAddVizierLink(
+        tt,
+        // OGLE GD-CEP names
+        /OGLE GD-CEP-(\d+)/,
         // In Vizier OGLE GD CEP tables J/AcA/68/315, the name is standardize differently from the one in SIMBAD
         // in the form of OGLE-GD-CEP-0634  (fixed 4 digits)
-        const ogleGdCepVizierName = `OGLE-GD-CEP-${ogleGdCepNum.padStart(4, '0')}`;
-        addVizierLink(
-          tt,
-          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/68/315&Star=${ogleGdCepVizierName}`,
-          'Vizier data from 2018AcA,OGLE',
-        );
-      }
+        (n) => `OGLE-GD-CEP-${n.padStart(4, '0')}`,
+        'https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/68/315&Star=${vizierName}',
+        'Vizier data from 2018AcA,OGLE',
+      );
 
-      // add a Vizier link to OGLE GD-ECL names
-      const [, ogleGdEclNum] = curAlias.match(/OGLE GD-ECL-(\d+)/) || [
-        null,
-        null,
-      ];
-      if (ogleGdEclNum) {
+      matchNameToAddVizierLink(
+        tt,
+        // OGLE GD-ECL names
+        /OGLE GD-ECL-(\d+)/,
         // In Vizier OGLE GD ECL tables J/AcA/63/115/, the Star column has the number only (no padding)
-        const ogleGdEclVizierName = ogleGdEclNum;
-        addVizierLink(
-          tt,
-          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/63/115&Star=${ogleGdEclVizierName}`,
-          'Vizier data from 2013AcA,OGLE',
-        );
-      }
+        (n) => n,
+        'https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AcA/63/115&Star=${vizierName}',
+        'Vizier data from 2013AcA,OGLE',
+      );
 
-      // add a Vizier link to ATO names, e.g., ATO J285.4962-18.4176
-      const [, atoId] = curAlias.match(/ATO (J.+)/) || [null, null];
-      if (atoId) {
-        addVizierLink(
-          tt,
-          `https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AJ/156/241&ATOID=${atoId}`,
-          'Vizier data from 2018AJ,ATLAS',
-        );
-      }
+      matchNameToAddVizierLink(
+        tt,
+        // match ATO names, e.g., ATO J285.4962-18.4176
+        /ATO (J.+)/,
+        (n) => n, // Vizier name is the entire J number
+        'https://vizier.cds.unistra.fr/viz-bin/VizieR-4?-source=J/AJ/156/241&ATOID=${vizierName}',
+        'Vizier data from 2018AJ,ATLAS',
+      );
     });
 }
 tweakIdentifiersUI();

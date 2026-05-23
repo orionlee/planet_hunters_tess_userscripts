@@ -8,7 +8,7 @@
 // @grant       GM_addStyle
 // @grant       GM_openInTab
 // @noframes
-// @version     1.14.1
+// @version     1.14.2
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -1405,6 +1405,7 @@ When TIC will be observed:<br>
     padding: 0.5em 1ch;
     width: 100%;
     font-size: 80%;
+    font-weight: normal;
     z-index: 99;
     display: none;
   }

@@ -12,7 +12,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR?*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.14.1
+// @version     1.14.2
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -460,6 +460,9 @@ function addSimpleSearchGETUrl() {
       if (!e.value) {
         return; // case No sort radio button is specified
       }
+      if (!coordVal && e.value == '_r') {
+        return; // sort by distance, but there is no coordinate
+      }
       searchURL += `&-sort=${encodeURIComponent(e.value)}`;
       sortAdded = true;
     });
@@ -477,6 +480,9 @@ function addSimpleSearchGETUrl() {
     document.forms[0].elements['-out.add']?.forEach((e) => {
       if (!e.checked) {
         return;
+      }
+      if (!coordVal && ['_r', '_p', '_x,_y'].includes(e.value)) {
+        return; // coordinate search specific computed columns, but there is no coordinate
       }
       searchURL += `&-out.add=${encodeURIComponent(e.value)}`;
       hasComputedColumns = true;

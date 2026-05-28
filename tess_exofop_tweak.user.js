@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.64.0
+// @version     1.65.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -583,6 +583,7 @@ function addExternalLInks() {
     '&-source=J/MNRAS/488/4905/table2' + // SuperWASP transit false positive catalog (Schanche+, 2019)
     '&-source=J/A+A/691/A242/obaf-eb1' + // TESS OBAF-type eclipsing binaries (IJspeert+, 2024)
     //                                      ^^^ the authors only use a subset for their work
+    '&-source=J/ApJS/279/50' + //           TESS Ten Thousand Catalog: Eclipsing Binaries (Kostov+, 2025), 3 tables
     '&-source=J/MNRAS/522/29/table2' + //   15000 ellipsoidal binary candidates in TESS (Green+, 2023),
     //                                      - all unfiltered targets, thus  many FPs, but indicate identified periods
     '&-source=J/MNRAS/522/29/table3' + //   15000 ellipsoidal binary candidates in TESS (Green+, 2023)
@@ -590,7 +591,7 @@ function addExternalLInks() {
     '&-source=J/ApJS/268/4' + //            Stellar variability with TESS 2min cadence phot. (Fetherolf+, 2023)
     //                                      - 3 tables, not really EB but could be useful check.
     '&-source=J/ApJS/276/57/table5' + //    Classification of periodic variable stars from TESS (Gao+, 2025)
-    //             j                        - not EB, but could be useful. ML-based classification using TESS sectors 1 - 67 2-min cadence data
+    //                                      - not EB, but could be useful. ML-based classification using TESS sectors 1 - 67 2-min cadence data
     '&-source=J/AJ/163/226/table2' + //     Classifying Be Star Variability with TESS I. (Labadie-Bartz+, 2022)
     //                                      - not EB, but could be useful. no type, but has frequencies, additional commentary in the paper
     `&TIC=${tic}&TESS=${tic}`;

@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.15.0
+// @version     1.16.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -833,13 +833,27 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
       return;
     }
 
-    // convert current time to JD, see https://en.wikipedia.org/wiki/Julian_day
-    const toJD = parseFloat((Date.now() / 86400000 + 2440587.5).toFixed(2));
-    const fromJD = toJD - 366 * 2; // 2 years, the default for LCGv2
-    const lcg2Url =
-      'https://www.aavso.org/LCGv2/index.htm?DateFormat=Calendar&RequestedBands=&view=api.delim' +
-      `&ident=${encodeURIComponent(getVSXName())}&fromjd=${fromJD}&tojd=${toJD}8&delimiter=@@@`;
+    const lcg2Url = (() => {
+      const urlBase =
+        'https://www.aavso.org/LCGv2/index.htm?DateFormat=Calendar&RequestedBands=&view=api.delim' +
+        `&ident=${encodeURIComponent(getVSXName())}`;
+      const urlSuffix = '&delimiter=@@@';
 
+      const [, numObs] = aavsoUidEl
+        .querySelector('a[title="Download data"]')
+        .previousSibling.textContent.match(/[(](\d+)/) || [, '99999'];
+      if (parseInt(numObs, 10) < 1000) {
+        // case num of observations is small, show all data
+        return `${urlBase}${urlSuffix}`;
+      } else {
+        // case num of observations is large, show last 2 years of data (the default in  LCGv2 UI)
+
+        // convert current time to JD, see https://en.wikipedia.org/wiki/Julian_day
+        const toJD = parseFloat((Date.now() / 86400000 + 2440587.5).toFixed(2));
+        const fromJD = toJD - 366 * 2;
+        return `${urlBase}&fromjd=${fromJD}&tojd=${toJD}${urlSuffix}`;
+      }
+    })();
     aavsoUidEl.insertAdjacentHTML(
       'beforeend',
       `&emsp;( <a href="${lcg2Url}" target="_blank">LCGv2</a> )`,

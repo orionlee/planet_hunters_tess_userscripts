@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.16.0
+// @version     1.17.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -401,19 +401,6 @@ function tweakSearchResult() {
       // (that exists in target detail page), so that encoding is done within the script
     }
 
-    // add shortcuts to search result as Alt-1, Alt-2, etc.
-    resRows.forEach((tr, i) => {
-      const el = tr.querySelector('.desig a');
-      if (el) {
-        el.accessKey = i + 1;
-      } else {
-        // should never happen, but just in case
-        console.warn(
-          `accesskey assignment: cannot find object detail link for row ${i + 1}. No-op`,
-        );
-      }
-    });
-
     // the third column is to the link of the object,
     // if the search is sorted by angular distance from coordinate
     // otherwise, link is in the second column. the logic here won't find it
@@ -424,6 +411,22 @@ function tweakSearchResult() {
       objectLinkEl.setAttribute(
         'href',
         objectLinkEl.getAttribute('href') + `#distance_from_coord=${distance}`,
+      );
+    }
+  });
+
+  // add shortcuts to search result as Alt-1, Alt-2, etc.
+  resRows.forEach((tr, i) => {
+    const el = tr.querySelector('.desig a');
+    if (el) {
+      el.accessKey = i + 1;
+      if (i == 0) {
+        el.focus();
+      } // focus on 1st match
+    } else {
+      // should never happen, but just in case
+      console.warn(
+        `accesskey assignment: cannot find object detail link for row ${i + 1}. No-op`,
       );
     }
   });

@@ -12,7 +12,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR?*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.14.2
+// @version     1.15.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -382,6 +382,34 @@ function tweakOgleBlgEclEllTables() {
   });
 }
 tweakOgleBlgEclEllTables();
+
+// Tweak the detail page of a single record
+function tweakSingleRecordPage() {
+  if (location.pathname != '/viz-bin/VizieR-5') {
+    return;
+  }
+  const srcTitle = document.querySelector(
+    'table tr:first-of-type td:nth-of-type(2) u',
+  )?.textContent;
+  if (!srcTitle) {
+    console.warn(
+      'tweakSingleRecordPage(): Cannot find the title of the underlying source. No-op',
+    );
+    return;
+  }
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `
+<div style="position: fixed; right: 6px; top: 6px; padding: 6px 6px; background-color: rgba(255, 255, 0, 0.6);">
+  <input id="mdRefOut" accessKey="L" title="markdown to reference this record"
+          onclick="this.select(); void(0);" />
+</div>
+`,
+  );
+  document.getElementById('mdRefOut').value =
+    `${srcTitle} ([Vizier](${location.href}))`;
+}
+tweakSingleRecordPage();
 
 // Provides an alternative in the form a short URL (that can be bookmarked)
 // Comparing it with the Vizier-standard bookmark feature, the URL is much shorter

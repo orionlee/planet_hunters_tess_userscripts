@@ -5,7 +5,7 @@
 // @match       https://www.aavso.org/vsx/*
 // @grant       GM_addStyle
 // @noframes
-// @version     1.17.0
+// @version     1.18.0
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -515,6 +515,54 @@ function tweakDetailPage() {
     return idCtrMatches?.[0];
   }
 
+  function getAllNameCtrPairs() {
+    const idCtr = getOtherNamesCtr();
+    if (!idCtr) {
+      // case no Other names, only return the main VSX name
+      return [getVSXName(true)];
+    }
+
+    const normalize = (name) => {
+      // for KIC / KID, sometimes VSX use non-standard names (compared with SIMBAD)
+      // - KID should be KIC
+      // - has leading zero
+      // 'KIC 07023917' should be 'KIC 7023917'
+      // 'KID 07023917' should be 'KIC 7023917' as well
+      return name.replace(/^\s*(KI[CD])\s+0+(\d+)/, 'KIC $2');
+    };
+
+    return (() => {
+      // Extract names listed, with some special processing
+      // 1. normalize KIC / KID if needed
+      // 2. Filter out edge case not a real ID, but the text
+      //   "Please note that aliases shown in grey link to obsolete records."
+      const res = Array.from(idCtr.querySelectorAll('td'), (td) => [
+        normalize(td.textContent.trim()),
+        td,
+      ]).filter((idCtrPair) => !idCtrPair[0].startsWith('Please note'));
+      res.push(getVSXName(true));
+      return res;
+    })();
+  }
+
+  // return TIC ID if available, null otherwise
+  function getTICid() {
+    const ticNames = getAllNameCtrPairs()
+      .map((nameCtr) => nameCtr[0])
+      .filter((name) => name.match(/^TIC\s*/i));
+
+    if (ticNames.length > 0) {
+      if (ticNames.length > 1) {
+        console.warn(
+          `getTICid(): multiple TIC names found. The first one will be returned - ${ticNames}`,
+        );
+      }
+      return ticNames[0].replace(/^TIC\s*/i, '');
+    } else {
+      return null; // case no TIC name
+    }
+  }
+
   function moveNotUsefulAliasToEnd(aliases) {
     // In practice, UCAC / SDSS is rarely cross-matched successfully in SIMBAD and ultimately removed;
     // Gaia DR3 is only used if the target is in Gaia DR3 Variable.
@@ -737,27 +785,7 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
     }
     const [aliasesMatched, aliasesNotMatchedSet] = [[], new Set(aliasList)];
 
-    const normalize = (name) => {
-      // for KIC / KID, sometimes VSX use non-standard names (compared with SIMBAD)
-      // - KID should be KIC
-      // - has leading zero
-      // 'KIC 07023917' should be 'KIC 7023917'
-      // 'KID 07023917' should be 'KIC 7023917' as well
-      return name.replace(/^\s*(KI[CD])\s+0+(\d+)/, 'KIC $2');
-    };
-
-    const existingIdCtrPairs = (() => {
-      // Extract names listed, with some special processing
-      // 1. normalize KIC / KID if needed
-      // 2. Filter out edge case not a real ID, but the text
-      //   "Please note that aliases shown in grey link to obsolete records."
-      const res = Array.from(idCtr.querySelectorAll('td'), (td) => [
-        normalize(td.textContent.trim()),
-        td,
-      ]).filter((idCtrPair) => !idCtrPair[0].startsWith('Please note'));
-      res.push(getVSXName(true));
-      return res;
-    })();
+    const existingIdCtrPairs = getAllNameCtrPairs();
 
     existingIdCtrPairs.forEach((idCtrPair) => {
       const [id, td] = idCtrPair;
@@ -874,7 +902,15 @@ ${getVSXName()}\t${aliasesNotMatched.join()}\t${getOid()}\t\t${extraNamesToShow.
     }
 
     // 1. ExoFOP URLs
-    const exofopNameUrl = `https://exofop.ipac.caltech.edu/tess/gototicid.php?target=${getVSXName()}`;
+    const exofopNameUrl = (() => {
+      // use TIC id if available
+      const ticId = getTICid();
+      if (ticId) {
+        return `https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}`;
+      } else {
+        return `https://exofop.ipac.caltech.edu/tess/gototicid.php?target=${getVSXName()}`;
+      }
+    })();
 
     // Note: In coordinate search,
     // for stars with large proper motion, the search might return nothing because

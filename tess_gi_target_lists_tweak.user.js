@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TESS GI Target List CSV UI tweaks
 // @namespace    astro.tess
-// @version      1.0.0
+// @version      1.1.0
 // @description
 // @author
 // @match        https://heasarc.gsfc.nasa.gov/docs/tess/data/target_lists/*.csv
@@ -34,4 +34,16 @@
       );
   }
   addLinksToGIProposals();
+
+  // To make the browser tab easier to be identified.
+  function tweakTitle() {
+    const [filename] = location.pathname.match(/[^/]+$/) || [null];
+    if (!filename) {
+      return null;
+    }
+    const title = `TESS ${filename}`;
+    document.title = title;
+    return title;
+  }
+  tweakTitle();
 })();

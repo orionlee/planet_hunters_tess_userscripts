@@ -5,7 +5,7 @@
 //              ^^^ the iframe of Gaia DR3 Photometry plot. Parent URL in the form of:
 //                  https://cdsarc.cds.unistra.fr/vizier/vizgraph.gml?-s=I/355&-i=.graph_sql_epphot&*
 // @grant       GM_addStyle
-// @version     1.1.1
+// @version     1.2.0
 // @author      -
 // @description This script tweaks the inner iframe of the plot. See tess_vizier_plot_gaiadr3_outer_frame_tweak.user.js for the outer frame tweak.
 // @icon        https://cdsarc.cds.unistra.fr/favicon.ico
@@ -52,12 +52,21 @@ function plotGmagOnlyInScatter() {
   document.querySelector('input#graph_vizier_reset_zoom').click(); // reset zoom
 }
 
+function createTSVDownloadUrl() {
+  const urlDecoded = decodeURIComponent(location.href);
+  const [pPos] = urlDecoded.match(/&Pos=[^&]+/) || [null]; // e.g., &Pos=244.27894496194-59.75065147156
+  const [pSource] = urlDecoded.match(/&Source=[^&]+/) || [null]; // e.g., &Source=5831536483793346816
+
+  return `https://cdsarc.cds.unistra.fr/viz-bin/vizgraph?-s=I%2F355&-i=.graph_sql_epphot${pPos}${pSource}&--output=tsv`;
+}
+
 function initUI() {
   addPeriodControlsUI();
 
   document.querySelector('#gadget_share').insertAdjacentHTML(
     'afterbegin',
     `
+<a href="${createTSVDownloadUrl()}" target="_blank">TSV</a>&nbsp;&nbsp;
 <button id="showGInDotsOnlyCtl">G scatter only</button>&nbsp;
 `,
   );

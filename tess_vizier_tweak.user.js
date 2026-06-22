@@ -12,7 +12,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR?*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.15.0
+// @version     1.15.1
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -426,7 +426,7 @@ function addSimpleSearchGETUrl() {
     }
     // use form.elements, rather than document.querySelector(),
     // as it has a more suitable API, e.g., handling radio input more easily
-    const inputValue = formEl.elements[inputName].value;
+    const inputValue = formEl.elements[inputName].value.trim();
     return `${prefix}${inputName}=${encodeURIComponent(inputValue)}`;
   }
 
@@ -475,6 +475,11 @@ function addSimpleSearchGETUrl() {
     // coordinate input will be missing for tables with no coordinates
     const coordVal = document.querySelector('input[name="-c"]')?.value;
     if (coordVal) {
+      // remove existing coordinate search params if any, e.g.,
+      // present in the URLs in the URLs from Vizier home page search of an object
+      searchURL = searchURL.replace(/[?&]-c=[^&]+/, '');
+      searchURL = searchURL.replace(/[?&]-c[.][^=]+=[^&]+/g, ''); // -c.r, -c.rs, -c.u, etc.
+
       const urlc = formElToURLComponent; // a short name
       searchURL += `&${urlc('-c')}&${urlc('-c.eq')}&${urlc('-c.r')}&${urlc('-c.u')}&${urlc('-c.geom')}`;
     }
@@ -524,6 +529,11 @@ function addSimpleSearchGETUrl() {
     if (maxVal && maxVal != '50') {
       searchURL += `&-out.max=${encodeURIComponent(maxVal)}`;
     }
+
+    // remove parameter `&-to=3` (to Vizier-3) from the URL if present
+    // the param will make Vizier stay in the query form page (Vizier-3)
+    // the param is present in the URLs in the URLs from Vizier home page search of an object
+    searchURL = searchURL.replace(/[&?]-to=3/, '');
 
     return searchURL;
   }

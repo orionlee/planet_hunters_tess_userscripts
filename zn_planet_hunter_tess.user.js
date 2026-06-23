@@ -7,8 +7,10 @@
 //                   to support the cases that PHT discussions are ajax-loaded from notifications
 // @grant       GM_addStyle
 // @grant       GM_openInTab
+// @grant       GM_getValue
+// @grant       GM_setValue
 // @noframes
-// @version     1.14.2
+// @version     1.15.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -23,6 +25,16 @@ function ajaxDbg(...args) {
   if (DEBUG_PHT_AJAX) {
     console.debug(...['[ADBG]'].concat(args));
   }
+}
+
+function my_GM_getValue(key, defaultValue = '') {
+  const result = GM_getValue(key);
+  if (!result) {
+    // Store a empty string so that the value can be edited in Tampermonkey UI
+    GM_setValue(key, '');
+    return defaultValue;
+  }
+  return result;
 }
 
 const urlChangeNotifier = (() => {
@@ -241,49 +253,15 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
 // Main customization logic
 //
 
-(function customizeClassify() {
+function customizeClassify() {
   const PATH_CLASSIFY =
     '/projects/nora-dot-eisner/planet-hunters-tess/classify/workflow/11235';
 
-  (function injectCSS() {
+  function injectCSS() {
     GM_addStyle(`
-#lightCurveViewerExpandCtr {
-  display: none;
-}
-
 /* Make The workflow is finished banner smaller */
 .x-light-curve-root > section > div.StyledBox-sc-13pk1d4-0.fgHeel > div.StyledBox-sc-13pk1d4-0.fqvxxV {
   max-height: 10px;
-}
-
-@media (min-width: 701px) {
-  /* make lightcurve occupies most of the window by compressing the right-sided box (that has Done Button)
-     Overwriting the shipped .blYUEA rule
-     Use our own .x-light-curve-root so that the rule here is not tied to the shipped class name
-     */
-  .lcv-expanded .x-light-curve-root {
-      grid-template-columns: 8fr 13rem; /* down from 25.3rem */
-  }
-
-  #lightCurveViewerExpandCtr {
-    display: block;
-  }
-
-  #lightCurveViewerExpandCtl:before {
-    content: "Expand LC >";
-  }
-
-  .lcv-expanded #lightCurveViewerExpandCtl:before {
-    content: "< Shrink LC";
-  }
-
-  /* make marked transit areas cover all the way to the bottom
-     when the viewer becomes taller in expanded state.
-     Use 10000px to approximate 100% height
-   */
-  .lcv-expanded .annotations-layer rect.selection {
-    height: 10000px;
-  }
 }
 
 /* make the buttons below the view right-aligned, easier to access */
@@ -312,7 +290,21 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
   font-weight: bold;
 }
 `);
-  })(); // function injectCSS()
+  }
+  injectCSS();
+
+  function makeLightCurveViewerWider() {
+    if (
+      my_GM_getValue('wideLCViewerInClassify', 'true').toLowerCase() !== 'true'
+    ) {
+      return;
+    }
+    GM_addStyle(`
+main .cpUEcx { /* Cannot use the CSS class .x-light-curve-root I added in userscript */
+    grid-template-columns: 9fr 1fr !important;
+}`);
+  }
+  makeLightCurveViewerWider(); // replace toggleExpandedViewer (no longer works)
 
   // Helper to react to classify tab's top-level ajax load
   function onMainLoaded(handleFn) {
@@ -378,54 +370,6 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     console.warn(`clickViewerBtn() button '${btnTitle}' not found. No-op.`);
     return false;
   } // function clickViewerBtn(..)
-
-  function toggleExpandedViewer() {
-    // only applicable to classify page
-    if (location.pathname !== PATH_CLASSIFY) {
-      return;
-    }
-
-    // add expanded at doc root, so that in case LC viewer is not yet loaded, we can still let it be in expanded state
-    document.documentElement.classList.toggle('lcv-expanded');
-
-    const rootEl = annotateViewerRoot();
-    if (rootEl) {
-      rootEl.scrollIntoView();
-      rootEl.querySelector('svg').focus(); // to make built-in keyboard shortcuts work without users clicking
-    } else {
-      console.warn(
-        'toggleExpandedViewer() - cannot find light curve viewer container - cannot focus it',
-      );
-    }
-  } // function toggleExpandedViewer()
-
-  function initToggleExpandedViewerUI() {
-    // 20221111: disable expand UI feature. Because with the changes in the classify UI, expand does not work in that
-    // 1. the lightcurve area does expand correctly, but
-    // 2. the lightcurve plot and the x-axis do not expand correspondingly
-    // 3. lightcurve plot can be compensated by using setting width=100% for clipPath#data-mask-99343 > rect
-    // 4. but there does not seem to have an easy way to fix the x-axis, the svg are a series of <g class="tick"> elements,
-    //    representing the ticks, with hardcoded coordinates, e.g.,     transform: translate(57.9601, 0);
-    //
-    // If the issues are fixed, the feature can be re-enabled by using the old initToggleExpandedViewerUI() codes
-    return true;
-  }
-
-  // function initToggleExpandedViewerUI() {
-
-  //   if (document.getElementById('lightCurveViewerExpandCtr')) {
-  //     return false; // already created. no need to do it again
-  //   }
-
-  //   document.body.insertAdjacentHTML('beforeend', `
-  // <div id="lightCurveViewerExpandCtr" style="z-index: 9; position: fixed; top: 10px; right: 4px; padding: 4px 8px; background-color: rgba(255,255,0,0.5);">
-  //     <button id="lightCurveViewerExpandCtl"></button>
-  // </div>`);
-  //   document.getElementById('lightCurveViewerExpandCtl').onclick = toggleExpandedViewer;
-
-  //   toggleExpandedViewer(); // set viewer to expanded state
-  //   return true;
-  // } // function initToggleExpandedViewerUI()
 
   // BEGIN Common helpers used by
   // 1) key map customization,  2) customizeViewerSubjectLevel()
@@ -785,9 +729,6 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
   function doCustomizeViewerGenericLevel() {
     ajaxDbg('doCustomizeViewerGenericLevel()');
 
-    // expand the viewer
-    initToggleExpandedViewerUI();
-
     addKeyMapToViewer(); // additional keyboard shortcuts
   }
 
@@ -906,9 +847,10 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
     }
   } // function customizeViewerOnDoneClicked(..)
   window.addEventListener('click', customizeViewerOnDoneClicked);
-})();
+}
+customizeClassify();
 
-(function customizeTalk() {
+function customizeTalk() {
   function openTalkSearchInNewTab(talkForm) {
     const query = talkForm.querySelector('input').value;
     const searchUrl = query.startsWith('#')
@@ -965,9 +907,10 @@ function doHandleKeyboardShortcuts(evt, keyMap) {
       onPanoptesMainLoaded(tweakTalkSearch);
     }
   });
-})();
+}
+customizeTalk();
 
-(function customizeSubjectTalk() {
+function customizeSubjectTalk() {
   // Helpers for subject / talk pages
   function getThreadContainer() {
     // subject pages and general talk pages have different container
@@ -1499,9 +1442,10 @@ When TIC will be observed:<br>
       }
     }
   });
-})();
+}
+customizeSubjectTalk();
 
-(function customizeCollection() {
+function customizeCollection() {
   function isPathNamePHTCollection() {
     return (
       /\/projects\/nora-dot-eisner\/planet-hunters-tess\/collections\/.+\/.+/.test(
@@ -1591,4 +1535,5 @@ ${subject}
       onPanoptesMainLoaded(showSubjectNumInThumbnails);
     }
   });
-})();
+}
+customizeCollection();

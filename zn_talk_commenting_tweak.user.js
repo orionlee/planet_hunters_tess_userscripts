@@ -6,7 +6,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.26.0
+// @version     1.26.1
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -101,7 +101,8 @@ titleForLinkifiedUrlImplList.push((url) => {
   // Case link of a paper referenced  by SIMBAD
   if (
     url.includes('simbad.u-strasbg.fr/simbad/sim-ref?bibcode=') ||
-    url.includes('simbad.cds.unistra.fr/simbad/sim-ref?bibcode=')
+    url.includes('simbad.cds.unistra.fr/simbad/sim-ref?bibcode=') ||
+    url.includes('simbad.cfa.harvard.edu/simbad/sim-ref?bibcode=')
   ) {
     // https://simbad.cds.unistra.fr/simbad/sim-ref?bibcode=2022ApJS..263...34C
     // abbrev followed the pattern used by SIMBAD, 2022ApJS in the above case
@@ -116,7 +117,8 @@ titleForLinkifiedUrlImplList.push((url) => {
   // Case of typical  SIMBAD links
   if (
     url.includes('simbad.u-strasbg.fr/simbad/sim-') ||
-    url.includes('simbad.cds.unistra.fr/simbad/sim-')
+    url.includes('simbad.cds.unistra.fr/simbad/sim-') ||
+    url.includes('simbad.cfa.harvard.edu/simbad/sim-')
   ) {
     // try to get object ID if it's in URL
 
@@ -744,15 +746,13 @@ GM_addStyle(`/* expand talk message body by shrinking right sidebar and left aut
 }
 `);
 function toggleTalkBodyWidthOnDblClick(evt) {
-  if (
-    !(
-      (isElementOrAncestor(evt.target, (el) => el.tagName === 'H3') &&
-        isElementOrAncestor(evt.target, (el) =>
-          el.classList.contains('talk-sidebar'),
-        )) ||
-      evt.target.classList.contains('talk-sidebar')
-    )
-  ) {
+  if (!(
+    (isElementOrAncestor(evt.target, (el) => el.tagName === 'H3') &&
+      isElementOrAncestor(evt.target, (el) =>
+        el.classList.contains('talk-sidebar'),
+      )) ||
+    evt.target.classList.contains('talk-sidebar')
+  )) {
     return;
   }
   // we only accept double click in the heading of talk sidebar, or the sidebar empty area

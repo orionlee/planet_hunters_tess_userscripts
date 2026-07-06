@@ -4,7 +4,7 @@
 // @match       https://exo.mast.stsci.edu/exomast_planet.html?planet=*
 // @grant       none
 // @noframes
-// @version     1.1.16
+// @version     1.1.17
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -131,11 +131,16 @@ function bjtdToRelative(tBjtd) {
 } // function bjtdToRelative(..)
 
 function mjdToBtjd(mjd) {
-  return mjd + 2400000.5 - 2457000.0;
+  // determine the decimal point in the MJD value,
+  // and ensure the BTJD counterpart has the same
+  // (to avoid the extra decimal points due to floating point operations)
+  const [, decimalPart] = mjd.toString().match(/[.](\d*)/) || [null, ''];
+  const btjd = mjd + 2400000.5 - 2457000.0;
+  return btjd.toFixed(decimalPart.length);
 } // function mjdToBtjd()
 
 function showTransitTimeInBtjd() {
-  if (!/planet=TIC.+/.test(location.search)) {
+  if (!/planet=(TIC|TOI).+/.test(location.search)) {
     // the target is not a TESS target. changing to BTJD would not make sense
     return;
   }
@@ -143,14 +148,17 @@ function showTransitTimeInBtjd() {
   const unitEl = document.querySelector('#transit_time > .small-unit');
   if (unitEl && unitEl.textContent === '[MJD]') {
     const timeEl = document.querySelector('#transit_time ~ span');
-    const tBjtd = mjdToBtjd(parseFloat(timeEl.textContent));
+    const tMjd = parseFloat(timeEl.textContent);
+    const tBjtd = mjdToBtjd(tMjd);
     timeEl.textContent = tBjtd;
+    timeEl.title = `MJD ${tMjd}`; // preserve MJD in the title
     unitEl.textContent = '[BTJD]';
     const [sector, timeRel] = bjtdToRelative(tBjtd);
     if (sector) {
       timeEl.insertAdjacentHTML(
         'afterend',
-        `<span class="nowrap" style="font-family: monospace; font-size: 90%">(${timeRel.toFixed(3)}, Sec. ${sector})</span>`,
+        `\
+<span class="nowrap" style="font-family: monospace; font-size: 90%">(${timeRel.toFixed(3)}, Sec. ${sector})</span>`,
       );
     }
   } else {

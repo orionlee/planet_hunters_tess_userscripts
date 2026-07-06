@@ -4,7 +4,7 @@
 // @match       https://exo.mast.stsci.edu/exomast_planet.html?planet=*
 // @grant       none
 // @noframes
-// @version     1.1.15
+// @version     1.1.16
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -48,7 +48,7 @@ function bjtdToRelative(tBjtd) {
     [30, 2115.884264538392, 2143.207661774344],
     [31, 2144.514258888768, 2169.944432468459],
     [32, 2174.227109325049, 2200.218976081749],
-    [33, 2201.72730, 2227.57173],
+    [33, 2201.7273, 2227.57173],
     [34, 2228.766579577884, 2254.065591600167],
     [35, 2254.994772551864, 2279.979866029939],
     [36, 2280.89808, 2305.98835],
@@ -113,8 +113,13 @@ function bjtdToRelative(tBjtd) {
     [95, 3882.3498890309, 3907.543896631188],
     [96, 3907.774455601238, 3933.434063071393],
     [97, 3933.660022710661, 3988.284049693419],
+    [98, 3988.503699561448, 4045.901574673295],
+    [99, 4047.242280354238, 4073.766698106344],
+    [100, 4074.006760393246, 4100.449629143865],
+    [101, 4100.68308466554, 4126.809641681039],
+    [102, 4127.359460187424, 4151.70785056981],
+    [103, 4152.031471112816, 4178.200911241182],
   ]; // Note: update the one in tess_exofop_tweak.user.js too
-
 
   for (const row of sectorStartStopList) {
     if (row[1] <= tBjtd && tBjtd <= row[2]) {
@@ -139,16 +144,18 @@ function showTransitTimeInBtjd() {
   if (unitEl && unitEl.textContent === '[MJD]') {
     const timeEl = document.querySelector('#transit_time ~ span');
     const tBjtd = mjdToBtjd(parseFloat(timeEl.textContent));
-    timeEl.textContent = tBjtd
+    timeEl.textContent = tBjtd;
     unitEl.textContent = '[BTJD]';
     const [sector, timeRel] = bjtdToRelative(tBjtd);
     if (sector) {
-      timeEl.insertAdjacentHTML('afterend', `<span class="nowrap" style="font-family: monospace; font-size: 90%">(${timeRel.toFixed(3)}, Sec. ${sector})</span>`);
+      timeEl.insertAdjacentHTML(
+        'afterend',
+        `<span class="nowrap" style="font-family: monospace; font-size: 90%">(${timeRel.toFixed(3)}, Sec. ${sector})</span>`,
+      );
     }
   } else {
     console.warn('Cannot found transit time in MJD', unitEl);
   }
-
 } // function showTransitTimeInBtjd()
 
 // Sometimes the planet radius shown in TCE is calculated when the star size assumed to be 1 (star size unknown)
@@ -157,30 +164,44 @@ function showTransitTimeInBtjd() {
 // Example - see:
 //   https://www.zooniverse.org/projects/nora-dot-eisner/planet-hunters-tess/talk/2112/1327057?comment=2557625
 function warnIfPlanetRadiusMightBeOff() {
-  const radiusStarInSun = parseFloat(document.querySelector('#Rs ~ span').firstChild.nodeValue)
-  const transitDepthInPct = parseFloat(document.querySelector('#transit_depth ~ span').firstChild.nodeValue)
-  const radiusPlanetInJupiter = parseFloat(document.querySelector('#Rp ~ span').firstChild.nodeValue)
-  const estRadiusPlanetInJupiter = Math.sqrt(radiusStarInSun * radiusStarInSun * transitDepthInPct / 100) / 0.10276
+  const radiusStarInSun = parseFloat(
+    document.querySelector('#Rs ~ span').firstChild.nodeValue,
+  );
+  const transitDepthInPct = parseFloat(
+    document.querySelector('#transit_depth ~ span').firstChild.nodeValue,
+  );
+  const radiusPlanetInJupiter = parseFloat(
+    document.querySelector('#Rp ~ span').firstChild.nodeValue,
+  );
+  const estRadiusPlanetInJupiter =
+    Math.sqrt((radiusStarInSun * radiusStarInSun * transitDepthInPct) / 100) /
+    0.10276;
 
   // if the radius reported vs estimated is off by more then 30%, warn the users
-  if (Math.abs(radiusPlanetInJupiter - estRadiusPlanetInJupiter) / radiusPlanetInJupiter >= 0.3) {
-    document.querySelector('#Rp ~ span').insertAdjacentHTML('afterend', `\
+  if (
+    Math.abs(radiusPlanetInJupiter - estRadiusPlanetInJupiter) /
+      radiusPlanetInJupiter >=
+    0.3
+  ) {
+    document.querySelector('#Rp ~ span').insertAdjacentHTML(
+      'afterend',
+      `\
 <span style="color: red;font-weight: bold;"
       title="The reported planet radius could be way off due to, e.g., assuming star size is sun. Shown is the estimate."
->(${estRadiusPlanetInJupiter.toFixed(3)})</span>`);
+>(${estRadiusPlanetInJupiter.toFixed(3)})</span>`,
+    );
   }
 }
 
 // wait till Ajax load done
 // setTimeout(showTransitTimeInBtjd, 4000);
-const dataObserver = new MutationObserver(function(mutations, observer) {
+const dataObserver = new MutationObserver(function (mutations, observer) {
   console.debug('TCE data on left panel loaded');
   showTransitTimeInBtjd();
   warnIfPlanetRadiusMightBeOff();
   observer.disconnect();
 });
 dataObserver.observe(document.querySelector('#data'), { childList: true });
-
 
 // To access related links for the pdfs
 // we must wait for Data Coverage tab loaded, which takes a while
@@ -191,7 +212,9 @@ function alertWhenDataCoverageLoadDone() {
     return;
   }
 
-  const stillLoading = (document.querySelector('.jquery-loading-modal__text')?.textContent === 'Loading exoplanet data...');
+  const stillLoading =
+    document.querySelector('.jquery-loading-modal__text')?.textContent ===
+    'Loading exoplanet data...';
   if (stillLoading) {
     setTimeout(alertWhenDataCoverageLoadDone, 2000);
   } else {

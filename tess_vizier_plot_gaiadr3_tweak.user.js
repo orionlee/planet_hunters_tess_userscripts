@@ -5,7 +5,7 @@
 //              ^^^ the iframe of Gaia DR3 Photometry plot. Parent URL in the form of:
 //                  https://cdsarc.cds.unistra.fr/vizier/vizgraph.gml?-s=I/355&-i=.graph_sql_epphot&*
 // @grant       GM_addStyle
-// @version     1.2.0
+// @version     1.2.1
 // @author      -
 // @description This script tweaks the inner iframe of the plot. See tess_vizier_plot_gaiadr3_outer_frame_tweak.user.js for the outer frame tweak.
 // @icon        https://cdsarc.cds.unistra.fr/favicon.ico
@@ -21,12 +21,16 @@ function changePeriod(factor) {
   perEl.value = curPer * factor;
 }
 
-function addPeriodControlsUI() {
+function addPeriodControlsUI(retry=3, retry_delay=500) {
   const perEl = document.querySelector('input#option_axis_x_period');
   if (!perEl) {
-    console.warn(
-      'addPeriodControls(): Cannot find period input element. No-op',
-    );
+    if (retry <=1) {
+      console.warn(
+        'addPeriodControls(): Cannot find period input element. No-op',
+      );
+    } else {
+      setTimeout(() => { addPeriodControlsUI(retry--) }, retry_delay * 2);
+    }
     return;
   }
 

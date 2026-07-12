@@ -12,7 +12,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR?*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.15.1
+// @version     1.16.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -97,13 +97,11 @@ table.tabList tr > td > b > a { /* Vizier table names. Make them stand out more 
   function hideOneEmptyTable(tabEl) {
     // tabEl should be a message indicating there is no row for the given table, e.g.,
     // <span class="warning">No object found around (ICRS) position 20:41:37.1+43:50:12</span>
-    if (
-      !(
-        tabEl.tagName == 'SPAN' &&
-        tabEl.classList.contains('warning') &&
-        tabEl.textContent.startsWith('No object found')
-      )
-    ) {
+    if (!(
+      tabEl.tagName == 'SPAN' &&
+      tabEl.classList.contains('warning') &&
+      tabEl.textContent.startsWith('No object found')
+    )) {
       return;
     }
     numTablesHidden++;
@@ -383,7 +381,35 @@ function tweakOgleBlgEclEllTables() {
 }
 tweakOgleBlgEclEllTables();
 
-// Tweak the detail page of a single record
+//
+// utils for a single record
+
+function showMarkdownForSingleRecordInUI(url, title) {
+  function doShow() {
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      `
+  <div id="mdRefOutCtr" style="position: fixed; right: 6px; top: 6px; padding: 6px 6px; background-color: rgba(255, 255, 0, 0.6);">
+    <input id="mdRefOut" accessKey="L" title="markdown to reference this record"
+            onclick="this.select(); void(0);" />
+  </div>
+  `,
+    );
+    const mdEl = document.getElementById('mdRefOut');
+    mdEl.value = `${title} ([Vizier](${url}))`;
+  }
+
+  const existingCtr = document.getElementById('mdRefOutCtr');
+  if (existingCtr) {
+    // add a delay between erasing the current UI and showing the new
+    // as a visual cue that the user operations succeeded.
+    existingCtr.remove();
+    setTimeout(doShow, 250);
+  } else {
+    doShow();
+  }
+}
+
 function tweakSingleRecordPage() {
   if (location.pathname != '/viz-bin/VizieR-5') {
     return;
@@ -397,19 +423,70 @@ function tweakSingleRecordPage() {
     );
     return;
   }
-  document.body.insertAdjacentHTML(
-    'beforeend',
-    `
-<div style="position: fixed; right: 6px; top: 6px; padding: 6px 6px; background-color: rgba(255, 255, 0, 0.6);">
-  <input id="mdRefOut" accessKey="L" title="markdown to reference this record"
-          onclick="this.select(); void(0);" />
-</div>
-`,
-  );
-  document.getElementById('mdRefOut').value =
-    `${srcTitle} ([Vizier](${location.href}))`;
+  showMarkdownForSingleRecordInUI(location.href, srcTitle);
 }
 tweakSingleRecordPage();
+
+// ctrl/alt right-click on the link to a single record to
+// to get a markdown snippet for the link.
+function onModifiedRightClickSingleRecord(evt) {
+  // console.debug('onModifiedRightClickSingleRecord', evt);
+  if (!(evt.ctrlKey || evt.altKey)) {
+    return;
+  }
+
+  // check to see if it's on a <a> element, some time it is <em> within an <a>
+  let target = evt.target;
+  if (target.tagName != 'A') {
+    target = target.parentElement;
+  }
+  if (target.tagName != 'A') {
+    return;
+  }
+
+  if (!target.href.includes('/VizieR-5?')) {
+    return;
+  }
+
+  //
+  // case click to a detailed entry, prevent browser defaults and do our thing
+  //
+  evt.preventDefault();
+
+  const findCatalogMetaTable = (el) => {
+    // el: expected to be <a> of a <td>
+    let curTab = el.parentElement.parentElement.parentElement.parentElement;
+    if (curTab?.tagName != 'TABLE') {
+      curTab = curTab?.parentElement;
+    }
+    if (curTab?.tagName != 'TABLE') {
+      return null;
+    }
+
+    let prevTab = curTab?.previousElementSibling;
+    if (prevTab.tagName != 'TABLE') {
+      // usually there is a <div> between the two tables, but sometimes the <div is missing
+      prevTab = prevTab?.previousElementSibling;
+    }
+    if (prevTab.tagName != 'TABLE') {
+      return null;
+    }
+    return prevTab;
+  };
+
+  const metaTab = findCatalogMetaTable(target);
+  if (!metaTab) {
+    console.warn(
+      'onModifiedRightClickSingleRecord(): cannot find the metadata of the current table. No-op,',
+    );
+  }
+  const catName = metaTab.querySelector('tr td:nth-of-type(2) a')?.textContent;
+  showMarkdownForSingleRecordInUI(target.href, catName);
+}
+if (location.pathname == '/viz-bin/VizieR-4') {
+  // install on search result pages
+  document.addEventListener('contextmenu', onModifiedRightClickSingleRecord);
+}
 
 // Provides an alternative in the form a short URL (that can be bookmarked)
 // Comparing it with the Vizier-standard bookmark feature, the URL is much shorter

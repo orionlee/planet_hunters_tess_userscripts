@@ -4,7 +4,7 @@
 // @match       https://exo.mast.stsci.edu/exomast_planet.html?planet=*
 // @grant       none
 // @noframes
-// @version     1.1.17
+// @version     1.1.18
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -119,6 +119,7 @@ function bjtdToRelative(tBjtd) {
     [101, 4100.68308466554, 4126.809641681039],
     [102, 4127.359460187424, 4151.70785056981],
     [103, 4152.031471112816, 4178.200911241182],
+    [104, 4179.18933292515, 4205.203494190147],
   ]; // Note: update the one in tess_exofop_tweak.user.js too
 
   for (const row of sectorStartStopList) {

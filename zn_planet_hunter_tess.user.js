@@ -10,7 +10,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.15.0
+// @version     1.16.0
 // @author      orionlee
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -1053,6 +1053,11 @@ function customizeSubjectTalk() {
         }
       }
 
+      // usage: add suffix to open related tabs (tess_exofop_tweak.user.js feature),
+      // e.g., '#open=simbad|_vsx||_tce'
+      const exofopUrlSuffix = my_GM_getValue('exofopUrlSuffix', '');
+      const tceUrl = my_GM_getValue('tceUrl', 'https://exo.mast.stsci.edu/#search=TIC%20');
+
       // create one
       document.body.insertAdjacentHTML(
         'beforeend',
@@ -1070,11 +1075,11 @@ function customizeSubjectTalk() {
 <a target="_pht_talk" href="/projects/nora-dot-eisner/planet-hunters-tess/talk/search?query=TIC%20${ticId}">Search Talk for TIC</a>
 <br><br>
 Subject info., including TOI:<br>
-<a target="_exofop" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}#open=simbad|_vsx|_gaia-dr3-xmatch-var|_tce" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
+<a target="_exofop" href="https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}${exofopUrlSuffix}" ref="noopener nofollow">https://exofop.ipac.caltech.edu/tess/target.php?id=${ticId}</a>
 
 <br><br>
 Search TCEs:<br>
-<a target="_exomast" href="https://exo.mast.stsci.edu/#search=TIC%20${ticId}" ref="noopener nofollow">https://exo.mast.stsci.edu/</a>
+<a target="_exomast" href="${tceUrl}${ticId}" ref="noopener nofollow">https://exo.mast.stsci.edu/</a>
 
 <br><br>
 MAST Portal:<br>

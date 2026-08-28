@@ -6,7 +6,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.26.1
+// @version     1.26.2
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -106,8 +106,9 @@ titleForLinkifiedUrlImplList.push((url) => {
   ) {
     // https://simbad.cds.unistra.fr/simbad/sim-ref?bibcode=2022ApJS..263...34C
     // abbrev followed the pattern used by SIMBAD, 2022ApJS in the above case
-    const [, abbrev] = url.match(/bibcode=(\d+[^.]*)/) || [null, null];
+    let [, abbrev] = url.match(/bibcode=(\d+[^.]*)/) || [null, null];
     if (abbrev) {
+      abbrev = decodeURIComponent(abbrev);
       return `${abbrev} paper referenced by SIMBAD`;
     } else {
       return 'paper referenced by SIMBAD';

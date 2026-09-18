@@ -6,7 +6,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.26.3
+// @version     1.26.4
 // @author      -
 // @description For zooniverse talk, provides shortcuts in typing comments. 1) when the user tries to paste a link / link to image,
 //              it will be converted to markdown automatically. 2) Keyboard shortcuts for bold (Ctrl-B) and italic (Ctrl-I).
@@ -433,7 +433,7 @@ function processLinksImages(text) {
   if (/^https?:\/\//.test(text)) {
     if (isImage(text)) {
       // e.g., match acme.net in https://www.acme.net/
-      const [, domain] = text.match(/https?:\/\/.*[.]([^.]+[.][^.]+)\//) || [null, ''];
+      const [, domain] = text.match(/https?:\/\/.*?([^./]+[.][^./]+)\//) || [null, ''];
       // case images
       return `![img from ${domain}](${text})`;
     } else {

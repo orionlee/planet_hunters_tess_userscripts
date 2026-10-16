@@ -12,7 +12,7 @@
 // @match       https://vizier.cfa.harvard.edu/viz-bin/VizieR?*
 // @noframes
 // @grant       GM_addStyle
-// @version     1.16.0
+// @version     1.17.0
 // @author      -
 // @description
 // @icon        http://vizier.u-strasbg.fr/favicon.ico
@@ -342,6 +342,32 @@ function highlightGaiaDR3XMatchVar() {
   addLinksToCats();
 }
 highlightGaiaDR3XMatchVar();
+
+function fixGaiaDR3PhotomeryPlotLinksOnCFA() {
+  // the fix is only needed on CFA mirror
+  if (location.hostname != "vizier.cfa.harvard.edu") {
+    return;
+  }
+  if (isSearchForm()) {
+    return;
+  }
+  // needed only for I/355/gaiadr3
+  if (document.body.outerHTML.indexOf(">I/355/gaiadr3<") < 0) {
+    return;
+  }
+
+  const problemStr = "javascript:aW('_736x600','VizF.http/vizier/vizgraph.gml?"
+  const fixedStr = "javascript:aW('_736x600','/vizier/vizgraph.gml?"
+
+  // need only if there is javascript link to photometry plot
+  if (document.body.outerHTML.indexOf(problemStr) < 0) {
+    return;
+  }
+
+  document.body.outerHTML = document.body.outerHTML.replaceAll(problemStr, fixedStr);
+
+}
+fixGaiaDR3PhotomeryPlotLinksOnCFA()
 
 function tweakOgleBlgEclEllTables() {
   // only applicable to search result of J/AcA/66/405/ecl and J/AcA/66/405/ell

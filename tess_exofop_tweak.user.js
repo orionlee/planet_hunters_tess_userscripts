@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.65.5
+// @version     1.65.7
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -209,6 +209,7 @@ function bjtdToRelative(tBjtd) {
     [104, 4179.18933292515, 4205.203494190147],
     [105, 4205.419061310566, 4233.059719822114],
     [106, 4233.429416851645, 4261.875729892523],
+    [107, 4262.101393762278, 4290.776608475709],
   ]; // Based on the one in tess_exomast_tce_tweak.user.js
 
   for (const row of sectorStartStopList) {
@@ -597,6 +598,8 @@ function addExternalLInks() {
     //                                      - all unfiltered targets, thus  many FPs, but indicate identified periods
     '&-source=J/MNRAS/522/29/table3' + //   15000 ellipsoidal binary candidates in TESS (Green+, 2023)
     //                                      - actual selected  ellipsoidal binary candidates
+    '&-source=J/AJ/170/287' + //            2min TESS data vetting with Exominer++ (Valizadegan+, 2025)
+    //                                      - focus on planets, but FPs could implicitly mean EBs
     '&-source=J/ApJS/268/4' + //            Stellar variability with TESS 2min cadence phot. (Fetherolf+, 2023)
     //                                      - 3 tables, not really EB but could be useful check.
     '&-source=J/ApJS/276/57/table5' + //    Classification of periodic variable stars from TESS (Gao+, 2025)

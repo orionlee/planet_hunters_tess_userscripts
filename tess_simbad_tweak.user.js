@@ -16,7 +16,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @noframes
-// @version     1.20.0
+// @version     1.20.1
 // @author      -
 // @description
 // @icon        https://panoptes-uploads.zooniverse.org/production/project_avatar/442e8392-6c46-4481-8ba3-11c6613fba56.jpeg
@@ -901,8 +901,8 @@ function tweakBibReference() {
     'beforebegin',
     `
 <div id="ads_link_ctr">
-  <img src="//simbad.cds.unistra.fr/icons//action.png" alt="goto" id="goto" align="LEFT" height="16" width="16">
-  <a href="https://ui.adsabs.harvard.edu/abs/${bibcode}/abstract">NASA ADS Entry</a>
+  <img src="/icons//action.png" alt="goto" id="goto" align="LEFT" height="16" width="16">
+  <a href="https://scixplorer.org/abs/${bibcode}/abstract">SciX Entry</a>
 </div>
 `,
   );
